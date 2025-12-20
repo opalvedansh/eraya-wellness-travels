@@ -1,0 +1,76 @@
+{
+  "reviews": [
+    {
+      "id": "1766174323355",
+      "name": "vedansh",
+      "email": "vedanshlovesmom88@gmail.com",
+      "rating": 2,
+      "review": "it was great experience, travel nepal with Eraya\n ",
+      "location": "india",
+      "displayOnHomepage": true,
+      "createdAt": "2025-12-19T19:58:43.355Z",
+      "approved": true
+    },
+    {
+      "id": "1766239666294",
+      "name": "reezu",
+      "email": "vedanshlovesmom88@gmail.com",
+      "rating": 5,
+      "review": "very good experience will this website",
+      "location": "nepal",
+      "displayOnHomepage": true,
+      "createdAt": "2025-12-20T14:07:46.294Z",
+      "approved": true
+    },
+    {
+      "id": "1766261522411",
+      "name": "Dr. Dibyanshi",
+      "email": "dr.dibyanshishrivastava2002@gmail.com",
+      "rating": 5,
+      "review": "\"A remarkable journey! Each location was breathtaking, and the service was top-notch.\"",
+      "location": "India",
+      "displayOnHomepage": true,
+      "createdAt": "2025-12-20T20:12:02.411Z",
+      "approved": true
+    }
+  ],
+  "transformations": [],
+  "callbacks": [],
+  "customizeTrips": [
+    {
+      "id": "1766209669340",
+      "name": "Test User",
+      "email": "test@example.com",
+      "phone": "1234567890",
+      "startDate": "2025-01-15",
+      "endDate": "2025-01-25",
+      "groupSize": "2",
+      "budget": "2000-3000",
+      "interests": [
+        "Trekking",
+        "Meditation & Yoga"
+      ],
+      "additionalNotes": "Looking for a peaceful retreat",
+      "tripName": "Himalayan Wellness Trek",
+      "createdAt": "2025-12-20T05:47:49.340Z",
+      "status": "pending"
+    },
+    {
+      "id": "1766209683089",
+      "name": "Test User",
+      "email": "test@example.com",
+      "phone": "1234567890",
+      "startDate": "2025-01-15",
+      "endDate": "2025-01-25",
+      "groupSize": "2",
+      "budget": "2000-3000",
+      "interests": [
+        "Trekking"
+      ],
+      "additionalNotes": "Test",
+      "tripName": null,
+      "createdAt": "2025-12-20T05:48:03.089Z",
+      "status": "pending"
+    }
+  ]
+}

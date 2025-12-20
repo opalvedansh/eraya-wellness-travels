@@ -1,0 +1,10 @@
+<svg viewBox="0 0 500 450" xmlns="http://www.w3.org/2000/svg">
+  <!-- Mountain accent element - stylized peak -->
+  <path d="M 260 130 L 290 170 L 310 150 L 345 190 L 380 160 L 375 175 L 330 200 L 285 175 L 245 200 L 220 165 L 240 145 Z" fill="#264180" stroke="none"/>
+  
+  <!-- Main text: "eraya" with decorative serif font -->
+  <text x="250" y="310" font-family="Georgia, 'Palatino Linotype', serif" font-size="110" font-weight="400" font-style="italic" text-anchor="middle" fill="#42594F" letter-spacing="-3">eraya</text>
+  
+  <!-- Subtext: "Wellness" -->
+  <text x="250" y="355" font-family="Arial, sans-serif" font-size="18" font-weight="400" text-anchor="middle" fill="#888888" letter-spacing="2">Wellness</text>
+</svg>
