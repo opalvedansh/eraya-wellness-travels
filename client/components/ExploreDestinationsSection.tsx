@@ -100,7 +100,6 @@ export default function ExploreDestinationsSection() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.3 }}
                 whileHover={{ scale: 1.08, y: -6 }}
                 whileTap={{ scale: 0.95 }}
                 animate={{
@@ -111,6 +110,8 @@ export default function ExploreDestinationsSection() {
                   ]
                 }}
                 transition={{
+                  duration: 0.6,
+                  delay: 0.3,
                   boxShadow: { duration: 2.5, repeat: Infinity, ease: "easeInOut" }
                 }}
                 className="relative bg-green-primary hover:bg-green-primary/90 text-white font-bold py-4 sm:py-4 md:py-4 lg:py-4 px-8 sm:px-8 md:px-10 lg:px-10 rounded-full shadow-premium-lg transition-all duration-300 text-sm sm:text-base md:text-lg lg:text-lg touch-target-min overflow-hidden group"
