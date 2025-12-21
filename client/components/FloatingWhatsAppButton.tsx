@@ -11,7 +11,7 @@ export default function FloatingWhatsAppButton() {
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-20 sm:bottom-24 md:bottom-6 lg:bottom-6 right-2 sm:right-3 md:right-6 lg:right-6 z-40 group touch-target-min"
+      className="hidden md:flex fixed bottom-6 lg:bottom-6 right-3 md:right-6 lg:right-6 z-40 group touch-target-min"
       title="Chat with a Nepal Trip Expert 🇳🇵"
     >
       <div className="relative flex items-center justify-center">

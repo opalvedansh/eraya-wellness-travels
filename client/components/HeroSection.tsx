@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Volume2, VolumeX, MapPin, Calendar, TrendingUp, Award, Users } from "lucide-react";
+import { Volume2, VolumeX, MapPin, Calendar } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import NavBar from "./NavBar";
@@ -10,7 +10,6 @@ export default function HeroSection() {
   const { scrollY } = useScroll();
   const textOpacity = useTransform(scrollY, [0, 300], [1, 0]);
   const textY = useTransform(scrollY, [0, 300], [0, -50]);
-  const badgeY = useTransform(scrollY, [0, 400], [0, -100]);
 
   const handleSoundToggle = () => {
     if (videoRef.current) {
@@ -39,73 +38,6 @@ export default function HeroSection() {
 
       {/* Navigation Bar */}
       <NavBar />
-
-      {/* Floating Stats Badges - Positioned Around Content */}
-      <motion.div
-        style={{ y: badgeY }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, delay: 1.2 }}
-        className="absolute top-32 left-4 sm:left-8 lg:left-16 z-20 hidden md:block"
-      >
-        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-premium-lg border border-green-primary/20 hover:scale-110 transition-all duration-300"
-          style={{ animation: "float 6s ease-in-out infinite" }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-primary/10 rounded-lg">
-              <Users className="w-6 h-6 text-green-primary" />
-            </div>
-            <div>
-              <div className="text-2xl font-black text-green-primary">2K+</div>
-              <div className="text-xs text-text-dark/70 font-semibold">Travelers</div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div
-        style={{ y: badgeY }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, delay: 1.4 }}
-        className="absolute top-48 right-4 sm:right-8 lg:right-16 z-20 hidden lg:block"
-      >
-        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-premium-lg border border-blue-accent/20 hover:scale-110 transition-all duration-300"
-          style={{ animation: "float 6s ease-in-out infinite 2s" }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-accent/10 rounded-lg">
-              <Award className="w-6 h-6 text-blue-accent" />
-            </div>
-            <div>
-              <div className="text-2xl font-black text-blue-accent">4.9/5</div>
-              <div className="text-xs text-text-dark/70 font-semibold">Rating</div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div
-        style={{ y: badgeY }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, delay: 1.6 }}
-        className="absolute bottom-32 left-4 sm:left-12 lg:left-24 z-20 hidden xl:block"
-      >
-        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-premium-lg border border-green-primary/20 hover:scale-110 transition-all duration-300"
-          style={{ animation: "float 6s ease-in-out infinite 4s" }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-primary/10 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-green-primary" />
-            </div>
-            <div>
-              <div className="text-2xl font-black text-green-primary">50+</div>
-              <div className="text-xs text-text-dark/70 font-semibold">Destinations</div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
 
       {/* Content Container */}
       <motion.div

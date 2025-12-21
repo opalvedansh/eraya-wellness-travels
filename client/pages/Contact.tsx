@@ -1,7 +1,7 @@
 import { useState } from "react";
 import PageHero from "@/components/PageHero";
 import Footer from "@/components/Footer";
-import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
+import { Mail, Phone, MapPin, Send, CheckCircle2, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { siteConfig, getMailtoLink, getTelLink } from "@/config/siteConfig";
@@ -85,10 +85,11 @@ export default function Contact() {
       link: getTelLink(),
     },
     {
-      icon: MapPin,
-      title: "Visit Us",
-      content: siteConfig.contact.address,
-      link: "#",
+      icon: Instagram,
+      title: "Follow Us",
+      content: "@eraya_wellness_travels",
+      link: "https://www.instagram.com/eraya_wellness_travels/",
+      target: "_blank",
     },
   ];
 
@@ -115,6 +116,8 @@ export default function Contact() {
                     <a
                       key={index}
                       href={info.link}
+                      target={info.target || "_self"}
+                      rel={info.target === "_blank" ? "noopener noreferrer" : undefined}
                       className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-card rounded-lg border border-border hover:shadow-md transition-shadow group touch-target-min"
                     >
                       <div className="flex-shrink-0 p-2 bg-green-primary/10 rounded-lg group-hover:bg-green-primary/20 transition-colors">

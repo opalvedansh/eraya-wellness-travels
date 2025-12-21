@@ -153,10 +153,10 @@ export default function Testimonials() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: (index % 3) * 0.1 }}
                   whileHover={{ y: -6, scale: 1.02 }}
-                  className="bg-card p-5 sm:p-6 md:p-7 lg:p-7 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300 border border-border/50 h-full flex flex-col cursor-pointer group"
+                  className="bg-card p-4 sm:p-6 md:p-7 lg:p-7 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300 border border-border/50 h-full flex flex-col cursor-pointer group"
                 >
-                  <Quote className="h-6 sm:h-7 md:h-8 lg:h-8 w-6 sm:w-7 md:w-8 lg:w-8 text-green-primary/25 mb-3 sm:mb-4 md:mb-4 lg:mb-4" />
-                  <div className="flex mb-3 sm:mb-4 md:mb-4 lg:mb-4">
+                  <Quote className="h-6 sm:h-7 md:h-8 lg:h-8 w-6 sm:w-7 md:w-8 lg:w-8 text-green-primary/25 mb-2 sm:mb-4 md:mb-4 lg:mb-4" />
+                  <div className="flex mb-2 sm:mb-4 md:mb-4 lg:mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
                       <Star
                         key={i}
@@ -164,10 +164,10 @@ export default function Testimonials() {
                       />
                     ))}
                   </div>
-                  <p className="text-text-dark/85 text-sm sm:text-base md:text-base lg:text-base leading-relaxed mb-6 sm:mb-7 md:mb-8 lg:mb-8 flex-grow font-medium">
+                  <p className="text-text-dark/85 text-sm sm:text-base md:text-base lg:text-base leading-relaxed mb-4 sm:mb-7 md:mb-8 lg:mb-8 flex-grow font-medium">
                     "{testimonial.text}"
                   </p>
-                  <div className="flex items-center gap-3 sm:gap-3 md:gap-3 lg:gap-3 pt-4 sm:pt-5 md:pt-6 lg:pt-6 border-t border-beige-dark/30">
+                  <div className="flex items-center gap-3 sm:gap-3 md:gap-3 lg:gap-3 pt-3 sm:pt-5 md:pt-6 lg:pt-6 border-t border-beige-dark/30">
                     <img
                       src={testimonial.image}
                       alt={testimonial.name}

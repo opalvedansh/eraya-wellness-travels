@@ -30,9 +30,8 @@ export default function MobileStickyBottomCTA({
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 bg-background border-t border-border shadow-lg z-30 p-2 sm:p-3 ${
-        hideOnDesktop ? "md:hidden" : ""
-      }`}
+      className={`fixed bottom-0 left-0 right-0 bg-background border-t border-border shadow-lg z-30 p-1.5 sm:p-3 ${hideOnDesktop ? "md:hidden" : ""
+        }`}
     >
       <div className="max-w-7xl mx-auto flex gap-2 sm:gap-3">
         <button

@@ -85,7 +85,7 @@ export default function Footer() {
                 >
                   <Link
                     to={link.to}
-                    className="group inline-flex items-center text-white/80 hover:text-white transition-all text-sm sm:text-base relative"
+                    className="group inline-flex items-center text-white/80 hover:text-white transition-all text-sm sm:text-base relative py-1 sm:py-0.5 min-h-[44px] sm:min-h-0"
                   >
                     <span className="absolute left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 bottom-0" />
                     {link.label}
@@ -204,21 +204,21 @@ export default function Footer() {
             <motion.a
               whileHover={{ y: -2 }}
               href="#terms"
-              className="text-white/70 hover:text-white transition-colors"
+              className="text-white/70 hover:text-white transition-colors inline-block py-2 sm:py-0 min-h-[44px] sm:min-h-0 flex items-center"
             >
               Terms & Conditions
             </motion.a>
             <motion.a
               whileHover={{ y: -2 }}
               href="#privacy"
-              className="text-white/70 hover:text-white transition-colors"
+              className="text-white/70 hover:text-white transition-colors inline-block py-2 sm:py-0 min-h-[44px] sm:min-h-0 flex items-center"
             >
               Privacy Policy
             </motion.a>
             <motion.a
               whileHover={{ y: -2 }}
               href="#cookies"
-              className="text-white/70 hover:text-white transition-colors"
+              className="text-white/70 hover:text-white transition-colors inline-block py-2 sm:py-0 min-h-[44px] sm:min-h-0 flex items-center"
             >
               Cookie Policy
             </motion.a>
