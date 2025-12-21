@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import TrekPageHero from "@/components/TrekPageHero";
 import Footer from "@/components/Footer";
@@ -22,17 +22,9 @@ import {
   GitCompare,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { Icon } from "leaflet";
 
-// Fix Leaflet default icon issue
-const defaultIcon = new Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
+// Dynamically import TrekMap to avoid SSR issues with Leaflet
+const TrekMap = lazy(() => import("@/components/TrekMap"));
 
 // Quick View Modal Component
 function QuickViewModal({ trek, isOpen, onClose }: any) {
@@ -1106,42 +1098,30 @@ export default function Trek() {
               </div>
             )
           ) : (
-            <div className="h-[600px] rounded-xl overflow-hidden shadow-premium border border-border">
-              <MapContainer center={[28.3949, 84.1240]} zoom={7} style={{ height: "100%", width: "100%" }}>
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                {processedTreks.map((trek) => (
-                  <Marker
-                    key={trek.id}
-                    position={trek.coordinates as [number, number]}
-                    icon={defaultIcon}
-                  >
-                    <Popup>
-                      <div className="p-2">
-                        <img
-                          src={trek.image}
-                          alt={trek.name}
-                          className="w-48 h-32 object-cover rounded-lg mb-2"
-                        />
-                        <h3 className="font-bold text-sm mb-1">{trek.name}</h3>
-                        <p className="text-xs text-gray-600 mb-2">{trek.location}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="font-black text-green-primary">${trek.price}</span>
-                          <button
-                            onClick={() => navigate(`/trek/${trek.slug}`)}
-                            className="px-3 py-1 bg-green-primary text-white rounded text-xs font-semibold"
-                          >
-                            View Trek
-                          </button>
-                        </div>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
-            </div>
+            <Suspense
+              fallback={
+                <div className="h-[600px] rounded-xl overflow-hidden shadow-premium border border-border flex items-center justify-center bg-beige-light">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
+                    <p className="text-text-dark/70">Loading map...</p>
+                  </div>
+                </div>
+              }
+            >
+              <TrekMap
+                treks={processedTreks.map((trek) => ({
+                  id: trek.id,
+                  name: trek.name,
+                  slug: trek.slug,
+                  location: trek.location,
+                  image: trek.image,
+                  price: trek.price,
+                  coordinates: trek.coordinates as [number, number],
+                  description: trek.description,
+                }))}
+                onTrekClick={(slug) => navigate(`/trek/${slug}`)}
+              />
+            </Suspense>
           )}
         </section>
 
