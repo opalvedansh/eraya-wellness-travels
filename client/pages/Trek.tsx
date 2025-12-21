@@ -1106,126 +1106,123 @@ export default function Trek() {
               </div>
             )
           ) : (
-            
             <div className="h-[600px] rounded-xl overflow-hidden shadow-premium border border-border">
-          <MapContainer center={[28.3949, 84.1240]} zoom={7} style={{ height: "100%", width: "100%" }}>
-            <>
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              {processedTreks.map((trek) => (
-                <Marker
-                  key={trek.id}
-                  position={trek.coordinates as [number, number]}
-                  icon={defaultIcon}
-                >
-                  <Popup>
-                    <div className="p-2">
-                      <img
-                        src={trek.image}
-                        alt={trek.name}
-                        className="w-48 h-32 object-cover rounded-lg mb-2"
-                      />
-                      <h3 className="font-bold text-sm mb-1">{trek.name}</h3>
-                      <p className="text-xs text-gray-600 mb-2">{trek.location}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="font-black text-green-primary">${trek.price}</span>
-                        <button
-                          onClick={() => navigate(`/trek/${trek.slug}`)}
-                          className="px-3 py-1 bg-green-primary text-white rounded text-xs font-semibold"
-                        >
-                          View Trek
-                        </button>
+              <MapContainer center={[28.3949, 84.1240]} zoom={7} style={{ height: "100%", width: "100%" }}>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {processedTreks.map((trek) => (
+                  <Marker
+                    key={trek.id}
+                    position={trek.coordinates as [number, number]}
+                    icon={defaultIcon}
+                  >
+                    <Popup>
+                      <div className="p-2">
+                        <img
+                          src={trek.image}
+                          alt={trek.name}
+                          className="w-48 h-32 object-cover rounded-lg mb-2"
+                        />
+                        <h3 className="font-bold text-sm mb-1">{trek.name}</h3>
+                        <p className="text-xs text-gray-600 mb-2">{trek.location}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="font-black text-green-primary">${trek.price}</span>
+                          <button
+                            onClick={() => navigate(`/trek/${trek.slug}`)}
+                            className="px-3 py-1 bg-green-primary text-white rounded text-xs font-semibold"
+                          >
+                            View Trek
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </>
-          </MapContainer>
-      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
           )}
-    </section>
+        </section>
 
-        {/* Recently Viewed Treks */ }
-  {
-    recentlyViewed.length > 0 && (
-      <section className="py-12 px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl sm:text-3xl font-black text-green-primary">
-            Recently Viewed
-          </h2>
-          <button
-            onClick={() => {
-              setRecentlyViewed([]);
-              localStorage.removeItem("recentlyViewedTreks");
-            }}
-            className="text-sm text-text-dark/60 hover:text-text-dark transition-colors"
-          >
-            Clear History
-          </button>
-        </div>
+        {/* Recently Viewed Treks */}
+        {
+          recentlyViewed.length > 0 && (
+            <section className="py-12 px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl sm:text-3xl font-black text-green-primary">
+                  Recently Viewed
+                </h2>
+                <button
+                  onClick={() => {
+                    setRecentlyViewed([]);
+                    localStorage.removeItem("recentlyViewedTreks");
+                  }}
+                  className="text-sm text-text-dark/60 hover:text-text-dark transition-colors"
+                >
+                  Clear History
+                </button>
+              </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {recentlyViewed.map((trekId) => {
-            const trek = treks.find(t => t.id === trekId);
-            if (!trek) return null;
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                {recentlyViewed.map((trekId) => {
+                  const trek = treks.find(t => t.id === trekId);
+                  if (!trek) return null;
 
-            return (
-              <motion.div
-                key={trek.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="group cursor-pointer"
-                onClick={() => {
-                  trackRecentlyViewed(trek.id);
-                  navigate(`/trek/${trek.slug}`);
-                }}
-              >
-                <div className="relative aspect-square rounded-lg overflow-hidden mb-2">
-                  <img
-                    src={trek.image}
-                    alt={trek.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-                <h3 className="text-sm font-bold text-text-dark line-clamp-2 mb-1">
-                  {trek.name}
-                </h3>
-                <p className="text-xs text-text-dark/60">{trek.location}</p>
-                <p className="text-sm font-black text-green-primary mt-1">
-                  ${trek.price}
-                </p>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
-    )
-  }
+                  return (
+                    <motion.div
+                      key={trek.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="group cursor-pointer"
+                      onClick={() => {
+                        trackRecentlyViewed(trek.id);
+                        navigate(`/trek/${trek.slug}`);
+                      }}
+                    >
+                      <div className="relative aspect-square rounded-lg overflow-hidden mb-2">
+                        <img
+                          src={trek.image}
+                          alt={trek.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <h3 className="text-sm font-bold text-text-dark line-clamp-2 mb-1">
+                        {trek.name}
+                      </h3>
+                      <p className="text-xs text-text-dark/60">{trek.location}</p>
+                      <p className="text-sm font-black text-green-primary mt-1">
+                        ${trek.price}
+                      </p>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </section>
+          )
+        }
 
-  {/* Why Travel With Us */ }
-  <WhyTravelWithUs />
+        {/* Why Travel With Us */}
+        <WhyTravelWithUs />
       </div >
 
-    {/* Mobile CTA */ }
-    <MobileStickyBottomCTA />
+      {/* Mobile CTA */}
+      <MobileStickyBottomCTA />
 
-    {/* Footer */ }
-    <Footer />
+      {/* Footer */}
+      <Footer />
 
-    {/* Quick View Modal */ }
-    <QuickViewModal trek = { quickViewTrek } isOpen = {!!quickViewTrek
-} onClose = {() => setQuickViewTrek(null)} />
+      {/* Quick View Modal */}
+      <QuickViewModal trek={quickViewTrek} isOpen={!!quickViewTrek
+      } onClose={() => setQuickViewTrek(null)} />
 
-{/* Comparison Modal */ }
-<ComparisonModal
-  treks={treks.filter((t) => comparisonList.includes(t.id))}
-  isOpen={showComparison}
-  onClose={() => setShowComparison(false)}
-/>
+      {/* Comparison Modal */}
+      <ComparisonModal
+        treks={treks.filter((t) => comparisonList.includes(t.id))}
+        isOpen={showComparison}
+        onClose={() => setShowComparison(false)}
+      />
     </div >
   );
 }
