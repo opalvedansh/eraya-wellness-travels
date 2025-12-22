@@ -14,14 +14,20 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  isVerified Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  photoURL     String?
+  googleUid    String?  @unique
+  authProvider String   @default("email") // "email" or "google"
+  isVerified   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  otps OTP[]
+  otps     OTP[]
   sessions Session[]
+
+  @@index([googleUid])
 }
 
 model OTP {

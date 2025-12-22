@@ -87,28 +87,28 @@ function CustomerStoriesCarousel() {
   const hardcodedStories = [
     {
       name: "Sarah Johnson",
-      trip: "Nepal Mountain Explorer - 2023",
+      trip: "Himalayan Heritage Explorer - 2023",
       image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
       story: "This trip changed my life. I went seeking adventure and found a deeper connection to myself and the world around me. The local guides shared their wisdom, and I returned home with a new perspective.",
       transformation: "From Corporate Burnout to Mindful Living",
     },
     {
       name: "Michael Chen",
-      trip: "Bhutan Wellness Retreat - 2024",
+      trip: "Mystic Valley Cultural Tour - 2024",
       image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
       story: "The meditation practices I learned in Bhutan have become part of my daily routine. I'm calmer, more present, and genuinely happier. This wasn't just a vacation—it was a transformation.",
       transformation: "From Anxiety to Inner Peace",
     },
     {
       name: "Elena Rodriguez",
-      trip: "Rajasthan Heritage Tour - 2023",
+      trip: "Sacred Trails Experience - 2023",
       image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
       story: "Meeting local artisans and hearing their stories gave me a whole new perspective on what truly matters in life. I now mentor young women in my community, inspired by the strong women I met in India.",
       transformation: "From Tourist to Cultural Ambassador",
     },
     {
       name: "David Park",
-      trip: "Tibet Sacred Journey - 2024",
+      trip: "Royal Cities Discovery Tour - 2024",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
       story: "Walking the pilgrimage routes with Tibetan monks taught me about dedication and faith. The experience was profoundly spiritual and has influenced every decision I make.",
       transformation: "From Skeptic to Spiritual Seeker",

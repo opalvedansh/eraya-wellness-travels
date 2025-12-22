@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import GoogleSignInButton from "./GoogleSignInButton";
 
 interface SignupPanelProps {
   onLoginClick: () => void;
@@ -11,7 +12,7 @@ export default function SignupPanel({
   onLoginClick,
   onClose,
 }: SignupPanelProps) {
-  const { requestOTP, verifyOTP, resendOTP, isLoading } = useAuth();
+  const { requestOTP, verifyOTP, resendOTP, loginWithGoogle, isLoading } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -24,6 +25,7 @@ export default function SignupPanel({
   const [otp, setOTP] = useState(["", "", "", "", "", ""]);
   const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -66,6 +68,27 @@ export default function SignupPanel({
       );
     }
   };
+
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setIsGoogleLoading(true);
+    try {
+      await loginWithGoogle();
+      setIsSubmitted(true);
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Google sign-in failed. Please try again."
+      );
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
 
   const handleOTPChange = (index: number, value: string) => {
     if (value.length > 1) {
@@ -275,7 +298,7 @@ export default function SignupPanel({
 
           <button
             type="submit"
-            disabled={!isValid || isLoading}
+            disabled={!isValid || isLoading || isGoogleLoading}
             className="w-full bg-green-primary hover:bg-green-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             {isLoading ? (
@@ -287,6 +310,18 @@ export default function SignupPanel({
               "Create Account"
             )}
           </button>
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="flex-1 h-px bg-border"></div>
+            <span className="text-text-dark/50 text-sm font-medium">or</span>
+            <div className="flex-1 h-px bg-border"></div>
+          </div>
+
+          <GoogleSignInButton
+            onClick={handleGoogleSignIn}
+            isLoading={isGoogleLoading}
+            disabled={isLoading}
+          />
         </form>
       ) : (
         <form onSubmit={handleVerifyOTP} className="space-y-6">
@@ -340,11 +375,10 @@ export default function SignupPanel({
                 type="button"
                 onClick={handleResendOTP}
                 disabled={resendCooldown > 0 || isVerifyingOTP}
-                className={`font-semibold transition-colors ${
-                  resendCooldown > 0 || isVerifyingOTP
-                    ? "text-text-dark/50 cursor-not-allowed"
-                    : "text-blue-accent hover:text-blue-accent-dark"
-                }`}
+                className={`font-semibold transition-colors ${resendCooldown > 0 || isVerifyingOTP
+                  ? "text-text-dark/50 cursor-not-allowed"
+                  : "text-blue-accent hover:text-blue-accent-dark"
+                  }`}
               >
                 {resendCooldown > 0
                   ? `Resend in ${resendCooldown}s`

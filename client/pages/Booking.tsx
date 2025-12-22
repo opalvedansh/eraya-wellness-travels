@@ -114,7 +114,7 @@ export default function Booking() {
   const tourDatabase = [
     {
       id: 1,
-      name: "Nepal Mountain Explorer",
+      name: "Himalayan Heritage Explorer",
       slug: "nepal-mountain-explorer",
       location: "Nepal",
       duration: "10 days",
@@ -122,7 +122,7 @@ export default function Booking() {
     },
     {
       id: 2,
-      name: "Tibet Sacred Journey",
+      name: "Royal Cities Discovery Tour",
       slug: "tibet-sacred-journey",
       location: "Tibet",
       duration: "12 days",
@@ -130,7 +130,7 @@ export default function Booking() {
     },
     {
       id: 3,
-      name: "Bhutan Wellness Retreat",
+      name: "Mystic Valley Cultural Tour",
       slug: "bhutan-wellness-retreat",
       location: "Bhutan",
       duration: "8 days",
@@ -138,7 +138,7 @@ export default function Booking() {
     },
     {
       id: 4,
-      name: "Rajasthan Heritage Tour",
+      name: "Sacred Trails Experience",
       slug: "rajasthan-heritage-tour",
       location: "India",
       duration: "7 days",
@@ -146,7 +146,7 @@ export default function Booking() {
     },
     {
       id: 5,
-      name: "Kerala Backwater Experience",
+      name: "Hidden Lakes & Highlands Journey",
       slug: "kerala-backwater-experience",
       location: "India",
       duration: "6 days",
@@ -154,7 +154,7 @@ export default function Booking() {
     },
     {
       id: 6,
-      name: "Patagonia Adventure",
+      name: "Timeless Temples Tour",
       slug: "patagonia-adventure",
       location: "Argentina",
       duration: "14 days",

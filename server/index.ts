@@ -16,6 +16,7 @@ import {
   handleRequestOTP,
   handleVerifyOTP,
   handleResendOTP,
+  handleGoogleAuth,
 } from "./routes/auth";
 import { corsConfig } from "./config/cors.config";
 import { requestLogger, errorLogger } from "./middleware/logging.middleware";
@@ -122,6 +123,9 @@ export function createServer() {
     validateRequest(resendOTPSchema),
     handleResendOTP
   );
+
+  // Google OAuth endpoint
+  app.post("/api/auth/google", otpRateLimit, handleGoogleAuth);
 
   // Legacy endpoints (not implemented)
   app.post("/api/forgot-password", handleForgotPassword);

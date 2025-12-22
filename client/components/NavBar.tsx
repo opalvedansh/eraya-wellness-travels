@@ -28,7 +28,7 @@ export default function NavBar() {
           <img
             src="/eraya-logo.png"
             alt="Eraya Wellness Travels"
-            className="w-14 sm:w-16 md:w-20 lg:w-28 xl:w-32 h-auto"
+            className="w-20 sm:w-24 md:w-28 lg:w-28 xl:w-32 h-auto"
             style={{ filter: "drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1))" }}
           />
         </Link>
@@ -44,11 +44,10 @@ export default function NavBar() {
               <Link
                 key={link.href}
                 to={link.href}
-                className={`text-xs xl:text-sm font-medium transition-colors whitespace-nowrap uppercase tracking-tight py-2 ${
-                  isActive
-                    ? "text-green-primary font-bold border-b border-green-primary"
-                    : "text-text-dark hover:text-green-primary"
-                }`}
+                className={`text-xs xl:text-sm font-medium transition-colors whitespace-nowrap uppercase tracking-tight py-2 ${isActive
+                  ? "text-green-primary font-bold border-b border-green-primary"
+                  : "text-text-dark hover:text-green-primary"
+                  }`}
               >
                 {link.label}
               </Link>

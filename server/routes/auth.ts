@@ -4,11 +4,13 @@ import {
   verifyOTP as verifyOTPService,
   canResendOTP,
   getUser,
+  createOrUpdateGoogleUser,
 } from "../services/otp";
 import { sendEmail, generateOTPEmailHTML } from "../services/email";
 import { printOTPToConsole } from "../services/dev-email-tester";
 import { generateToken } from "../services/jwt";
 import logger from "../services/logger";
+import { verifyFirebaseToken } from "../config/firebase-admin.config";
 
 export const handleRequestOTP: RequestHandler = async (req, res) => {
   // Validation is handled by middleware
@@ -146,6 +148,86 @@ export const handleResendOTP: RequestHandler = async (req, res) => {
   });
 };
 
+export const handleGoogleAuth: RequestHandler = async (req, res) => {
+  const { idToken } = req.body;
+
+  if (!idToken) {
+    return res.status(400).json({ error: "ID token is required" });
+  }
+
+  try {
+    // Verify Firebase ID token
+    const verificationResult = await verifyFirebaseToken(idToken);
+
+    if (!verificationResult.success || !verificationResult.decodedToken) {
+      logger.error("Firebase token verification failed", {
+        error: verificationResult.error,
+      });
+      return res.status(401).json({
+        error: verificationResult.error || "Invalid authentication token",
+      });
+    }
+
+    const decodedToken = verificationResult.decodedToken;
+
+    // Extract user data from token
+    const googleData = {
+      googleUid: decodedToken.uid,
+      email: decodedToken.email || "",
+      name: decodedToken.name || null,
+      photoURL: decodedToken.picture || null,
+    };
+
+    if (!googleData.email) {
+      logger.error("No email in Google token", { uid: googleData.googleUid });
+      return res.status(400).json({
+        error: "Email is required for authentication",
+      });
+    }
+
+    // Create or update user in database
+    const userResult = await createOrUpdateGoogleUser(googleData);
+
+    if (!userResult.success || !userResult.user) {
+      return res.status(500).json({
+        error: userResult.error || "Failed to authenticate user",
+      });
+    }
+
+    // Generate app JWT token
+    const { token, sessionId } = await generateToken(
+      userResult.user.id,
+      userResult.user.email
+    );
+
+    logger.info("Google authentication successful", {
+      userId: userResult.user.id,
+      email: userResult.user.email,
+      sessionId,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Google authentication successful",
+      user: {
+        id: userResult.user.id,
+        email: userResult.user.email,
+        name: userResult.user.name,
+        photoURL: userResult.user.photoURL,
+        isVerified: userResult.user.isVerified,
+      },
+      token,
+    });
+  } catch (error) {
+    logger.error("Google authentication error", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return res.status(500).json({
+      error: "Authentication failed. Please try again.",
+    });
+  }
+};
+
 export const handleForgotPassword: RequestHandler = (req, res) => {
   res.status(501).json({ error: "Not implemented - using OTP-based authentication" });
 };
@@ -157,3 +239,4 @@ export const handleLogin: RequestHandler = (req, res) => {
 export const handleSignup: RequestHandler = (req, res) => {
   res.status(501).json({ error: "Not implemented - using OTP-based authentication" });
 };
+

@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import TrekPageHero from "@/components/TrekPageHero";
 import Footer from "@/components/Footer";
 import WhyTravelWithUs from "@/components/WhyTravelWithUs";
 import MobileStickyBottomCTA from "@/components/MobileStickyBottomCTA";
+import MapBottomSheet from "@/components/MapBottomSheet";
 import {
   MapPin,
   Calendar,
@@ -254,6 +255,10 @@ export default function Trek() {
   const [showComparison, setShowComparison] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<number[]>([]);
+  const [selectedTrekId, setSelectedTrekId] = useState<number | null>(null);
+  const [bottomSheetOpen, setBottomSheetOpen] = useState(true);
+  const trekCardRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const bottomSheetScrollRef = useRef<HTMLDivElement | null>(null);
 
   // Advanced filters
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000]);
@@ -765,7 +770,7 @@ export default function Trek() {
 
       <div className="flex-grow">
         {/* View Controls & Sort - Sticky on Scroll */}
-        <section className={`py-4 px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto transition-all ${isSticky
+        <section className={`py-4 px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto transition-all ${viewMode === "map" ? "hidden lg:block" : ""} ${isSticky
           ? 'fixed top-0 left-0 right-0 bg-beige shadow-lg z-40 border-b border-border'
           : 'relative'
           }`}>
@@ -786,11 +791,8 @@ export default function Trek() {
                     <span className="hidden sm:inline">Grid</span>
                   </button>
                   <button
-                    onClick={() => setViewMode("map")}
-                    className={`px-4 py-2 rounded-r-lg flex items-center gap-2 transition-colors ${viewMode === "map"
-                      ? "bg-green-primary text-white"
-                      : "text-text-dark hover:bg-beige"
-                      }`}
+                    onClick={() => navigate("/trek/map")}
+                    className="px-4 py-2 rounded-r-lg flex items-center gap-2 transition-colors text-text-dark hover:bg-beige bg-card border-l border-border"
                   >
                     <MapIcon className="h-4 w-4" />
                     <span className="hidden sm:inline">Map</span>
@@ -937,7 +939,7 @@ export default function Trek() {
         </section>
 
         {/* Treks Display: Grid or Map */}
-        <section className="py-8 px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto">
+        <section className={`${viewMode === "map" ? "lg:py-8 lg:px-12 py-0 px-0" : "py-8 px-3 sm:px-6 lg:px-12"} max-w-7xl mx-auto`}>
           {viewMode === "grid" ? (
             // Grid View
             processedTreks.length === 0 ? (
@@ -1098,30 +1100,176 @@ export default function Trek() {
               </div>
             )
           ) : (
-            <Suspense
-              fallback={
-                <div className="h-[600px] rounded-xl overflow-hidden shadow-premium border border-border flex items-center justify-center bg-beige-light">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
-                    <p className="text-text-dark/70">Loading map...</p>
+            // Map View - Desktop: Normal map, Mobile: Full-screen map + bottom sheet
+            <div>
+              {/* Desktop Map View */}
+              <div className="hidden lg:block">
+                <Suspense
+                  fallback={
+                    <div className="h-[600px] rounded-xl overflow-hidden shadow-premium border border-border flex items-center justify-center bg-beige-light">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
+                        <p className="text-text-dark/70">Loading map...</p>
+                      </div>
+                    </div>
+                  }
+                >
+                  <TrekMap
+                    treks={processedTreks.map((trek) => ({
+                      id: trek.id,
+                      name: trek.name,
+                      slug: trek.slug,
+                      location: trek.location,
+                      image: trek.image,
+                      price: trek.price,
+                      coordinates: trek.coordinates as [number, number],
+                      description: trek.description,
+                    }))}
+                    onTrekClick={(slug) => navigate(`/trek/${slug}`)}
+                  />
+                </Suspense>
+              </div>
+
+              {/* Mobile Map View - Full Screen + Bottom Sheet */}
+              <div className="lg:hidden block fixed inset-0 bg-white z-30">
+                {/* Back to Grid Button */}
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className="absolute top-4 left-4 z-50 px-4 py-2 bg-white rounded-lg shadow-lg flex items-center gap-2 font-semibold text-text-dark hover:bg-beige transition-colors"
+                >
+                  <Grid className="h-4 w-4" />
+                  <span>Grid View</span>
+                </button>
+
+                <Suspense
+                  fallback={
+                    <div className="h-full flex items-center justify-center bg-beige-light">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
+                        <p className="text-text-dark/70">Loading map...</p>
+                      </div>
+                    </div>
+                  }
+                >
+                  <TrekMap
+                    treks={processedTreks.map((trek) => ({
+                      id: trek.id,
+                      name: trek.name,
+                      slug: trek.slug,
+                      location: trek.location,
+                      image: trek.image,
+                      price: trek.price,
+                      coordinates: trek.coordinates as [number, number],
+                      description: trek.description,
+                    }))}
+                    onTrekClick={(slug) => navigate(`/trek/${slug}`)}
+                    onMarkerClick={(trekId) => {
+                      setSelectedTrekId(trekId);
+                      setBottomSheetOpen(true);
+                      // Scroll to trek card in bottom sheet
+                      setTimeout(() => {
+                        const cardElement = trekCardRefs.current[trekId];
+                        if (cardElement && bottomSheetScrollRef.current) {
+                          cardElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                          });
+                        }
+                      }, 300);
+                    }}
+                    selectedTrekId={selectedTrekId}
+                    className="w-full h-full"
+                  />
+                </Suspense>
+
+                {/* Bottom Sheet with Trek Cards */}
+                <MapBottomSheet
+                  isOpen={bottomSheetOpen}
+                  onOpenChange={setBottomSheetOpen}
+                >
+                  <div ref={bottomSheetScrollRef} className="p-4 space-y-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold text-text-dark">
+                        {processedTreks.length} Trek{processedTreks.length !== 1 ? 's' : ''} Found
+                      </h3>
+                      <button
+                        onClick={() => setViewMode("grid")}
+                        className="text-sm text-green-primary font-semibold"
+                      >
+                        Exit Map
+                      </button>
+                    </div>
+
+                    {processedTreks.map((trek) => (
+                      <motion.div
+                        key={trek.id}
+                        ref={(el) => { trekCardRefs.current[trek.id] = el; }}
+                        onClick={() => {
+                          setSelectedTrekId(trek.id);
+                        }}
+                        className={`bg-white rounded-xl overflow-hidden shadow-sm transition-all cursor-pointer ${selectedTrekId === trek.id
+                          ? 'ring-2 ring-green-primary shadow-md'
+                          : 'hover:shadow-md'
+                          }`}
+                      >
+                        <div className="flex gap-3 p-3">
+                          {/* Image */}
+                          <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden">
+                            <img
+                              src={trek.image}
+                              alt={trek.name}
+                              className="w-full h-full object-cover"
+                            />
+                            {selectedTrekId === trek.id && (
+                              <div className="absolute inset-0 bg-green-primary/20 flex items-center justify-center">
+                                <div className="w-3 h-3 bg-green-primary rounded-full animate-pulse" />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-sm text-text-dark mb-1 truncate">
+                              {trek.name}
+                            </h4>
+                            <div className="flex items-center gap-1 text-xs text-text-dark/60 mb-2">
+                              <MapPin className="h-3 w-3" />
+                              <span className="truncate">{trek.location}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3 text-green-primary" />
+                                <span>{trek.duration}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Star className="h-3 w-3 text-yellow-500" />
+                                <span>{trek.rating}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Price */}
+                          <div className="flex flex-col items-end justify-between">
+                            <span className="text-lg font-black text-green-primary">
+                              ${trek.price}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/trek/${trek.slug}`);
+                              }}
+                              className="text-xs bg-green-primary text-white px-3 py-1 rounded-full font-semibold hover:bg-green-primary/90"
+                            >
+                              View
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
-                </div>
-              }
-            >
-              <TrekMap
-                treks={processedTreks.map((trek) => ({
-                  id: trek.id,
-                  name: trek.name,
-                  slug: trek.slug,
-                  location: trek.location,
-                  image: trek.image,
-                  price: trek.price,
-                  coordinates: trek.coordinates as [number, number],
-                  description: trek.description,
-                }))}
-                onTrekClick={(slug) => navigate(`/trek/${slug}`)}
-              />
-            </Suspense>
+                </MapBottomSheet>
+              </div>
+            </div>
           )}
         </section>
 

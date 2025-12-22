@@ -43,7 +43,7 @@ export default function Testimonials() {
       text: "The spiritual journey to Tibet exceeded all expectations. The monasteries, the culture, and the mindfulness practices were life-changing. Eraya's attention to detail and authentic experiences make them stand out.",
       image:
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-      tour: "Tibet Sacred Journey",
+      tour: "Royal Cities Discovery Tour",
     },
     {
       id: 3,
@@ -53,7 +53,7 @@ export default function Testimonials() {
       text: "As a solo female traveler, I felt completely safe and supported. The group was welcoming, the itinerary was well-planned, and I made friends for life. The Kerala backwater experience was magical!",
       image:
         "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-      tour: "Kerala Backwater Experience",
+      tour: "Hidden Lakes & Highlands Journey",
     },
     {
       id: 4,
@@ -63,17 +63,17 @@ export default function Testimonials() {
       text: "Professional, organized, and passionate about what they do. The Patagonia adventure was epic - from glaciers to mountain peaks. Every day was a new adventure. Highly recommend!",
       image:
         "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-      tour: "Patagonia Adventure",
+      tour: "Timeless Temples Tour",
     },
     {
       id: 5,
       name: "Priya Patel",
       location: "Mumbai, India",
       rating: 5,
-      text: "The Bhutan Wellness Retreat was exactly what I needed. The combination of cultural immersion and wellness practices was perfect. Eraya truly understands how to create meaningful travel experiences.",
+      text: "The Mystic Valley Cultural Tour was exactly what I needed. The combination of cultural immersion and wellness practices was perfect. Eraya truly understands how to create meaningful travel experiences.",
       image:
         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
-      tour: "Bhutan Wellness Retreat",
+      tour: "Mystic Valley Cultural Tour",
     },
     {
       id: 6,

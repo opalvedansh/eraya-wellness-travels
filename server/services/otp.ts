@@ -316,3 +316,90 @@ export async function cleanupExpiredOTPs(): Promise<number> {
     return 0;
   }
 }
+
+/**
+ * Create or update user from Google OAuth
+ */
+export async function createOrUpdateGoogleUser(googleData: {
+  googleUid: string;
+  email: string;
+  name: string | null;
+  photoURL: string | null;
+}): Promise<{ success: boolean; user?: any; error?: string }> {
+  const emailLower = googleData.email.toLowerCase();
+
+  try {
+    // First, check if user exists by email or googleUid
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: emailLower },
+          { googleUid: googleData.googleUid },
+        ],
+      },
+    });
+
+    let user;
+
+    if (existingUser) {
+      // Update existing user with Google data if not already set
+      user = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          googleUid: googleData.googleUid,
+          name: googleData.name || existingUser.name,
+          photoURL: googleData.photoURL || existingUser.photoURL,
+          authProvider: "google",
+          isVerified: true, // Google users are automatically verified
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          photoURL: true,
+          isVerified: true,
+          createdAt: true,
+        },
+      });
+
+      logger.info("Google user updated", {
+        userId: user.id,
+        email: emailLower,
+      });
+    } else {
+      // Create new user
+      user = await prisma.user.create({
+        data: {
+          email: emailLower,
+          googleUid: googleData.googleUid,
+          name: googleData.name,
+          photoURL: googleData.photoURL,
+          authProvider: "google",
+          isVerified: true, // Google users are automatically verified
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          photoURL: true,
+          isVerified: true,
+          createdAt: true,
+        },
+      });
+
+      logger.info("New Google user created", {
+        userId: user.id,
+        email: emailLower,
+      });
+    }
+
+    return { success: true, user };
+  } catch (error) {
+    logger.error("Error creating/updating Google user", {
+      email: emailLower,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return { success: false, error: "Failed to create/update user" };
+  }
+}
+

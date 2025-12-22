@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2, AlertCircle } from "lucide-react";
+import GoogleSignInButton from "./GoogleSignInButton";
 
 interface LoginPanelProps {
   onSignupClick: () => void;
@@ -13,12 +14,13 @@ export default function LoginPanel({
   onForgotPasswordClick,
   onClose,
 }: LoginPanelProps) {
-  const { login, isLoading } = useAuth();
+  const { login, loginWithGoogle, isLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const isValid = email.trim() !== "" && password.trim() !== "";
 
@@ -34,6 +36,26 @@ export default function LoginPanel({
       }, 1500);
     } catch (err) {
       setError("Invalid email or password. Please try again.");
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setIsGoogleLoading(true);
+    try {
+      await loginWithGoogle();
+      setIsSubmitted(true);
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Google sign-in failed. Please try again."
+      );
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -77,7 +99,7 @@ export default function LoginPanel({
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
             className="w-full px-4 py-3 rounded-lg border border-border bg-background text-text-dark placeholder-text-dark/50 focus:outline-none focus:ring-2 focus:ring-green-primary"
-            disabled={isLoading}
+            disabled={isLoading || isGoogleLoading}
           />
         </div>
 
@@ -95,7 +117,7 @@ export default function LoginPanel({
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             className="w-full px-4 py-3 rounded-lg border border-border bg-background text-text-dark placeholder-text-dark/50 focus:outline-none focus:ring-2 focus:ring-green-primary"
-            disabled={isLoading}
+            disabled={isLoading || isGoogleLoading}
           />
         </div>
 
@@ -106,7 +128,7 @@ export default function LoginPanel({
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
             className="w-4 h-4 rounded border-border text-green-primary focus:ring-green-primary"
-            disabled={isLoading}
+            disabled={isLoading || isGoogleLoading}
           />
           <label
             htmlFor="remember"
@@ -118,7 +140,7 @@ export default function LoginPanel({
 
         <button
           type="submit"
-          disabled={!isValid || isLoading}
+          disabled={!isValid || isLoading || isGoogleLoading}
           className="w-full bg-green-primary hover:bg-green-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           {isLoading ? (
@@ -131,6 +153,18 @@ export default function LoginPanel({
           )}
         </button>
       </form>
+
+      <div className="my-6 flex items-center gap-3">
+        <div className="flex-1 h-px bg-border"></div>
+        <span className="text-text-dark/50 text-sm font-medium">or</span>
+        <div className="flex-1 h-px bg-border"></div>
+      </div>
+
+      <GoogleSignInButton
+        onClick={handleGoogleSignIn}
+        isLoading={isGoogleLoading}
+        disabled={isLoading}
+      />
 
       <div className="mt-6 space-y-3 text-center">
         <button

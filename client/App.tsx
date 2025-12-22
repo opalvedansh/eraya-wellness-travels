@@ -1,5 +1,5 @@
 import "./global.css";
-import "leaflet/dist/leaflet.css";
+import "./leaflet.css";
 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -11,6 +11,8 @@ import Index from "./pages/Index";
 import About from "./pages/About";
 import Tour from "./pages/Tour";
 import Trek from "./pages/Trek";
+import TreksMap from "./pages/TreksMap";
+import ToursMap from "./pages/ToursMap";
 import TourDetail from "./pages/TourDetail";
 import TrekDetail from "./pages/TrekDetail";
 import Booking from "./pages/Booking";
@@ -40,6 +42,8 @@ export default function App() {
               <Route path="/tour" element={<Tour />} />
               <Route path="/tour/:slug" element={<TourDetail />} />
               <Route path="/trek" element={<Trek />} />
+              <Route path="/tour/map" element={<ToursMap />} />
+              <Route path="/trek/map" element={<TreksMap />} />
               <Route path="/trek/:slug" element={<TrekDetail />} />
               <Route path="/treks/:slug" element={<TrekDetail />} />
               <Route path="/booking/:type/:slug" element={<Booking />} />

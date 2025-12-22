@@ -328,7 +328,7 @@ export default function TrekDetail() {
     },
     {
       id: 2,
-      name: "Tibet Sacred Journey",
+      name: "Royal Cities Discovery Tour",
       slug: "tibet-sacred-journey",
       location: "Tibet",
       image: "https://images.unsplash.com/photo-1548013146-72d440642117?w=1200&h=600&fit=crop",
@@ -391,7 +391,7 @@ export default function TrekDetail() {
     },
     {
       id: 3,
-      name: "Bhutan Wellness Retreat",
+      name: "Mystic Valley Cultural Tour",
       slug: "bhutan-wellness-retreat",
       location: "Bhutan",
       image: "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1200&h=600&fit=crop",
@@ -517,7 +517,7 @@ export default function TrekDetail() {
     },
     {
       id: 5,
-      name: "Kerala Backwater Experience",
+      name: "Hidden Lakes & Highlands Journey",
       slug: "kerala-backwater-experience",
       location: "India",
       image: "https://images.unsplash.com/photo-1595658658481-d53d3f999875?w=1200&h=600&fit=crop",
@@ -580,7 +580,7 @@ export default function TrekDetail() {
     },
     {
       id: 6,
-      name: "Patagonia Adventure",
+      name: "Timeless Temples Tour",
       slug: "patagonia-adventure",
       location: "Argentina",
       image: "https://images.unsplash.com/photo-1531065208531-4036c0dba3f5?w=1200&h=600&fit=crop",

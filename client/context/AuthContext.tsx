@@ -1,15 +1,19 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "@/config/firebase.config";
 
 interface User {
   id: string;
   name: string;
   email: string;
+  photoURL?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   requestPasswordReset: (email: string) => Promise<void>;
@@ -47,6 +51,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     }
   };
+
+  const loginWithGoogle = async () => {
+    setIsLoading(true);
+    try {
+      // Sign in with Google popup
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      // Get Firebase ID token
+      const idToken = await user.getIdToken();
+
+      // Send ID token to backend for verification and user creation/login
+      const response = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Google authentication failed");
+      }
+
+      const data = await response.json();
+      setUser(data.user);
+      localStorage.setItem("auth_token", data.token);
+    } catch (error: any) {
+      console.error("Google login error:", error);
+
+      // Handle specific Firebase errors
+      if (error.code === "auth/popup-blocked") {
+        throw new Error(
+          "Popup was blocked. Please allow popups for this site and try again."
+        );
+      } else if (error.code === "auth/popup-closed-by-user") {
+        throw new Error("Sign-in was cancelled. Please try again.");
+      } else if (error.code === "auth/cancelled-popup-request") {
+        // User opened another popup, ignore this error
+        return;
+      }
+
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   const signup = async (name: string, email: string, password: string) => {
     setIsLoading(true);
@@ -175,6 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isLoading,
         login,
+        loginWithGoogle,
         signup,
         logout,
         requestPasswordReset,

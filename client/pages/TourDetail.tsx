@@ -223,7 +223,7 @@ export default function TourDetail() {
   const tourDatabase = [
     {
       id: 1,
-      name: "Nepal Mountain Explorer",
+      name: "Himalayan Heritage Explorer",
       slug: "nepal-mountain-explorer",
       location: "Nepal",
       image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600&fit=crop",
@@ -328,7 +328,7 @@ export default function TourDetail() {
     },
     {
       id: 2,
-      name: "Tibet Sacred Journey",
+      name: "Royal Cities Discovery Tour",
       slug: "tibet-sacred-journey",
       location: "Tibet",
       image: "https://images.unsplash.com/photo-1548013146-72d440642117?w=1200&h=600&fit=crop",
@@ -391,7 +391,7 @@ export default function TourDetail() {
     },
     {
       id: 3,
-      name: "Bhutan Wellness Retreat",
+      name: "Mystic Valley Cultural Tour",
       slug: "bhutan-wellness-retreat",
       location: "Bhutan",
       image: "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1200&h=600&fit=crop",
@@ -454,7 +454,7 @@ export default function TourDetail() {
     },
     {
       id: 4,
-      name: "Rajasthan Heritage Tour",
+      name: "Sacred Trails Experience",
       slug: "rajasthan-heritage-tour",
       location: "India",
       image: "https://images.unsplash.com/photo-1516214104703-3e691de8e4ad?w=1200&h=600&fit=crop",
@@ -517,7 +517,7 @@ export default function TourDetail() {
     },
     {
       id: 5,
-      name: "Kerala Backwater Experience",
+      name: "Hidden Lakes & Highlands Journey",
       slug: "kerala-backwater-experience",
       location: "India",
       image: "https://images.unsplash.com/photo-1595658658481-d53d3f999875?w=1200&h=600&fit=crop",
@@ -580,7 +580,7 @@ export default function TourDetail() {
     },
     {
       id: 6,
-      name: "Patagonia Adventure",
+      name: "Timeless Temples Tour",
       slug: "patagonia-adventure",
       location: "Argentina",
       image: "https://images.unsplash.com/photo-1531065208531-4036c0dba3f5?w=1200&h=600&fit=crop",
