@@ -15,7 +15,7 @@ export default function WhyTravelWithUs() {
       icon: Award,
       title: "9+ Years Experience",
       description:
-        "Since 2015, trusted by 2,000+ travelers. Award-winning service.",
+        "Since 2023, trusted by 2,000+ travelers. Award-winning service.",
       color: "text-blue-accent",
       bgColor: "bg-blue-accent/10",
     },
@@ -117,7 +117,7 @@ export default function WhyTravelWithUs() {
           <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 sm:gap-10 md:gap-12 lg:gap-12 text-center relative z-10">
             {[
               { value: "4.9/5", label: "Guest Rating", sublabel: "From 2,847 reviews" },
-              { value: "2,000+", label: "Happy Travelers", sublabel: "Across 50+ destinations" },
+              { value: "2,000+", label: "Happy Travelers", sublabel: "Across 20+ destinations" },
               { value: "100%", label: "Satisfaction", sublabel: "Or your money back" }
             ].map((stat, index) => (
               <motion.div

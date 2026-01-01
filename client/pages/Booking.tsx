@@ -1,8 +1,10 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Footer from "@/components/Footer";
 import FloatingWhatsAppButton from "@/components/FloatingWhatsAppButton";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabaseClient";
 import {
   ArrowLeft,
   MapPin,
@@ -17,7 +19,8 @@ import {
   Lock,
   Headphones,
   Check,
-  Loader2
+  Loader2,
+  Users
 } from "lucide-react";
 
 // Helper Components
@@ -75,109 +78,65 @@ function DetailRow({ icon: Icon, label, value }: { icon: any; label: string; val
 export default function Booking() {
   const { type, slug } = useParams();
   const navigate = useNavigate();
+  const { user, isLoading } = useAuth();
 
-  const trekDatabase = [
-    {
-      id: 1,
-      name: "Annapurna Base Camp Trek",
-      slug: "annapurna-base-camp",
-      location: "Nepal",
-      duration: "12 days",
-      price: 1299,
-    },
-    {
-      id: 2,
-      name: "Everest Base Camp Trek",
-      slug: "everest-base-camp",
-      location: "Nepal",
-      duration: "14 days",
-      price: 1699,
-    },
-    {
-      id: 3,
-      name: "Valley Trek - Langtang",
-      slug: "langtang-valley",
-      location: "Nepal",
-      duration: "8 days",
-      price: 899,
-    },
-    {
-      id: 4,
-      name: "Forest Night Hike - Sagano",
-      slug: "sagano-night-hike",
-      location: "Japan",
-      duration: "3 days",
-      price: 399,
-    },
-  ];
-
-  const tourDatabase = [
-    {
-      id: 1,
-      name: "Himalayan Heritage Explorer",
-      slug: "nepal-mountain-explorer",
-      location: "Nepal",
-      duration: "10 days",
-      price: 1299,
-    },
-    {
-      id: 2,
-      name: "Royal Cities Discovery Tour",
-      slug: "tibet-sacred-journey",
-      location: "Tibet",
-      duration: "12 days",
-      price: 1599,
-    },
-    {
-      id: 3,
-      name: "Mystic Valley Cultural Tour",
-      slug: "bhutan-wellness-retreat",
-      location: "Bhutan",
-      duration: "8 days",
-      price: 1899,
-    },
-    {
-      id: 4,
-      name: "Sacred Trails Experience",
-      slug: "rajasthan-heritage-tour",
-      location: "India",
-      duration: "7 days",
-      price: 899,
-    },
-    {
-      id: 5,
-      name: "Hidden Lakes & Highlands Journey",
-      slug: "kerala-backwater-experience",
-      location: "India",
-      duration: "6 days",
-      price: 799,
-    },
-    {
-      id: 6,
-      name: "Timeless Temples Tour",
-      slug: "patagonia-adventure",
-      location: "Argentina",
-      duration: "14 days",
-      price: 2299,
-    },
-  ];
-
-  const getItem = () => {
-    if (type === "trek") {
-      return trekDatabase.find((t) => t.slug === slug);
-    } else if (type === "tour") {
-      return tourDatabase.find((t) => t.slug === slug);
+  // Protect route - redirect if not authenticated
+  useEffect(() => {
+    if (!isLoading && !user) {
+      // Store intended booking URL
+      sessionStorage.setItem('intendedBooking', window.location.pathname);
+      // Redirect to homepage
+      navigate('/', { replace: true });
     }
-    return null;
-  };
+  }, [user, isLoading, navigate]);
 
-  const item = getItem();
+  const [item, setItem] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch trek or tour data from API based on type and slug
+  useEffect(() => {
+    const fetchItem = async () => {
+      if (!type || !slug) {
+        setError("Invalid booking parameters");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const endpoint = type === "trek" ? `/api/treks` : `/api/tours`;
+        const response = await fetch(endpoint);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${type} data`);
+        }
+
+        const items = await response.json();
+        const foundItem = items.find((i: any) => i.slug === slug);
+
+        if (foundItem) {
+          setItem(foundItem);
+        } else {
+          setError(`${type === "trek" ? "Trek" : "Tour"} not found`);
+        }
+      } catch (err) {
+        console.error("Error fetching item:", err);
+        setError(err instanceof Error ? err.message : "Failed to load data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchItem();
+  }, [type, slug]);
 
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
     date: "",
+    guests: 1,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -193,9 +152,10 @@ export default function Booking() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    const newValue = name === "guests" ? parseInt(value) || 1 : value;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: newValue,
     }));
     if (errors[name]) {
       setErrors((prev) => ({
@@ -228,27 +188,112 @@ export default function Booking() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      setIsSubmitting(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      navigate("/payment-confirmation", {
-        state: {
-          bookingData: formData,
-          itemData: item,
-          type,
+    if (!validateForm()) return;
+
+    if (!user || !item) return;
+
+    setIsSubmitting(true);
+    try {
+      // Get Supabase session token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+
+      console.log('[Booking] Creating booking...');
+
+      // Create booking in database
+      const bookingResponse = await fetch("/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
         },
+        body: JSON.stringify({
+          type,
+          itemName: item.name,
+          itemSlug: item.slug,
+          location: item.location,
+          duration: item.duration,
+          price: item.price,
+          travelDate: formData.date,
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          guests: formData.guests,
+          amount: item.price * formData.guests,
+        }),
       });
+
+      if (!bookingResponse.ok) {
+        const errorData = await bookingResponse.json().catch(() => ({ error: 'Failed to create booking' }));
+        console.error('[Booking] Booking creation failed:', {
+          status: bookingResponse.status,
+          statusText: bookingResponse.statusText,
+          error: errorData
+        });
+        throw new Error(errorData.error || errorData.details || "Failed to create booking");
+      }
+
+      const booking = await bookingResponse.json();
+      console.log('[Booking] Booking created successfully:', booking.id);
+
+      // Create Stripe checkout session
+      console.log('[Booking] Creating Stripe checkout session...');
+      const sessionResponse = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          guests: formData.guests,
+        }),
+      });
+
+      if (!sessionResponse.ok) {
+        const errorData = await sessionResponse.json().catch(() => ({ error: 'Failed to create payment session' }));
+        console.error('[Booking] Checkout session creation failed:', {
+          status: sessionResponse.status,
+          statusText: sessionResponse.statusText,
+          error: errorData
+        });
+        throw new Error(errorData.error || errorData.message || "Failed to create payment session");
+      }
+
+      const { sessionUrl } = await sessionResponse.json();
+      console.log('[Booking] Checkout session created, redirecting to Stripe...');
+
+      // Redirect to Stripe Checkout
+      window.location.href = sessionUrl;
+    } catch (error) {
+      console.error("[Booking] Booking error:", error);
+      setIsSubmitting(false);
+      setErrors({ submit: error instanceof Error ? error.message : "An error occurred" });
     }
   };
 
-  if (!item) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-beige flex flex-col">
+        <FloatingWhatsAppButton />
+        <div className="flex-grow flex flex-col items-center justify-center px-4 py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mb-4"></div>
+          <p className="text-text-dark/70">Loading booking details...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!item || error) {
     return (
       <div className="min-h-screen bg-beige flex flex-col">
         <FloatingWhatsAppButton />
         <div className="flex-grow flex flex-col items-center justify-center px-4 py-12">
           <h1 className="text-3xl font-black text-green-primary mb-4">
-            Invalid Booking Link
+            {error || "Invalid Booking Link"}
           </h1>
           <p className="text-text-dark/70 mb-8">
             The trek or tour you're trying to book doesn't exist.
@@ -477,7 +522,7 @@ export default function Booking() {
               </div>
 
               {/* Date of Travel */}
-              <div className="mb-8">
+              <div className="mb-6">
                 <label
                   htmlFor="date"
                   className="block text-sm font-bold text-text-dark mb-2"
@@ -509,6 +554,37 @@ export default function Booking() {
                 <p className="text-xs text-text-dark/60 mt-2">
                   Minimum 7 days from today
                 </p>
+              </div>
+
+              {/* Number of Guests */}
+              <div className="mb-8">
+                <label
+                  htmlFor="guests"
+                  className="block text-sm font-bold text-text-dark mb-2"
+                >
+                  Number of Participants <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-text-dark/40" />
+                  <input
+                    type="number"
+                    id="guests"
+                    name="guests"
+                    value={formData.guests}
+                    onChange={handleInputChange}
+                    min="1"
+                    max="20"
+                    className="w-full pl-12 pr-5 py-3.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-primary focus:border-transparent bg-white text-text-dark shadow-sm transition-all duration-200"
+                  />
+                </div>
+                <div className="mt-3 p-4 bg-green-primary/5 border border-green-primary/20 rounded-lg">
+                  <p className="text-sm text-text-dark/70">
+                    <span className="font-bold text-green-primary">Total Amount: ${(item.price * formData.guests).toFixed(2)} USD</span>
+                  </p>
+                  <p className="text-xs text-text-dark/60 mt-1">
+                    ${item.price} per person × {formData.guests} {formData.guests === 1 ? "guest" : "guests"}
+                  </p>
+                </div>
               </div>
 
               {/* Submit Button */}
@@ -546,6 +622,23 @@ export default function Booking() {
                 <p className="text-xs text-text-dark/60 text-center mt-3">
                   Please fill in all required fields to continue
                 </p>
+              )}
+
+              {/* Error Message Display */}
+              {errors.submit && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg"
+                >
+                  <p className="text-red-600 text-sm font-semibold flex items-center gap-2">
+                    <span className="text-lg">⚠️</span>
+                    {errors.submit}
+                  </p>
+                  <p className="text-red-500 text-xs mt-2">
+                    Please try again or contact support if the issue persists.
+                  </p>
+                </motion.div>
               )}
             </motion.form>
           </div>

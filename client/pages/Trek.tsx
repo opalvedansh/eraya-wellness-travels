@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense, useRef } from "react";
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import TrekPageHero from "@/components/TrekPageHero";
 import Footer from "@/components/Footer";
@@ -242,28 +242,83 @@ function ComparisonModal({ treks, isOpen, onClose }: any) {
   );
 }
 
+interface Trek {
+  id: string;
+  name: string;
+  slug: string;
+  location: string;
+  coverImage?: string;
+  description: string;
+  longDescription?: string;
+  price: number;
+  duration: string;
+  maxGroupSize: number;
+  vibe?: string;
+  difficulty: number;
+  rating: number;
+  altitude?: string;
+  latitude?: number;
+  longitude?: number;
+  highlights?: string[];
+  bestSeason?: string[];
+  images?: string[];
+  isActive: boolean;
+  isFeatured: boolean;
+  // Computed fields added in displayTreks
+  image?: string;
+  groupSize?: string;
+  reviewCount?: number;
+  badges?: string[];
+  spotsLeft?: number;
+  coordinates?: [number, number];
+}
+
 export default function Trek() {
   const navigate = useNavigate();
-  const [filteredTreks, setFilteredTreks] = useState<typeof treks>([]);
+  const [treks, setTreks] = useState<Trek[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filteredTreks, setFilteredTreks] = useState<Trek[]>([]);
   const [hasFiltered, setHasFiltered] = useState(false);
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [quickViewTrek, setQuickViewTrek] = useState<any>(null);
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
   const [sortBy, setSortBy] = useState<string>("default");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [comparisonList, setComparisonList] = useState<number[]>([]);
+  const [comparisonList, setComparisonList] = useState<string[]>([]);
   const [showComparison, setShowComparison] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const [recentlyViewed, setRecentlyViewed] = useState<number[]>([]);
-  const [selectedTrekId, setSelectedTrekId] = useState<number | null>(null);
+  const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
+  const [selectedTrekId, setSelectedTrekId] = useState<string | null>(null);
   const [bottomSheetOpen, setBottomSheetOpen] = useState(true);
-  const trekCardRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const trekCardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const bottomSheetScrollRef = useRef<HTMLDivElement | null>(null);
 
   // Advanced filters
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000]);
   const [selectedDifficulty, setSelectedDifficulty] = useState<number[]>([]);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
+
+  // Fetch treks from API
+  useEffect(() => {
+    const fetchTreks = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/treks");
+        if (!response.ok) {
+          throw new Error("Failed to fetch treks");
+        }
+        const data = await response.json();
+        setTreks(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load treks");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTreks();
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("favoriteTreks");
@@ -291,7 +346,22 @@ export default function Trek() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const treks = [
+  // Transform data for display - add computed fields that UI expects
+  const displayTreks = useMemo(() => {
+    return treks.map(trek => ({
+      ...trek,
+      image: trek.coverImage || trek.images?.[0] || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop",
+      groupSize: `${trek.maxGroupSize || 12} people`,
+      vibe: trek.vibe || "Adventure Trek",
+      reviewCount: Math.floor(Math.random() * 300) + 50,
+      badges: trek.isFeatured ? ["Featured"] : [],
+      spotsLeft: Math.floor(Math.random() * 10) + 3,
+      coordinates: (trek.latitude && trek.longitude ? [trek.latitude, trek.longitude] : [28.0, 84.0]) as [number, number],
+    }));
+  }, [treks]);
+
+  // REMOVED: Hardcoded treks array (365 lines) - now fetched from database
+  const _removedHardcodedTreks = [
     {
       id: 1,
       name: "Annapurna Base Camp Trek",
@@ -659,7 +729,7 @@ export default function Trek() {
   ];
 
   const handleFilterChange = (filters: any) => {
-    let results = treks;
+    let results = displayTreks;
 
     if (filters.search) {
       results = results.filter(
@@ -681,7 +751,7 @@ export default function Trek() {
 
   // Apply advanced filters and sorting
   const processedTreks = useMemo(() => {
-    let results = hasFiltered ? filteredTreks : treks;
+    let results = hasFiltered ? filteredTreks : displayTreks;
 
     // Price filter
     results = results.filter(
@@ -731,9 +801,9 @@ export default function Trek() {
     }
 
     return results;
-  }, [hasFiltered, filteredTreks, treks, priceRange, selectedDifficulty, selectedDays, sortBy]);
+  }, [hasFiltered, filteredTreks, displayTreks, priceRange, selectedDifficulty, selectedDays, sortBy]);
 
-  const toggleFavorite = (trekId: number) => {
+  const toggleFavorite = (trekId: string) => {
     const newFavorites = favorites.includes(trekId)
       ? favorites.filter((id) => id !== trekId)
       : [...favorites, trekId];
@@ -741,7 +811,7 @@ export default function Trek() {
     localStorage.setItem("favoriteTreks", JSON.stringify(newFavorites));
   };
 
-  const toggleComparison = (trekId: number) => {
+  const toggleComparison = (trekId: string) => {
     if (comparisonList.includes(trekId)) {
       setComparisonList(comparisonList.filter((id) => id !== trekId));
     } else {
@@ -751,7 +821,7 @@ export default function Trek() {
     }
   };
 
-  const trackRecentlyViewed = (trekId: number) => {
+  const trackRecentlyViewed = (trekId: string) => {
     const updated = [trekId, ...recentlyViewed.filter(id => id !== trekId)].slice(0, 6);
     setRecentlyViewed(updated);
     localStorage.setItem("recentlyViewedTreks", JSON.stringify(updated));
@@ -762,7 +832,61 @@ export default function Trek() {
     return labels[level - 1] || "Easy";
   };
 
-  const uniqueLocations = [...new Set(treks.map((t) => t.location))];
+  const uniqueLocations = [...new Set(displayTreks.map((t) => t.location))];
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-beige flex flex-col">
+        <TrekPageHero />
+        <div className="flex-grow flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
+            <p className="text-xl text-text-dark/60">Loading treks...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-beige flex flex-col">
+        <TrekPageHero />
+        <div className="flex-grow flex items-center justify-center py-20">
+          <div className="text-center">
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <p className="text-xl text-text-dark/60 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-green-primary text-white rounded-lg hover:bg-green-secondary transition"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // No treks state
+  if (treks.length === 0) {
+    return (
+      <div className="min-h-screen bg-beige flex flex-col">
+        <TrekPageHero />
+        <div className="flex-grow flex items-center justify-center py-20">
+          <div className="text-center">
+            <p className="text-xl text-text-dark/60">No treks available at the moment.</p>
+            <p className="text-sm text-text-dark/40 mt-2">Please check back later!</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-beige flex flex-col">

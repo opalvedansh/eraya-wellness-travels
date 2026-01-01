@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import path from "path";
 import { handleDemo } from "./routes/demo";
 import {
   handleContact,
@@ -13,11 +14,19 @@ import {
   handleForgotPassword,
   handleLogin,
   handleSignup,
-  handleRequestOTP,
-  handleVerifyOTP,
-  handleResendOTP,
+  handleRequestVerification,
+  handleVerifyEmailToken,
+  handleResendVerification,
   handleGoogleAuth,
 } from "./routes/auth";
+import { handleChat } from "./routes/chat";
+import bookingRoutes from "./routes/bookings";
+import profileRoutes from "./routes/profile";
+import paymentRoutes from "./routes/payment.routes";
+import adminRoutes from "./routes/admin.routes";
+import contentRoutes from "./routes/content.routes";
+import publicRoutes from "./routes/public.routes";
+import uploadRoutes from "./routes/upload.routes";
 import { corsConfig } from "./config/cors.config";
 import { requestLogger, errorLogger } from "./middleware/logging.middleware";
 import {
@@ -28,15 +37,15 @@ import {
 import { validateRequest } from "./middleware/validation.middleware";
 import {
   requestOTPSchema,
-  verifyOTPSchema,
   resendOTPSchema,
   contactSchema,
   customizeTripSchema,
+  chatMessageSchema,
 } from "./validation/schemas";
 import logger from "./services/logger";
 import { authenticate } from "./middleware/auth.middleware";
 import { cleanupExpiredSessions } from "./services/jwt";
-import { cleanupExpiredOTPs } from "./services/otp";
+import { cleanupExpiredTokens } from "./services/otp";
 
 export function createServer() {
   const app = express();
@@ -44,10 +53,20 @@ export function createServer() {
   // Trust proxy for correct IP in rate limiting (important for production behind proxy/load balancer)
   app.set("trust proxy", 1);
 
+
   // CORS Configuration
   app.use(corsConfig);
 
-  // Body parsing middleware
+  // Conditional body parsing: raw body for webhook, JSON for everything else
+  app.use((req, res, next) => {
+    if (req.path === "/api/stripe-webhook") {
+      express.raw({ type: "application/json" })(req, res, next);
+    } else {
+      next();
+    }
+  });
+
+  // Body parsing middleware for all other routes
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
@@ -102,26 +121,33 @@ export function createServer() {
     handleCustomizeTrip
   );
 
+  // Chat endpoint (with rate limiting and validation)
+  app.post(
+    "/api/chat",
+    contactRateLimit,
+    validateRequest(chatMessageSchema),
+    handleChat
+  );
+
   // Auth endpoints (with rate limiting and validation)
   app.post(
-    "/api/request-otp",
+    "/api/request-verification",
     otpRateLimit,
     validateRequest(requestOTPSchema),
-    handleRequestOTP
+    handleRequestVerification
   );
 
-  app.post(
-    "/api/verify-otp",
+  app.get(
+    "/api/verify-email/:token",
     otpRateLimit,
-    validateRequest(verifyOTPSchema),
-    handleVerifyOTP
+    handleVerifyEmailToken
   );
 
   app.post(
-    "/api/resend-otp",
+    "/api/resend-verification",
     otpRateLimit,
     validateRequest(resendOTPSchema),
-    handleResendOTP
+    handleResendVerification
   );
 
   // Google OAuth endpoint
@@ -138,6 +164,30 @@ export function createServer() {
       user: req.user,
     });
   });
+
+  // Booking endpoints (protected)
+  app.use("/api/bookings", bookingRoutes);
+
+  // Profile endpoints (protected)
+  app.use("/api/profile", profileRoutes);
+
+  // Payment endpoints (checkout session requires auth, webhook does not)
+  app.use("/api", paymentRoutes);
+
+  // Public routes for tours and treks (no auth required)
+  app.use("/api", publicRoutes);
+
+  // Serve static files from uploads directory
+  app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
+
+  // Upload routes (protected, admin only)
+  app.use("/api/admin", uploadRoutes);
+
+  // Admin endpoints (protected, admin only)
+  app.use("/api/admin", adminRoutes);
+
+  // Public Content routes
+  app.use("/api/content", contentRoutes);
 
   // Catch-all middleware: pass non-API routes to Vite for SPA routing
   // This ensures React Router can handle client-side routes in development
@@ -182,13 +232,13 @@ function setupCleanupIntervals() {
     60 * 60 * 1000
   ); // 1 hour
 
-  // Clean up expired OTPs every 10 minutes
+  // Clean up expired verification tokens every 10 minutes
   setInterval(
     async () => {
       try {
-        await cleanupExpiredOTPs();
+        await cleanupExpiredTokens();
       } catch (error) {
-        logger.error("Error in OTP cleanup interval", {
+        logger.error("Error in verification token cleanup interval", {
           error: error instanceof Error ? error.message : String(error),
         });
       }

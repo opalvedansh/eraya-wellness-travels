@@ -22,7 +22,7 @@ const highlightedIcon = new Icon({
 });
 
 interface Trek {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     location: string;
@@ -35,8 +35,8 @@ interface Trek {
 interface TrekMapProps {
     treks: Trek[];
     onTrekClick: (slug: string) => void;
-    onMarkerClick?: (trekId: number) => void;
-    selectedTrekId?: number | null;
+    onMarkerClick?: (trekId: string) => void;
+    selectedTrekId?: string | null;
     className?: string;
 }
 
@@ -45,7 +45,7 @@ function MapController({
     selectedTrekId,
     treks
 }: {
-    selectedTrekId: number | null;
+    selectedTrekId: string | null;
     treks: Trek[];
 }) {
     const map = useMap();

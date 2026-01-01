@@ -49,11 +49,11 @@ export default function TourPageHero() {
                     >
                         <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md px-4 py-2 rounded-lg border border-white/30 shadow-lg">
                             <MapPin className="h-5 w-5 text-green-400" />
-                            <span className="text-white font-semibold text-sm">24 Tours Available</span>
+                            <span className="text-white font-semibold text-sm">7 Tours Available</span>
                         </div>
                         <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md px-4 py-2 rounded-lg border border-white/30 shadow-lg">
                             <Globe className="h-5 w-5 text-blue-400" />
-                            <span className="text-white font-semibold text-sm">8 Countries Covered</span>
+                            <span className="text-white font-semibold text-sm">Covers all Nepal</span>
                         </div>
                         <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md px-4 py-2 rounded-lg border border-white/30 shadow-lg">
                             <Star className="h-5 w-5 text-yellow-400" />

@@ -1,7 +1,7 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { createServer } from "./server";
+import { createServer } from "./server/index";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -15,6 +15,18 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: "dist/spa",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor libraries into separate chunks
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['framer-motion', 'lucide-react'],
+          'map-vendor': ['leaflet', 'react-leaflet'],
+          '3d-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000, // Temporarily increase limit
   },
   plugins: [react(), expressPlugin()],
   resolve: {
@@ -32,8 +44,8 @@ function expressPlugin(): Plugin {
     configureServer(server) {
       const app = createServer();
 
-      // Add Express app as middleware to Vite dev server
-      // Express handles API routes, Vite handles everything else (SPA routing)
+      // Add Express app as middleware BEFORE Vite's built-in middlewares
+      // This ensures API routes are handled by Express, not Vite's SPA fallback
       server.middlewares.use(app);
     },
   };

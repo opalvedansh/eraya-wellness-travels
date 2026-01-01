@@ -56,7 +56,7 @@ export default function TrustIndicators() {
     },
     {
       icon: Globe,
-      number: "50+",
+      number: "20+",
       label: "Destinations",
       description: "All over nepal",
       color: "text-blue-accent",
@@ -66,7 +66,7 @@ export default function TrustIndicators() {
       icon: Clock,
       number: "2+",
       label: "Years Experience",
-      description: "Since 2021",
+      description: "Since 2023",
       color: "text-green-primary",
       bgColor: "bg-green-primary/10",
     },

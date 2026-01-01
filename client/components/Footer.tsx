@@ -116,7 +116,7 @@ export default function Footer() {
               <motion.li whileHover={{ x: 4 }} className="flex items-start gap-3">
                 <Phone className="h-5 w-5 text-white/80 flex-shrink-0 mt-0.5" />
                 <span className="text-white/80 text-sm sm:text-base">
-                  +977-123-456-7890
+                  +9779765548080
                 </span>
               </motion.li>
               <motion.li whileHover={{ x: 4 }} className="flex items-start gap-3">

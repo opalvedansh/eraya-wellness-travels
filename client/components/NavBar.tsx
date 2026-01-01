@@ -58,10 +58,10 @@ export default function NavBar() {
         {/* Right Navigation Links */}
         <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 lg:gap-4 flex-shrink-0">
           <a
-            href="tel:+977-1-1234567"
+            href="tel:+9779765548080"
             className="hidden lg:inline text-text-dark hover:text-green-primary transition-colors whitespace-nowrap text-xs lg:text-sm font-medium py-2"
           >
-            📞 +977-1234567
+            📞 +9779765548080
           </a>
 
           {user ? (
@@ -75,14 +75,22 @@ export default function NavBar() {
               </button>
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50">
-                  <button className="w-full text-left px-4 py-3 text-text-dark hover:bg-muted transition-colors flex items-center gap-2 border-b border-border">
+                  <Link
+                    to="/my-bookings"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="w-full text-left px-4 py-3 text-text-dark hover:bg-muted transition-colors flex items-center gap-2 border-b border-border"
+                  >
                     <Bookmark className="h-4 w-4 text-green-primary" />
                     My Bookings
-                  </button>
-                  <button className="w-full text-left px-4 py-3 text-text-dark hover:bg-muted transition-colors flex items-center gap-2 border-b border-border">
+                  </Link>
+                  <Link
+                    to="/profile"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="w-full text-left px-4 py-3 text-text-dark hover:bg-muted transition-colors flex items-center gap-2 border-b border-border"
+                  >
                     <User className="h-4 w-4 text-green-primary" />
                     My Profile
-                  </button>
+                  </Link>
                   <button
                     onClick={() => {
                       logout();
@@ -137,22 +145,30 @@ export default function NavBar() {
                 </nav>
                 <div className="flex flex-col gap-0.5 sm:gap-1 pt-2 sm:pt-3 border-t border-beige-dark">
                   <a
-                    href="tel:+977-1-1234567"
+                    href="tel:+9779765548080"
                     onClick={() => setMobileMenuOpen(false)}
                     className="text-xs sm:text-sm md:text-base text-text-dark hover:text-green-primary transition-colors py-2.5 sm:py-3 md:py-3 px-2.5 sm:px-3 md:px-3 hover:bg-beige-light rounded-lg touch-target-min"
                   >
-                    📞 +977-1234567
+                    📞 +9779765548080
                   </a>
                   {user ? (
                     <>
-                      <button className="text-left text-xs sm:text-sm md:text-base text-text-dark hover:text-green-primary transition-colors flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 md:py-3 px-2.5 sm:px-3 md:px-3 hover:bg-beige-light rounded-lg touch-target-min">
+                      <Link
+                        to="/my-bookings"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="text-left text-xs sm:text-sm md:text-base text-text-dark hover:text-green-primary transition-colors flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 md:py-3 px-2.5 sm:px-3 md:px-3 hover:bg-beige-light rounded-lg touch-target-min"
+                      >
                         <Bookmark className="h-3.5 sm:h-4 md:h-4 w-3.5 sm:w-4 md:w-4 flex-shrink-0" />
                         My Bookings
-                      </button>
-                      <button className="text-left text-xs sm:text-sm md:text-base text-text-dark hover:text-green-primary transition-colors flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 md:py-3 px-2.5 sm:px-3 md:px-3 hover:bg-beige-light rounded-lg touch-target-min">
+                      </Link>
+                      <Link
+                        to="/profile"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="text-left text-xs sm:text-sm md:text-base text-text-dark hover:text-green-primary transition-colors flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 md:py-3 px-2.5 sm:px-3 md:px-3 hover:bg-beige-light rounded-lg touch-target-min"
+                      >
                         <User className="h-3.5 sm:h-4 md:h-4 w-3.5 sm:w-4 md:w-4 flex-shrink-0" />
                         My Profile
-                      </button>
+                      </Link>
                       <button
                         onClick={() => {
                           logout();

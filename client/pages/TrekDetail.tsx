@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Footer from "@/components/Footer";
+import AuthModal from "@/components/AuthModal";
+import { useAuth } from "@/context/AuthContext";
 import FloatingWhatsAppButton from "@/components/FloatingWhatsAppButton";
 import { RouteMap } from "@/components/RouteMap";
 import {
@@ -23,7 +25,7 @@ import { additionalAnnapurnaReviews, additionalEverestReviews, trekRouteCoordina
 
 
 // Sticky Booking Widget Component
-function StickyBookingWidget({ trek }: { trek: any }) {
+function StickyBookingWidget({ trek, onBookClick }: { trek: any; onBookClick: () => void }) {
   const [isSticky, setIsSticky] = useState(false);
 
   useEffect(() => {
@@ -40,13 +42,15 @@ function StickyBookingWidget({ trek }: { trek: any }) {
   }, []);
 
   return (
-    <div
+    <motion.div
+      animate={{ y: isSticky ? [0, -2, 0] : 0 }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
       className={`transition-all duration-300 ${isSticky
         ? "fixed top-20 right-6 w-80 z-30"
         : "relative w-full"
         }`}
     >
-      <div className="bg-card rounded-xl shadow-premium-lg border border-border p-6 space-y-4">
+      <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-premium-lg border-2 border-green-primary/20 p-6 space-y-4 hover:shadow-premium-hover transition-all duration-300">
         <div className="text-center">
           <p className="text-sm text-text-dark/60">From</p>
           <p className="text-4xl font-black text-green-primary">${trek.price}</p>
@@ -77,9 +81,15 @@ function StickyBookingWidget({ trek }: { trek: any }) {
           </div>
         </div>
 
-        <button className="w-full bg-green-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-green-primary/90 transition-colors shadow-lg">
-          Book This Trek
-        </button>
+        <motion.button
+          onClick={onBookClick}
+          whileHover={{ scale: 1.02, y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          className="relative w-full bg-gradient-to-r from-green-primary to-green-primary/90 text-white py-4 rounded-lg font-bold text-lg shadow-lg overflow-hidden group"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+          <span className="relative z-10">Book This Trek</span>
+        </motion.button>
 
         <button className="w-full border-2 border-green-primary text-green-primary py-3 rounded-lg font-semibold hover:bg-green-primary/5 transition-colors">
           Request Custom Quote
@@ -90,43 +100,63 @@ function StickyBookingWidget({ trek }: { trek: any }) {
           <p className="mt-1">📞 Questions? Call us at +1-555-0123</p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-// Photo Gallery Component
+// Photo Gallery Component - Enhanced with Spectacular Animations
 function PhotoGallery({ images }: { images: string[] }) {
   const [selectedImage, setSelectedImage] = useState(0);
 
   return (
     <div className="space-y-4">
-      {/* Main Image */}
-      <div className="relative aspect-video rounded-xl overflow-hidden shadow-premium-lg">
+      {/* Main Image with Gradient Overlay */}
+      <motion.div
+        key={selectedImage}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative aspect-video rounded-xl overflow-hidden shadow-premium-lg group"
+      >
         <img
           src={images[selectedImage]}
           alt="Trek photo"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
-      </div>
+        {/* Gradient Overlay for Depth */}
+        <div className="absolute inset-0 bg-gradient-to-t from-green-primary/40 via-transparent to-transparent opacity-60" />
+      </motion.div>
 
-      {/* Thumbnails */}
+      {/* Thumbnails with Enhanced Hover States */}
       <div className="grid grid-cols-6 gap-2">
         {images.map((img, index) => (
-          <button
+          <motion.button
             key={index}
             onClick={() => setSelectedImage(index)}
-            className={`aspect-video rounded-lg overflow-hidden ${selectedImage === index
-              ? "ring-4 ring-green-primary"
-              : "opacity-60 hover:opacity-100"
-              } transition-all`}
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            className={`aspect-video rounded-lg overflow-hidden relative ${selectedImage === index
+              ? "ring-4 ring-green-primary shadow-lg shadow-green-primary/30"
+              : "opacity-60 hover:opacity-100 hover:shadow-md"
+              } transition-all duration-300`}
           >
-            <img src={img} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
-          </button>
+            <img
+              src={img}
+              alt={`Thumbnail ${index + 1}`}
+              className={`w-full h-full object-cover transition-all duration-300 ${selectedImage === index ? '' : 'hover:brightness-110'
+                }`}
+            />
+            {/* Pulsing Effect on Selected */}
+            {selectedImage === index && (
+              <div className="absolute inset-0 ring-4 ring-green-primary/50 rounded-lg animate-pulse" />
+            )}
+          </motion.button>
         ))}
       </div>
     </div>
   );
 }
+
 
 // Reviews Component
 function ReviewsSection({ reviews }: { reviews: any[] }) {
@@ -219,55 +249,72 @@ function SimilarTreksCarousel({ treks, currentTrekId }: any) {
 export default function TrekDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const trekDatabase = [
     {
       id: 1,
       name: "Annapurna Base Camp Trek",
       slug: "annapurna-base-camp",
-      location: "Nepal",
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600&fit=crop",
+      location: "Annapurna Region, Nepal",
+      image: "/annapurna-1.jpg",
       gallery: [
-        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1200&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1589182373726-e4f658ab50b0?w=1200&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=1200&h=600&fit=crop",
-        "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1200&h=600&fit=crop",
+        "/annapurna-1.jpg",
+        "/annapurna-2.jpg",
+        "/annapurna-3.jpg",
+        "/annapurna-4.jpg",
+        "/annapurna-5.jpg",
       ],
-      description: "Experience the majestic Himalayan peaks and cultural heritage of Nepal.",
+      description: "Trekking to Annapurna Base Camp is more than just a hike — it's a deeply personal experience. From warm Gurung villages to silent alpine valleys, every step feels sacred. Surrounded by towering Himalayan peaks and peaceful forests, this trek leaves you with memories that stay long after you return home.",
       price: 1299,
-      duration: "10 days",
+      duration: "7-12 days",
       groupSize: "8-12 people",
       difficulty: 3,
       rating: 4.9,
       reviewCount: 234,
       included: [
-        { item: "Accommodation", detail: "4-star hotels & lodges", included: true },
-        { item: "Meals", detail: "Breakfast & Dinner daily", included: true },
-        { item: "Transportation", detail: "All transfers & flights", included: true },
-        { item: "Licensed Guide", detail: "English-speaking expert", included: true },
-        { item: "Permits & Fees", detail: "All necessary permits", included: true },
+        { item: "Accommodation", detail: "Tea houses & mountain lodges", included: true },
+        { item: "Meals", detail: "Breakfast & Dinner (Dal Bhat recommended)", included: true },
+        { item: "Licensed Guide", detail: "Expert local guide with altitude training", included: true },
+        { item: "Permits & Fees", detail: "TIMS card & ACAP permit", included: true },
+        { item: "Transportation", detail: "Kathmandu-Pokhara-Nayapul transfers", included: true },
         { item: "International Flights", detail: "Book separately", included: false },
-        { item: "Travel Insurance", detail: "Highly recommended", included: false },
-        { item: "Personal Expenses", detail: "Souvenirs, tips, etc.", included: false },
+        { item: "Travel Insurance", detail: "Mandatory - must cover up to 5,000m", included: false },
+        { item: "Personal Expenses", detail: "Snacks, drinks, WiFi, tips", included: false },
       ],
       faqs: [
         {
           q: "What fitness level is required?",
-          a: "This trek requires moderate fitness. We'll do some hiking at altitude, but nothing too strenuous. If you can walk 3-4 hours with breaks, you'll be fine.",
+          a: "Moderate fitness is needed. You don't need to be an athlete — just consistent. We recommend 3-4 weeks of training: cardio (30 min/day), stair climbing, leg strength exercises (squats, lunges), and stretching. If you can walk 3-4 hours with breaks, you'll be fine. Remember: go slow, breathe, and enjoy the trail. ABC is not a race.",
         },
         {
           q: "What should I pack?",
-          a: "Layered clothing is essential! Bring warm layers for mornings/evenings, comfortable hiking boots, sunscreen, hat, and sunglasses. We'll send a detailed packing list upon booking.",
-        },
-        {
-          q: "Is travel insurance mandatory?",
-          a: "Yes, comprehensive travel insurance covering medical evacuation is mandatory for this trip. We can recommend providers.",
+          a: "Layered clothing is essential! Use a layering system: base layer, fleece, down jacket, and waterproof shell. Must-haves: quality hiking boots, sunglasses, sunscreen, lip balm, hat, and gloves. Keep your pack light — every extra gram feels heavier with altitude. We'll send a detailed packing list upon booking.",
         },
         {
           q: "What about altitude sickness?",
-          a: "We include acclimatization days in the itinerary. Stay hydrated, avoid alcohol in the first few days, and ascend gradually. Our guides are trained in altitude sickness recognition.",
+          a: "Even though ABC is lower than Everest treks, altitude sickness is real. Common symptoms include headache, dizziness, nausea, loss of appetite, and sleep issues. Prevention: drink 3-4 liters of water daily, ascend slowly (we include acclimatization days), eat warm meals (Dal Bhat is best for energy), and listen to your body. Our guides are trained in altitude sickness recognition and carry first aid kits.",
+        },
+        {
+          q: "What gadgets and electronics should I bring?",
+          a: "Less is more at altitude. Must-carry: Power bank (15,000-20,000 mAh) as charging gets expensive and unreliable above Deurali, camera/GoPro/smartphone for magical morning light, extra batteries (cold drains them fast — keep inside your jacket!), headlamp for early starts, and universal adapter (charging points are limited and shared). Download offline maps, music, podcasts, movies, and emergency apps before the trek.",
+        },
+        {
+          q: "Will I have WiFi and mobile connectivity?",
+          a: "Connectivity exists but it's unpredictable. NTC & Ncell work well till Ghandruk & Chhomrong. From Bamboo → Deurali → ABC, signal drops dramatically. Tea-house WiFi is slow, paid, and shared among many trekkers. Download everything you need before starting: offline Google Maps, entertainment, important documents, and SOS apps. Once you accept being offline, the mountains feel more alive.",
+        },
+        {
+          q: "Is travel insurance mandatory?",
+          a: "Yes! Travel insurance is not optional — it's peace of mind. Your insurance must cover: high-altitude trekking (up to 5,000m), emergency helicopter evacuation, medical expenses, trip delays, and baggage loss. This is critical for your safety.",
+        },
+        {
+          q: "How do I get to the trek starting point?",
+          a: "From Kathmandu → Pokhara: take a 25-minute flight (best option) or 6-8 hour tourist bus, or hire a private vehicle for groups. From Pokhara → Trek Start (Nayapul/Siwai): local or private jeep. Many trekkers start from Siwai to shorten the route. The trek ends at Siwai or Nayapul, then jeep back to Pokhara. Hot showers and lakeside cafes feel luxurious after the trek!",
+        },
+        {
+          q: "What about Nepal visa?",
+          a: "Visa on Arrival is available at Kathmandu airport for most nationalities. Options: 15, 30, or 90 days. Your passport must be valid for at least 6 months from your entry date.",
         },
       ],
       reviews: [
@@ -300,34 +347,398 @@ export default function TrekDetail() {
       route: trekRouteCoordinates.annapurna,
       itinerary: [
         {
-          day: "Day 1-2",
+          day: "Day 1",
           title: "Arrival in Kathmandu",
-          description: "Welcome to Nepal! Arrive in Kathmandu and check into your hotel. Explore the bustling city, visit local markets, and acclimatize to the altitude.",
+          description: "Welcome to Nepal! Arrive in Kathmandu, transfer to your hotel. Rest and prepare for your adventure. Evening orientation with your guide.",
         },
         {
-          day: "Day 3-4",
-          title: "Kathmandu Cultural Trek",
-          description: "Visit UNESCO World Heritage sites including Pashupatinath Temple, Boudhanath Stupa, and Swayambhunath. Learn about Buddhist and Hindu traditions from experienced guides.",
+          day: "Day 2",
+          title: "Kathmandu to Pokhara",
+          description: "Scenic drive or short flight to Pokhara (820m). Explore the lakeside city and enjoy views of the Annapurna range. Prepare gear and get final briefing.",
         },
         {
-          day: "Day 5-7",
-          title: "Pokhara Exploration",
-          description: "Fly to Pokhara and explore its serene lakes. Enjoy boating on Phewa Lake, visit local villages, and experience the stunning backdrop of the Annapurna range.",
+          day: "Day 3",
+          title: "Pokhara to Ghandruk (1,940m)",
+          description: "Drive to Nayapul/Siwai and begin trekking through terraced fields and traditional villages. Arrive at the beautiful Gurung village of Ghandruk with stunning mountain views.",
         },
         {
-          day: "Day 8-9",
-          title: "Mountain Scenery & Local Life",
-          description: "Experience short hikes around Pokhara. Visit local farms, taste fresh Nepalese cuisine, and interact with local communities.",
+          day: "Day 4",
+          title: "Ghandruk to Chhomrong (2,170m)",
+          description: "Trek through rhododendron forests with spectacular views of Annapurna South and Machhapuchhre (Fishtail). Arrive at Chhomrong, the last major settlement before the sanctuary.",
+        },
+        {
+          day: "Day 5",
+          title: "Chhomrong to Bamboo (2,310m)",
+          description: "Descend to Chhomrong Khola and climb up through bamboo forests. The trail enters the Annapurna Sanctuary as vegetation becomes denser.",
+        },
+        {
+          day: "Day 6",
+          title: "Bamboo to Deurali (3,230m)",
+          description: "Trek through the scenic Modi Khola valley. Pass through Dovan and Himalaya Hotel. As you gain altitude, notice the changing landscape and cooler temperatures.",
+        },
+        {
+          day: "Day 7",
+          title: "Deurali to Annapurna Base Camp (4,130m)",
+          description: "Early morning trek to Machhapuchhre Base Camp (3,700m) for breakfast. Then continue to Annapurna Base Camp surrounded by towering peaks. Witness magical sunset views. Acclimatize and rest.",
+        },
+        {
+          day: "Day 8",
+          title: "ABC to Bamboo",
+          description: "Wake up early for stunning sunrise over the Annapurna massif. After breakfast, begin descent to Bamboo. Enjoy easier breathing as you descend to lower altitude.",
+        },
+        {
+          day: "Day 9",
+          title: "Bamboo to Jhinu Danda",
+          description: "Continue descent to Jhinu Danda. Optional: relax in natural hot springs — a perfect reward after days of trekking!",
         },
         {
           day: "Day 10",
+          title: "Jhinu Danda to Nayapul, Return to Pokhara",
+          description: "Final day of trekking down to Nayapul. Drive back to Pokhara. Celebrate your achievement with a lakeside dinner!",
+        },
+        {
+          day: "Day 11",
+          title: "Pokhara to Kathmandu",
+          description: "Return to Kathmandu by flight or drive. Free time for shopping and sightseeing in Thamel.",
+        },
+        {
+          day: "Day 12",
           title: "Departure",
-          description: "Enjoy a final breakfast with mountain views before heading to the airport. Depart with cherished memories.",
+          description: "Final breakfast with mountain memories. Transfer to airport for your departure flight. Depart with cherished experiences from the heart of the Himalayas.",
         },
       ],
     },
     {
       id: 2,
+      name: "Everest Base Camp Trek",
+      slug: "everest-base-camp",
+      location: "Everest Region, Nepal",
+      image: "/everest-1.webp",
+      gallery: [
+        "/everest-1.webp",
+        "/everest-2.jpg",
+        "/everest-3.jpg",
+        "/everest-4.jpeg",
+        "/everest-5.jpeg",
+      ],
+      description: "\"Today didn't feel like a trek. It felt like the mountains were teaching me something.\" Days begin early, in silence and cold. As the sun rises, the peaks glow softly, and every step feels meaningful. Prayer flags whisper in the wind, glaciers surround you, and moments arrive where words simply disappear. Evenings are spent near warm stoves, sipping tea, watching the mountains stand still under starlit skies. This trek changes you — quietly. Best Season: Autumn (Sep-Nov) for clear skies and stable weather, Spring (Mar-May) for warmer days and blooming rhododendrons.",
+      price: 1499,
+      duration: "12 days",
+      groupSize: "8-12 people",
+      difficulty: 4,
+      rating: 4.9,
+      reviewCount: 312,
+      included: [
+        { item: "Tea House Accommodation", detail: "Local Sherpa family-run lodges", included: true },
+        { item: "Meals", detail: "Breakfast & Dinner (Dal Bhat recommended)", included: true },
+        { item: "Expert Sherpa Guide", detail: "Experienced & altitude-trained", included: true },
+        { item: "Permits", detail: "Sagarmatha National Park & Khumbu permits, TIMS", included: true },
+        { item: "Lukla Flights", detail: "Kathmandu-Lukla return flights", included: true },
+        { item: "International Flights", detail: "Book separately", included: false },
+        { item: "Travel Insurance", detail: "Mandatory - must cover helicopter evacuation", included: false },
+        { item: "Personal Expenses", detail: "WiFi, charging, snacks, drinks, tips", included: false },
+      ],
+      faqs: [
+        {
+          q: "Is EBC suitable for beginners?",
+          a: "Yes, with good fitness and proper acclimatization. You don't need mountaineering experience, but excellent cardiovascular fitness is essential. Train for 6-8 weeks before: daily cardio, stair climbing with a weighted backpack, leg strength exercises. If you can hike 6-7 hours comfortably, you're ready. The key is slow, steady, and staying positive."
+        },
+        {
+          q: "Will I see Everest from Base Camp?",
+          a: "Not directly from Base Camp! The best panoramic view of Everest is from Kalapatthar (5,545m), a steep early-morning climb that's absolutely worth it. You'll see Everest, Lhotse, Nuptse, and the Khumbu Glacier from the summit — one of the most spectacular views on Earth."
+        },
+        {
+          q: "How cold does it get?",
+          a: "Temperatures vary dramatically. At Namche (3,440m): 10-15°C during day, near 0°C at night. At Gorakshep/Kalapatthar (5,160-5,545m): -10 to -20°C, especially at sunrise. Layering is critical: thermal base layers, fleece mid-layer, down jacket, and windproof shell. Bring quality gloves, warm socks, and a good sleeping bag rated for -15°C."
+        },
+        {
+          q: "What about altitude sickness (AMS)?",
+          a: "Altitude sickness is the biggest challenge on EBC. Common symptoms: headache, nausea, loss of appetite, dizziness, difficulty sleeping. High-risk zones: Namche (3,440m), Tengboche (3,867m), Dingboche (4,410m), Lobuche (4,940m), Gorakshep (5,164m). Prevention: walk slowly (\"Bistari Bistari\" in Nepali), drink 3-4L water daily, no alcohol or smoking, proper acclimatization days, Diamox (doctor-recommended). Severe symptoms = descend immediately. Helicopter evacuation available if required."
+        },
+        {
+          q: "What food is available during the trek?",
+          a: "Breakfast: Tibetan bread, chapati, oats, porridge, muesli, eggs (boiled, omelet), pancakes with honey/jam, tea, coffee, ginger lemon honey. Lunch & Dinner: Dal Bhat (best & refillable!), fried rice, noodles, thukpa, Sherpa stew, soups (garlic soup recommended for altitude), momos, pasta, potatoes. Safe eating tips: avoid meat above Namche, drink boiled or purified water only, carry snacks & energy bars."
+        },
+        {
+          q: "What are the accommodations like?",
+          a: "Tea houses run by local Sherpa families. What to expect: twin-bed rooms, shared toilets, warm dining hall with stove, no heating in rooms, paid WiFi & charging at higher altitudes. Comfort levels: Lukla-Namche (best facilities), Dingboche-Lobuche (colder, simpler), Gorakshep (very basic & cold). Bring a quality sleeping bag!"
+        },
+        {
+          q: "What gadgets and electronics should I bring?",
+          a: "Power bank (20,000+ mAh) is essential as charging is expensive and unreliable above Dingboche. Camera/smartphone for sunrise at Kalapatthar, extra batteries (cold drains them — keep inside jacket!), headlamp for early starts, universal adapter (charging points limited and shared). Download offline maps, music, podcasts, movies, and emergency apps before the trek."
+        },
+        {
+          q: "Will I have WiFi and mobile connectivity?",
+          a: "Connectivity exists but unreliable. NTC & Ncell work reasonably well till Namche. From Tengboche onwards, signal drops significantly. Tea-house WiFi is slow, paid ($3-5/day), and shared. Download everything you need beforehand: offline Google Maps, entertainment, important documents, SOS apps. Embrace being offline — the mountains feel more alive that way."
+        },
+        {
+          q: "Is solo trekking safe?",
+          a: "Generally yes — the EBC trail is well-traveled. However, hiring a guide is highly recommended for safety, navigation, cultural insights, and altitude sickness management. Guides know the terrain, can communicate with locals, and provide emergency support. Solo trekkers should have prior high-altitude experience."
+        },
+        {
+          q: "What permits are required?",
+          a: "You need: Sagarmatha National Park Permit, Khumbu Pasang Lhamu Rural Municipality Permit, and TIMS Card (optional but recommended). We arrange all permits for you."
+        },
+        {
+          q: "What about Nepal visa?",
+          a: "Visa on Arrival is available at Kathmandu airport for most nationalities. Options: 15, 30, or 90 days. Your passport must be valid for at least 6 months from entry date."
+        },
+      ],
+      reviews: [
+        {
+          name: "Michael Roberts",
+          avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+          rating: 5,
+          date: "December 2024",
+          text: "Standing at Everest Base Camp was a dream come true! The trek was challenging but incredibly rewarding. Our Sherpa guide was phenomenal — his knowledge and support made all the difference. The sunrise from Kalapatthar is something I'll never forget.",
+          verified: true,
+        },
+        {
+          name: "Sophie Williams",
+          avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+          rating: 5,
+          date: "November 2024",
+          text: "Best adventure of my life! The Khumbu region is spectacular. Each day brought new views, warm Sherpa hospitality, and a deeper appreciation for the mountains. Proper acclimatization days made the difference. Highly recommend this experience!",
+          verified: true,
+        },
+        {
+          name: "David Thompson",
+          avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+          rating: 5,
+          date: "October 2024",
+          text: "An epic journey to the roof of the world! The trek tested my limits, but the support from our guide and the camaraderie with fellow trekkers made it unforgettable. Namche Bazaar, Tengboche Monastery, and Kalapatthar — every moment was magical.",
+          verified: true,
+        },
+        ...additionalEverestReviews,
+      ],
+      route: trekRouteCoordinates.everest,
+      itinerary: [
+        {
+          day: "Day 1",
+          title: "Fly to Lukla – Trek to Phakding (2,610m)",
+          description: "Scenic 25-minute flight to Lukla (2,860m), one of the world's most thrilling airports. Begin trekking through pine forests and Sherpa villages along the Dudh Koshi River to Phakding. Gentle first day to ease into the trek."
+        },
+        {
+          day: "Day 2",
+          title: "Phakding → Namche Bazaar (3,440m)",
+          description: "Cross suspension bridges decorated with prayer flags. Pass through Monjo and enter Sagarmatha National Park. Steep climb to Namche Bazaar, the Sherpa capital. First views of Everest, Lhotse, and Thamserku. Celebrate arrival at this vibrant mountain town!"
+        },
+        {
+          day: "Day 3",
+          title: "Acclimatization Day in Namche",
+          description: "Essential acclimatization day. Hike to Everest View Hotel (3,880m) for stunning panoramic views, or visit Khumjung village and Hillary School. Explore Namche's markets, bakeries, and cafes. Return to Namche for overnight rest."
+        },
+        {
+          day: "Day 4",
+          title: "Namche → Tengboche (3,867m)",
+          description: "Trek through rhododendron and juniper forests with spectacular mountain views. Visit Tengboche Monastery, the spiritual heart of the Khumbu region. Attend evening prayer ceremony (if timing permits). Sleep surrounded by Everest, Ama Dablam, and Lhotse."
+        },
+        {
+          day: "Day 5",
+          title: "Tengboche → Dingboche (4,410m)",
+          description: "Descend to Debuche, cross the Imja River, and trek through Pangboche village. Ascend to Dingboche, gateway to the high Himalayas. Notice the landscape becoming more barren and dramatic. Afternoon rest to adjust to altitude."
+        },
+        {
+          day: "Day 6",
+          title: "Acclimatization Day in Dingboche",
+          description: "Another crucial acclimatization day. Hike to Nagarjun Hill (5,100m) for incredible 360° views of Makalu, Lhotse, and Ama Dablam. Rest, hydrate, and prepare for higher altitudes ahead."
+        },
+        {
+          day: "Day 7",
+          title: "Dingboche → Lobuche (4,940m)",
+          description: "Trek past memorials to fallen climbers at Thukla Pass — a humbling reminder of Everest's power. Continue to Lobuche with views of the Khumbu Glacier. Increasingly cold and windswept terrain. Rest well for the big day ahead."
+        },
+        {
+          day: "Day 8",
+          title: "Lobuche → Gorakshep → Everest Base Camp (5,364m) → Gorakshep",
+          description: "Early start to Gorakshep, the last settlement. Drop bags and trek to Everest Base Camp (5,364m) — stand below the world's highest mountain! Witness the Khumbu Icefall and expedition camps. Return to Gorakshep for overnight. Celebrate your incredible achievement!"
+        },
+        {
+          day: "Day 9",
+          title: "Kalapatthar Sunrise (5,545m) → Pheriche (4,371m)",
+          description: "Pre-dawn hike to Kalapatthar summit for the most spectacular sunrise view of Everest, Nuptse, and the Himalayan range — the ultimate reward! Descend to Gorakshep for breakfast, then trek down to Pheriche. Easier breathing at lower altitude."
+        },
+        {
+          day: "Day 10",
+          title: "Pheriche → Namche Bazaar",
+          description: "Long descent through Pangboche and Tengboche. Retrace steps back to Namche Bazaar. Enjoy the thicker air, warm showers, and celebratory dinner in Namche's cozy lodges."
+        },
+        {
+          day: "Day 11",
+          title: "Namche → Lukla",
+          description: "Final day of trekking! Descend through familiar trails, crossing suspension bridges and passing through Sherpa villages. Arrive in Lukla and celebrate completion of the trek with your team. Rest and prepare for flight back."
+        },
+        {
+          day: "Day 12",
+          title: "Fly back to Kathmandu",
+          description: "Morning flight from Lukla to Kathmandu. Final mountain views as you descend. Enjoy hot showers, comfortable beds, and a celebratory meal in Kathmandu. Depart with memories that will last a lifetime."
+        },
+      ],
+    },
+    {
+      id: 3,
+      name: "Gokyo Lakes & Renjo La Pass Trek",
+      slug: "gokyo-lakes-renjo-la",
+      location: "Everest / Khumbu Region, Nepal",
+      image: "/gokyo-1.jpg",
+      gallery: [
+        "/gokyo-1.jpg",
+        "/gokyo-2.jpg",
+        "/gokyo-3.jpg",
+        "/gokyo-4.jpg",
+        "/gokyo-5.jpg",
+      ],
+      description: "A Quieter, Wilder Alternative to Everest Base Camp. The Gokyo Lakes & Renjo La Pass Trek is one of the most scenic and less-crowded treks in the Everest region. This journey takes you past turquoise glacial lakes, massive glaciers, and over a dramatic high pass — offering jaw-dropping views of Everest, Cho Oyu, Lhotse, Makalu, and many more Himalayan giants. If you want Everest-level views without Everest-level crowds, this trek is pure gold.",
+      price: 1549,
+      duration: "12 days",
+      groupSize: "6-10 people",
+      difficulty: 4,
+      rating: 4.9,
+      reviewCount: 187,
+      included: [
+        { item: "Tea House Accommodation", detail: "Comfortable mountain lodges", included: true },
+        { item: "Meals", detail: "Breakfast & Dinner throughout trek", included: true },
+        { item: "Experienced Guide", detail: "Licensed Sherpa guide", included: true },
+        { item: "Permits & Fees", detail: "Sagarmatha National Park & TIMS", included: true },
+        { item: "Lukla Flights", detail: "Kathmandu-Lukla return", included: true },
+        { item: "International Flights", detail: "Book separately", included: false },
+        { item: "Travel Insurance", detail: "Mandatory", included: false },
+        { item: "Personal Expenses", detail: "WiFi, snacks, tips", included: false },
+      ],
+      faqs: [
+        {
+          q: "How is this different from Everest Base Camp trek?",
+          a: "Gokyo Lakes & Renjo La offers fewer trekkers, more dramatic landscapes with turquoise glacial lakes, challenging high passes (Renjo La at 5,360m), and arguably better panoramic Himalayan views from Gokyo Ri. It's for adventurers who want solitude, challenge, and unmatched scenery."
+        },
+        {
+          q: "What makes Gokyo Ri special?",
+          a: "Gokyo Ri (5,360m) is one of the best viewpoints in Nepal. From the summit, you can see Everest, Lhotse, Makalu, and Cho Oyu (four of the world's six highest peaks) all together in one panoramic view — something you can't get from Everest Base Camp."
+        },
+        {
+          q: "How difficult is the Renjo La Pass?",
+          a: "Renjo La Pass (5,360m) is challenging and requires good fitness and acclimatization. The ascent is steep with scree and boulder sections. Weather can change rapidly. However, the views from both sides of the pass are breathtaking and absolutely worth the effort."
+        },
+        {
+          q: "What is the Ngozumpa Glacier?",
+          a: "The Ngozumpa Glacier is Nepal's largest glacier, stretching 36km through the Gokyo Valley. You'll walk alongside it for several hours, witnessing its massive scale and the turquoise Gokyo Lakes formed by glacial melt. It's a spectacular sight of raw Himalayan geology."
+        },
+        {
+          q: "How many Gokyo Lakes will I see?",
+          a: "There are officially six Gokyo Lakes, though traditionally five are visited. The Third Lake (Dudh Pokhari) is where the main settlement is. Many trekkers hike to the Fifth Lake for even more spectacular views. The turquoise color comes from glacial rock flour."
+        },
+        {
+          q: "Is this trek suitable for beginners?",
+          a: "This is a challenging trek recommended for experienced trekkers with good fitness. The Renjo La Pass crossing and high altitudes require excellent acclimatization and stamina. Prior high-altitude trekking experience is highly beneficial."
+        },
+        {
+          q: "What about altitude sickness?",
+          a: "Altitude sickness risk is significant due to high elevations (up to 5,360m). Proper acclimatization days at Namche and Gokyo are crucial. Symptoms include headache, nausea, dizziness. Walk slowly, stay hydrated (3-4L/day), avoid alcohol, and descend if symptoms worsen. Diamox can help with doctor consultation."
+        },
+        {
+          q: "What's the best time to do this trek?",
+          a: "Best seasons are Autumn (September-November) for clear skies, stable weather, and best mountain visibility, and Spring (March-May) for warmer days and blooming rhododendrons. Avoid monsoon (June-August) due to rain and poor views, and winter (December-February) due to extreme cold and heavy snow."
+        },
+        {
+          q: "Will I visit Thame Monastery?",
+          a: "Yes! After crossing Renjo La Pass, the trek descends through the Bhote Koshi Valley to Thame village, home to the historic Thame Monastery — an important Sherpa spiritual center with beautiful architecture and stunning mountain views."
+        },
+        {
+          q: "How crowded is this trek compared to EBC?",
+          a: "Significantly less crowded! While EBC sees thousands of trekkers during peak season, the Gokyo route attracts far fewer people, especially after leaving Namche. You'll experience more solitude, pristine landscapes, and a wilder, more authentic Himalayan adventure."
+        },
+      ],
+      reviews: [
+        {
+          name: "Alexandra Martinez",
+          avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+          rating: 5,
+          date: "November 2024",
+          text: "The Gokyo Lakes were absolutely mesmerizing! The turquoise color against snow-capped peaks is otherworldly. Crossing Renjo La was challenging but the views made every step worth it. Far less crowded than EBC route — felt like a true adventure!",
+          verified: true,
+        },
+        {
+          name: "James Peterson",
+          avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+          rating: 5,
+          date: "October 2024",
+          text: "Stunning trek! Gokyo Ri sunrise was the highlight — seeing four 8000m peaks together was incredible. The Ngozumpa Glacier walk and Fifth Lake visit were spectacular. Our guide was excellent and kept us safe throughout.",
+          verified: true,
+        },
+        {
+          name: "Emma Richardson",
+          avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
+          rating: 5,
+          date: "September 2024",
+          text: "Best trek I've ever done! The combination of glacial lakes, high passes, and mountain views is unbeatable. Quieter trails, authentic Sherpa culture, and world-class scenery. Thame Monastery was a beautiful cultural highlight.",
+          verified: true,
+        },
+      ],
+      route: trekRouteCoordinates.gokyo,
+      itinerary: [
+        {
+          day: "Day 1",
+          title: "Fly Kathmandu → Lukla | Trek to Phakding (2,610m)",
+          description: "Scenic 25-minute flight to Lukla. Short scenic trek through Dudh Koshi Valley with suspension bridges and mountain views to Phakding."
+        },
+        {
+          day: "Day 2",
+          title: "Phakding → Namche Bazaar (3,445m)",
+          description: "Cross multiple suspension bridges and enter Sagarmatha National Park before reaching the Sherpa capital with spectacular mountain views."
+        },
+        {
+          day: "Day 3",
+          title: "Acclimatization Day at Namche",
+          description: "Essential acclimatization day. Hike to Everest View Hotel, visit Khumjung & Khunde villages, and enjoy panoramic Himalayan views. Explore Namche's markets and cafes."
+        },
+        {
+          day: "Day 4",
+          title: "Namche → Dole (4,150m)",
+          description: "Trail separates from EBC route, entering quieter high-altitude terrain. Trek through rhododendron forests with increasing mountain views. Notice fewer trekkers as you head toward Gokyo Valley."
+        },
+        {
+          day: "Day 5",
+          title: "Dole → Machhermo (4,470m)",
+          description: "Gradual ascent with incredible views of Cho Oyu (8,188m), Kantega, and Thamserku. Pass through sparse alpine landscape. Stay in traditional tea house."
+        },
+        {
+          day: "Day 6",
+          title: "Machhermo → Gokyo (4,750m)",
+          description: "Walk alongside Nepal's largest Ngozumpa Glacier and reach the stunning Gokyo Lakes with their distinctive turquoise color. Afternoon hike to Fifth Lake for spectacular glacier and mountain views."
+        },
+        {
+          day: "Day 7",
+          title: "Sunrise Hike to Gokyo Ri (5,360m)",
+          description: "Pre-dawn ascent to Gokyo Ri summit — one of the best viewpoints in Nepal. See Everest, Lhotse, Makalu, and Cho Oyu (four 8000ers) together in panoramic splendor. Return to Gokyo for rest."
+        },
+        {
+          day: "Day 8",
+          title: "Cross Renjo La Pass (5,360m) → Lungden (4,350m)",
+          description: "Challenging but immensely rewarding pass crossing. Steep ascent over scree and boulders to Renjo La with breathtaking views on both sides. Descend to Lungden village in Bhote Koshi Valley."
+        },
+        {
+          day: "Day 9",
+          title: "Lungden → Thame (3,850m)",
+          description: "Descend through Bhote Koshi Valley and visit historic Thame Monastery, an important Sherpa spiritual center with beautiful architecture and mountain backdrop. Experience authentic Sherpa culture."
+        },
+        {
+          day: "Day 10",
+          title: "Thame → Namche Bazaar",
+          description: "Relaxed downhill walk back to Namche Bazaar. Enjoy the thicker air and celebrate your achievement with a warm meal at a cozy lodge."
+        },
+        {
+          day: "Day 11",
+          title: "Namche → Lukla",
+          description: "Final trekking day through familiar forests and villages. Arrive in Lukla and celebrate completion of this spectacular trek with your team."
+        },
+        {
+          day: "Day 12",
+          title: "Fly Lukla → Kathmandu",
+          description: "Morning flight back to Kathmandu with final views of the Himalayas. Enjoy hot showers, comfortable beds, and a celebratory meal. Depart with unforgettable memories of turquoise lakes and mountain majesty."
+        },
+      ],
+    },
+    {
+      id: 4,
       name: "Royal Cities Discovery Tour",
       slug: "tibet-sacred-journey",
       location: "Tibet",
@@ -645,6 +1056,15 @@ export default function TrekDetail() {
 
   const trek = trekDatabase.find((t) => t.slug === slug);
 
+  const handleBookNow = () => {
+    if (user) {
+      navigate(`/booking/trek/${slug}`);
+    } else {
+      sessionStorage.setItem('intendedBooking', `/booking/trek/${slug}`);
+      setAuthModalOpen(true);
+    }
+  };
+
   if (!trek) {
     return (
       <div className="min-h-screen bg-beige flex flex-col">
@@ -719,32 +1139,64 @@ export default function TrekDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-14">
-            {/* Trek Details Grid */}
+            {/* Trek Details Grid - Enhanced with Glassmorphism */}
             <div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6">
-                <div className="bg-card rounded-xl p-6 shadow-premium-sm border border-border">
-                  <Calendar className="h-6 w-6 text-green-primary mb-3" />
-                  <p className="text-xs font-bold text-text-dark/70 uppercase mb-1">Duration</p>
-                  <p className="text-xl font-black text-text-dark">{trek.duration}</p>
-                </div>
-                <div className="bg-card rounded-xl p-6 shadow-premium-sm border border-border">
-                  <Users className="h-6 w-6 text-green-primary mb-3" />
-                  <p className="text-xs font-bold text-text-dark/70 uppercase mb-1">Group Size</p>
-                  <p className="text-xl font-black text-text-dark">{trek.groupSize}</p>
-                </div>
-                <div className="bg-card rounded-xl p-6 shadow-premium-sm border border-border">
-                  <MapPin className="h-6 w-6 text-green-primary mb-3" />
-                  <p className="text-xs font-bold text-text-dark/70 uppercase mb-1">Location</p>
-                  <p className="text-xl font-black text-text-dark">{trek.location}</p>
-                </div>
+                <motion.div
+                  whileHover={{ scale: 1.02, y: -4 }}
+                  className="relative bg-white/60 backdrop-blur-md rounded-xl p-6 shadow-premium border-2 border-transparent hover:border-green-primary/30 transition-all duration-300 group overflow-hidden"
+                >
+                  {/* Animated Gradient Border */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-primary/20 via-blue-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl" />
+                  <div className="relative z-10">
+                    <motion.div whileHover={{ scale: 1.1, rotate: 5 }} transition={{ type: "spring", stiffness: 300 }}>
+                      <Calendar className="h-6 w-6 text-green-primary mb-3" />
+                    </motion.div>
+                    <p className="text-xs font-bold text-text-dark/70 uppercase mb-1 tracking-wider">Duration</p>
+                    <p className="text-xl font-black text-text-dark">{trek.duration}</p>
+                  </div>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.02, y: -4 }}
+                  className="relative bg-white/60 backdrop-blur-md rounded-xl p-6 shadow-premium border-2 border-transparent hover:border-green-primary/30 transition-all duration-300 group overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-primary/20 via-blue-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl" />
+                  <div className="relative z-10">
+                    <motion.div whileHover={{ scale: 1.1, rotate: 5 }} transition={{ type: "spring", stiffness: 300 }}>
+                      <Users className="h-6 w-6 text-green-primary mb-3" />
+                    </motion.div>
+                    <p className="text-xs font-bold text-text-dark/70 uppercase mb-1 tracking-wider">Group Size</p>
+                    <p className="text-xl font-black text-text-dark">{trek.groupSize}</p>
+                  </div>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.02, y: -4 }}
+                  className="relative bg-white/60 backdrop-blur-md rounded-xl p-6 shadow-premium border-2 border-transparent hover:border-green-primary/30 transition-all duration-300 group overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-primary/20 via-blue-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl" />
+                  <div className="relative z-10">
+                    <motion.div whileHover={{ scale: 1.1, rotate: 5 }} transition={{ type: "spring", stiffness: 300 }}>
+                      <MapPin className="h-6 w-6 text-green-primary mb-3" />
+                    </motion.div>
+                    <p className="text-xs font-bold text-text-dark/70 uppercase mb-1 tracking-wider">Location</p>
+                    <p className="text-xl font-black text-text-dark">{trek.location}</p>
+                  </div>
+                </motion.div>
               </div>
             </div>
 
             {/* What's Included Section */}
             <div>
-              <h2 className="text-3xl sm:text-4xl font-black text-green-primary mb-8 tracking-tight">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+                className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-green-primary to-green-primary/70 bg-clip-text text-transparent mb-10 tracking-tight relative"
+              >
                 What's Included
-              </h2>
+                <div className="absolute -bottom-3 left-0 w-24 h-1 bg-gradient-to-r from-green-primary to-blue-accent rounded-full" />
+              </motion.h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {trek.included?.map((item, index) => (
                   <div
@@ -787,56 +1239,95 @@ export default function TrekDetail() {
               </div>
             )} */}
 
-            {/* Itinerary Section */}
+            {/* Itinerary Section - Enhanced Vertical Timeline */}
             <div>
-              <h2 className="text-3xl sm:text-4xl font-black text-green-primary mb-8 tracking-tight">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+                className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-green-primary to-green-primary/70 bg-clip-text text-transparent mb-12 tracking-tight relative"
+              >
                 Itinerary
-              </h2>
-              <div className="space-y-5">
-                {trek.itinerary?.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    className="bg-card rounded-xl p-6 sm:p-7 shadow-premium-sm hover:shadow-premium transition-all border border-border"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                      <span className="inline-block bg-blue-accent text-white font-bold px-4 py-2 rounded-lg text-sm whitespace-nowrap">
-                        {item.day}
-                      </span>
-                      <div className="flex-grow">
-                        <h3 className="text-lg sm:text-xl font-bold text-text-dark mb-2">{item.title}</h3>
-                        <p className="text-sm sm:text-base text-text-dark/75 leading-relaxed">
-                          {item.description}
-                        </p>
+                <div className="absolute -bottom-3 left-0 w-24 h-1 bg-gradient-to-r from-green-primary to-blue-accent rounded-full" />
+              </motion.h2>
+              {/* Timeline Container */}
+              <div className="relative">
+                {/* Vertical Timeline Line */}
+                <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-green-primary via-blue-accent to-green-primary hidden sm:block" />
+
+                <div className="space-y-8">
+                  {trek.itinerary?.map((item, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -30 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.08 }}
+                      viewport={{ once: true }}
+                      className="relative group"
+                    >
+                      {/* Timeline Dot */}
+                      <div className="absolute left-6 top-6 w-4 h-4 rounded-full bg-green-primary border-4 border-white shadow-lg transform -translate-x-1/2 z-10 hidden sm:block group-hover:scale-125 transition-transform" />
+
+                      {/* Card */}
+                      <div className="sm:ml-20 bg-white/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-premium hover:shadow-premium-lg border-l-4 border-transparent hover:border-green-primary transition-all duration-300 group-hover:translate-x-2">
+                        <div className="flex flex-col gap-4">
+                          {/* Day Badge - Circular with Gradient */}
+                          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-accent to-blue-accent-dark text-white font-black text-sm shadow-lg group-hover:scale-110 transition-all duration-300">
+                            {item.day.replace('Day ', '')}
+                          </div>
+                          <div>
+                            <h3 className="text-xl sm:text-2xl font-black text-text-dark mb-3 group-hover:text-green-primary transition-colors">{item.title}</h3>
+                            <p className="text-base text-text-dark/75 leading-relaxed">
+                              {item.description}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* FAQ Section */}
+            {/* FAQ Section - Modern Accordion */}
             <div>
-              <h2 className="text-3xl sm:text-4xl font-black text-green-primary mb-8 tracking-tight">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+                className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-green-primary to-green-primary/70 bg-clip-text text-transparent mb-10 tracking-tight relative"
+              >
                 Frequently Asked Questions
-              </h2>
+                <div className="absolute -bottom-3 left-0 w-24 h-1 bg-gradient-to-r from-green-primary to-blue-accent rounded-full" />
+              </motion.h2>
               <div className="space-y-4">
                 {trek.faqs?.map((faq, index) => (
-                  <details
+                  <motion.details
                     key={index}
-                    className="bg-card rounded-xl p-6 shadow-premium-sm border border-border group"
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    viewport={{ once: true }}
+                    className="bg-white/90 backdrop-blur-sm rounded-xl p-6 shadow-premium-sm border-l-4 border-transparent hover:border-green-primary/50 open:border-green-primary open:shadow-premium transition-all duration-300 group hover:bg-white"
                   >
-                    <summary className="font-bold text-lg cursor-pointer list-none flex items-center justify-between">
+                    <summary className="font-bold text-lg cursor-pointer list-none flex items-center justify-between group-hover:text-green-primary transition-colors">
                       {faq.q}
-                      <span className="text-green-primary group-open:rotate-180 transition-transform">
+                      <motion.span
+                        className="text-green-primary group-open:rotate-180 transition-transform duration-300"
+                        whileHover={{ scale: 1.2 }}
+                      >
                         ▼
-                      </span>
+                      </motion.span>
                     </summary>
-                    <p className="mt-4 text-text-dark/70 leading-relaxed">{faq.a}</p>
-                  </details>
+                    <motion.p
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      className="mt-4 text-text-dark/75 leading-relaxed">
+                      {faq.a}
+                    </motion.p>
+                  </motion.details>
                 ))}
               </div>
             </div>
@@ -844,16 +1335,23 @@ export default function TrekDetail() {
 
           {/* Sticky Booking Widget Sidebar */}
           <div className="hidden lg:block">
-            <StickyBookingWidget trek={trek} />
+            <StickyBookingWidget trek={trek} onBookClick={handleBookNow} />
           </div>
         </div>
       </div>
 
       {/* Reviews Section */}
       <section className="px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto w-full mb-14 sm:mb-18">
-        <h2 className="text-3xl sm:text-4xl font-black text-green-primary mb-8 tracking-tight">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-green-primary to-green-primary/70 bg-clip-text text-transparent mb-10 tracking-tight relative"
+        >
           Traveler Reviews
-        </h2>
+          <div className="absolute -bottom-3 left-0 w-24 h-1 bg-gradient-to-r from-green-primary to-blue-accent rounded-full" />
+        </motion.h2>
         <ReviewsSection reviews={trek.reviews || []} />
       </section>
 
@@ -876,7 +1374,7 @@ export default function TrekDetail() {
               <p className="text-white/90">Book now and start your journey of a lifetime</p>
             </div>
             <button
-              onClick={() => navigate(`/booking/trek/${trek.slug}`)}
+              onClick={handleBookNow}
               className="bg-white text-green-primary px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transition-colors text-lg shadow-lg"
             >
               Book This Trek - ${trek.price}
@@ -886,6 +1384,12 @@ export default function TrekDetail() {
       </section>
 
       <Footer />
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+      />
     </div >
   );
 }

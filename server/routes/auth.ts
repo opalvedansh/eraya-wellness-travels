@@ -1,18 +1,18 @@
 import { RequestHandler } from "express";
 import {
   initiateSignup,
-  verifyOTP as verifyOTPService,
-  canResendOTP,
+  verifyEmailToken,
+  canResendVerification,
   getUser,
   createOrUpdateGoogleUser,
 } from "../services/otp";
-import { sendEmail, generateOTPEmailHTML } from "../services/email";
-import { printOTPToConsole } from "../services/dev-email-tester";
+import { sendEmail, generateVerificationEmailHTML } from "../services/email";
 import { generateToken } from "../services/jwt";
 import logger from "../services/logger";
-import { verifyFirebaseToken } from "../config/firebase-admin.config";
 
-export const handleRequestOTP: RequestHandler = async (req, res) => {
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
+
+export const handleRequestVerification: RequestHandler = async (req, res) => {
   // Validation is handled by middleware
   const { email } = req.body;
 
@@ -22,54 +22,51 @@ export const handleRequestOTP: RequestHandler = async (req, res) => {
     return res.status(400).json({ error: result.error });
   }
 
-  const otp = result.otp!;
+  const token = result.token!;
+  const verificationLink = `${FRONTEND_URL}/verify-email?token=${token}`;
 
   const emailSent = await sendEmail({
     to: email,
-    subject: "Email Verification - Eraya Wellness Travels",
-    html: generateOTPEmailHTML(otp),
-    text: `Your OTP is: ${otp}. It will expire in 5 minutes.`,
+    subject: "Verify Your Email - Eraya Wellness Travels",
+    html: generateVerificationEmailHTML(verificationLink),
+    text: `Click this link to verify your email: ${verificationLink}. This link will expire in 24 hours.`,
   });
 
   if (!emailSent) {
-    logger.error(`Failed to send OTP email to ${email}`);
+    logger.error(`Failed to send verification email to ${email}`);
     return res.status(500).json({
-      error: "Failed to send verification email. Please check your email configuration.",
+      error: "Failed to send verification email. Please try again.",
     });
   }
 
-  printOTPToConsole(email, otp);
+  logger.info("Verification email sent", { email, verificationLink });
 
   res.status(200).json({
     success: true,
-    message: "OTP sent to your email address",
+    message: "Verification email sent. Please check your inbox.",
   });
 };
 
-export const handleVerifyOTP: RequestHandler = async (req, res) => {
-  // Validation is handled by middleware
-  const { email, otp } = req.body;
+export const handleVerifyEmailToken: RequestHandler = async (req, res) => {
+  const { token } = req.params;
 
-  const verifyResult = await verifyOTPService(email, otp);
+  if (!token) {
+    return res.status(400).json({ error: "Verification token is required" });
+  }
+
+  const verifyResult = await verifyEmailToken(token);
 
   if (!verifyResult.success) {
     return res.status(400).json({ error: verifyResult.error });
   }
 
-  const user = await getUser(email);
+  const user = verifyResult.user!;
 
-  if (!user) {
-    logger.error("User not found after successful OTP verification", { email });
-    return res
-      .status(400)
-      .json({ error: "User not found. Please start over." });
-  }
-
-  // Generate JWT token
+  // Generate JWT token for automatic login
   try {
-    const { token, sessionId } = await generateToken(user.id, user.email);
+    const { token: jwtToken, sessionId } = await generateToken(user.id, user.email);
 
-    logger.info("User verified and token generated", {
+    logger.info("Email verified and user logged in", {
       userId: user.id,
       email: user.email,
       sessionId,
@@ -77,17 +74,19 @@ export const handleVerifyOTP: RequestHandler = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Account verified successfully",
+      message: "Email verified successfully",
       user: {
         id: user.id,
         email: user.email,
+        name: user.name,
+        photoURL: user.photoURL,
         isVerified: user.isVerified,
       },
-      token,
+      token: jwtToken,
     });
   } catch (error) {
-    logger.error("Failed to generate token after OTP verification", {
-      email,
+    logger.error("Failed to generate token after email verification", {
+      email: user.email,
       error: error instanceof Error ? error.message : String(error),
     });
     return res.status(500).json({
@@ -96,7 +95,7 @@ export const handleVerifyOTP: RequestHandler = async (req, res) => {
   }
 };
 
-export const handleResendOTP: RequestHandler = async (req, res) => {
+export const handleResendVerification: RequestHandler = async (req, res) => {
   // Validation is handled by middleware
   const { email } = req.body;
 
@@ -105,15 +104,19 @@ export const handleResendOTP: RequestHandler = async (req, res) => {
   if (!user) {
     return res
       .status(400)
-      .json({ error: "No signup in progress for this email." });
+      .json({ error: "No account found for this email." });
   }
 
-  const cooldownCheck = await canResendOTP(email);
+  if (user.isVerified) {
+    return res.status(400).json({ error: "Email already verified" });
+  }
+
+  const cooldownCheck = await canResendVerification(email);
 
   if (!cooldownCheck.canResend) {
     const seconds = Math.ceil((cooldownCheck.cooldownMs || 0) / 1000);
     return res.status(429).json({
-      error: `Please wait ${seconds} seconds before requesting a new OTP`,
+      error: `Please wait ${seconds} seconds before requesting a new verification email`,
       cooldownMs: cooldownCheck.cooldownMs,
     });
   }
@@ -124,108 +127,38 @@ export const handleResendOTP: RequestHandler = async (req, res) => {
     return res.status(400).json({ error: result.error });
   }
 
-  const otp = result.otp!;
+  const token = result.token!;
+  const verificationLink = `${FRONTEND_URL}/verify-email?token=${token}`;
 
   const emailSent = await sendEmail({
     to: email,
-    subject: "New Email Verification Code - Eraya Wellness Travels",
-    html: generateOTPEmailHTML(otp),
-    text: `Your new OTP is: ${otp}. It will expire in 5 minutes.`,
+    subject: "Verify Your Email - Eraya Wellness Travels",
+    html: generateVerificationEmailHTML(verificationLink),
+    text: `Click this link to verify your email: ${verificationLink}. This link will expire in 24 hours.`,
   });
 
   if (!emailSent) {
-    logger.error(`Failed to send OTP email to ${email}`);
+    logger.error(`Failed to send verification email to ${email}`);
     return res.status(500).json({
-      error: "Failed to send verification email. Please check your email configuration.",
+      error: "Failed to send verification email. Please try again.",
     });
   }
 
-  printOTPToConsole(email, otp);
+  logger.info("Verification email resent", { email });
 
   res.status(200).json({
     success: true,
-    message: "New OTP sent to your email address",
+    message: "New verification email sent. Please check your inbox.",
   });
 };
 
+// Google OAuth is now handled entirely by Supabase on the client side
+// The backend no longer needs to verify Firebase tokens
+// Users authenticate directly with Supabase and maintain their session there
 export const handleGoogleAuth: RequestHandler = async (req, res) => {
-  const { idToken } = req.body;
-
-  if (!idToken) {
-    return res.status(400).json({ error: "ID token is required" });
-  }
-
-  try {
-    // Verify Firebase ID token
-    const verificationResult = await verifyFirebaseToken(idToken);
-
-    if (!verificationResult.success || !verificationResult.decodedToken) {
-      logger.error("Firebase token verification failed", {
-        error: verificationResult.error,
-      });
-      return res.status(401).json({
-        error: verificationResult.error || "Invalid authentication token",
-      });
-    }
-
-    const decodedToken = verificationResult.decodedToken;
-
-    // Extract user data from token
-    const googleData = {
-      googleUid: decodedToken.uid,
-      email: decodedToken.email || "",
-      name: decodedToken.name || null,
-      photoURL: decodedToken.picture || null,
-    };
-
-    if (!googleData.email) {
-      logger.error("No email in Google token", { uid: googleData.googleUid });
-      return res.status(400).json({
-        error: "Email is required for authentication",
-      });
-    }
-
-    // Create or update user in database
-    const userResult = await createOrUpdateGoogleUser(googleData);
-
-    if (!userResult.success || !userResult.user) {
-      return res.status(500).json({
-        error: userResult.error || "Failed to authenticate user",
-      });
-    }
-
-    // Generate app JWT token
-    const { token, sessionId } = await generateToken(
-      userResult.user.id,
-      userResult.user.email
-    );
-
-    logger.info("Google authentication successful", {
-      userId: userResult.user.id,
-      email: userResult.user.email,
-      sessionId,
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "Google authentication successful",
-      user: {
-        id: userResult.user.id,
-        email: userResult.user.email,
-        name: userResult.user.name,
-        photoURL: userResult.user.photoURL,
-        isVerified: userResult.user.isVerified,
-      },
-      token,
-    });
-  } catch (error) {
-    logger.error("Google authentication error", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return res.status(500).json({
-      error: "Authentication failed. Please try again.",
-    });
-  }
+  res.status(501).json({
+    error: "Google authentication is handled by Supabase. This endpoint is deprecated."
+  });
 };
 
 export const handleForgotPassword: RequestHandler = (req, res) => {

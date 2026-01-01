@@ -4,6 +4,7 @@ import { Heart, Globe, Users, Compass, Award, Linkedin, Instagram, ChevronLeft, 
 import { motion, useInView } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import { Helmet } from "react-helmet-async";
 
 // Timeline Item Component
 function TimelineItem({ milestone, index }: { milestone: any; index: number }) {
@@ -219,7 +220,7 @@ export default function About() {
 
   const teamMembers = [
     {
-      name: "Rajesh Kumar",
+      name: "Reeju",
       role: "Founder & CEO",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
       bio: "15+ years leading adventure expeditions across the Himalayas. Passionate about responsible tourism and cultural preservation.",
@@ -263,33 +264,137 @@ export default function About() {
 
   const milestones = [
     {
-      year: "2015",
+      year: "2023",
       title: "The Beginning",
       description: "Founded with a mission to transform adventure travel through authentic cultural experiences and sustainable practices.",
       image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
     },
     {
-      year: "2017",
+      year: "2024",
       title: "Expansion",
       description: "Expanded to 15 destinations across Nepal, Tibet, and Bhutan. Launched our first wellness retreat program.",
       image: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&h=300&fit=crop",
     },
     {
-      year: "2020",
+      year: "2025",
       title: "Sustainability Commitment",
-      description: "Became carbon-neutral and established partnerships with 50+ local communities for authentic experiences.",
+      description: "Became carbon-neutral and established partnerships with 20+ local communities for authentic experiences.",
       image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop",
     },
     {
-      year: "2024",
-      title: "40,000 Travelers",
-      description: "Celebrated serving our 40,000th traveler and won 'Best Responsible Tourism Operator' award.",
+      year: "2026",
+      title: "2,000 Travelers",
+      description: "Celebrated serving our 2,000th traveler and won 'Best Responsible Tourism Operator' award.",
       image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=300&fit=crop",
     },
   ];
 
   return (
     <div className="min-h-screen bg-beige flex flex-col">
+      {/* SEO Meta Tags */}
+      <Helmet>
+        {/* Primary Meta Tags */}
+        <title>About Us - Eraya Wellness Travels | Transformative Adventure & Spiritual Travel</title>
+        <meta
+          name="description"
+          content="Discover Eraya Wellness Travels - Nepal's premier adventure travel company. Since 2023, we've transformed 2,000+ lives through authentic cultural experiences, sustainable tourism, and spiritual journeys across the Himalayas."
+        />
+        <meta
+          name="keywords"
+          content="Nepal adventure travel, Himalayan trekking, sustainable tourism Nepal, spiritual travel, wellness retreats, cultural experiences, Everest Base Camp, Annapurna trek, responsible tourism, eco-friendly travel"
+        />
+        <link rel="canonical" href="https://erayawellnesstravels.com/about" />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://erayawellnesstravels.com/about" />
+        <meta property="og:title" content="About Eraya Wellness Travels - Transforming Lives Through Adventure" />
+        <meta
+          property="og:description"
+          content="Join 2,000+ travelers who discovered authentic Nepal. Expert guides, sustainable practices, and life-changing experiences across 20+ Himalayan destinations."
+        />
+        <meta
+          property="og:image"
+          content="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=630&fit=crop"
+        />
+        <meta property="og:site_name" content="Eraya Wellness Travels" />
+        <meta property="og:locale" content="en_US" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content="https://erayawellnesstravels.com/about" />
+        <meta name="twitter:title" content="About Eraya Wellness Travels - Transforming Lives Through Adventure" />
+        <meta
+          name="twitter:description"
+          content="Join 2,000+ travelers who discovered authentic Nepal. Expert guides, sustainable practices, and life-changing experiences."
+        />
+        <meta
+          name="twitter:image"
+          content="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=630&fit=crop"
+        />
+
+        {/* Additional Meta Tags */}
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="Eraya Wellness Travels" />
+        <meta name="geo.region" content="NP" />
+        <meta name="geo.placename" content="Nepal" />
+
+        {/* Structured Data - Organization */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "TravelAgency",
+            "name": "Eraya Wellness Travels",
+            "description": "Premier adventure and wellness travel company specializing in transformative experiences across Nepal, Tibet, and Bhutan",
+            "url": "https://erayawellnesstravels.com",
+            "logo": "https://erayawellnesstravels.com/logo.png",
+            "foundingDate": "2023",
+            "founder": {
+              "@type": "Person",
+              "name": "Reeju"
+            },
+            "address": {
+              "@type": "PostalAddress",
+              "addressCountry": "NP",
+              "addressRegion": "Nepal"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.9",
+              "reviewCount": "2000"
+            },
+            "areaServed": ["Nepal", "Tibet", "Bhutan"],
+            "serviceType": ["Adventure Travel", "Trekking", "Spiritual Tourism", "Wellness Retreats"],
+            "priceRange": "$$",
+            "sameAs": [
+              "https://instagram.com/eraya_wellness_travels"
+            ]
+          })}
+        </script>
+
+        {/* Structured Data - Breadcrumb */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://erayawellnesstravels.com"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "About Us",
+                "item": "https://erayawellnesstravels.com/about"
+              }
+            ]
+          })}
+        </script>
+      </Helmet>
+
       {/* Hero Banner */}
       <AboutPageHero />
 
@@ -338,8 +443,8 @@ export default function About() {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12">
               {[
-                { number: "40,000+", label: "Happy Travelers", icon: "😊" },
-                { number: "50+", label: "Destinations", icon: "🗺️" },
+                { number: "2,000+", label: "Happy Travelers", icon: "😊" },
+                { number: "20+", label: "Destinations", icon: "🗺️" },
                 { number: "4.9/5", label: "Average Rating", icon: "⭐" },
                 { number: "200+", label: "Local Partners", icon: "🤝" },
               ].map((stat, index) => (
@@ -372,7 +477,7 @@ export default function About() {
                 From a Trek to a Movement
               </h2>
               <p className="text-xs sm:text-sm lg:text-base text-text-dark/70 leading-relaxed mb-3 sm:mb-4">
-                It all started in 2015 when our founder, Rajesh, was trekking to Annapurna Base Camp.
+                It all started in 2023 when our founder, Reeju, was trekking to Annapurna Base Camp.
                 He met a local Sherpa family struggling to preserve their cultural heritage while adapting
                 to mass tourism. That conversation changed everything.
               </p>
@@ -382,7 +487,7 @@ export default function About() {
                 Eraya Wellness Travels was born to bridge that gap.
               </p>
               <p className="text-xs sm:text-sm lg:text-base text-text-dark/70 leading-relaxed mb-6">
-                Today, we've facilitated over <strong className="text-green-primary">40,000+ journeys</strong> that
+                Today, we've facilitated over <strong className="text-green-primary">2,000+ journeys</strong> that
                 empower local guides, preserve cultural traditions, and transform travelers into advocates
                 for responsible exploration.
               </p>
@@ -393,7 +498,7 @@ export default function About() {
                   "Travel isn't about ticking boxes on a bucket list. It's about becoming part of
                   a global family that cares for each other and our planet."
                 </p>
-                <p className="text-xs sm:text-sm text-green-primary font-bold mt-3">— Rajesh Kumar, Founder</p>
+                <p className="text-xs sm:text-sm text-green-primary font-bold mt-3">— Reeju, Founder</p>
               </div>
             </div>
             <div className="h-56 sm:h-72 lg:h-96 rounded-lg overflow-hidden shadow-premium">
@@ -476,8 +581,8 @@ export default function About() {
                 See Our Adventures in Action
               </h2>
               <p className="text-text-dark/70 text-sm sm:text-base leading-relaxed mb-6">
-                From the peaks of the Himalayas to the tranquil backwaters of Kerala,
-                witness the transformative journeys of our travelers. Each trip is a
+                From the towering peaks of the Himalayas to the lush plains of the Terai,
+                witness the transformative journeys of our travelers across Nepal. Each trip is a
                 story of discovery, connection, and personal growth.
               </p>
 
@@ -486,7 +591,7 @@ export default function About() {
                   { icon: "🎥", text: "300+ Video Testimonials" },
                   { icon: "📸", text: "10,000+ Journey Photos" },
                   { icon: "🌟", text: "2,847 5-Star Reviews" },
-                  { icon: "🌍", text: "78 Countries Represented" },
+                  { icon: "🌍", text: "Travelers from 78 Countries" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <span className="text-2xl">{item.icon}</span>

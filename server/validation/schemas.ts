@@ -52,10 +52,26 @@ export const customizeTripSchema = z.object({
     tripName: z.string().optional(),
 });
 
+// Chat message schema
+export const chatMessageSchema = z.object({
+    message: z.string()
+        .min(1, "Message cannot be empty")
+        .max(500, "Message is too long (max 500 characters)")
+        .trim(),
+});
+
+// Create checkout session schema
+export const createCheckoutSessionSchema = z.object({
+    bookingId: z.string().cuid("Invalid booking ID format"),
+    guests: z.number().int().min(1, "At least 1 guest required").max(20, "Maximum 20 guests allowed"),
+});
+
 // Export types
 export type RequestOTPInput = z.infer<typeof requestOTPSchema>;
 export type VerifyOTPInput = z.infer<typeof verifyOTPSchema>;
 export type ResendOTPInput = z.infer<typeof resendOTPSchema>;
 export type ContactInput = z.infer<typeof contactSchema>;
 export type CustomizeTripInput = z.infer<typeof customizeTripSchema>;
+export type ChatMessageInput = z.infer<typeof chatMessageSchema>;
+export type CreateCheckoutSessionInput = z.infer<typeof createCheckoutSessionSchema>;
 

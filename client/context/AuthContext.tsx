@@ -1,52 +1,93 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
-import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "@/config/firebase.config";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface User {
   id: string;
   name: string;
   email: string;
   photoURL?: string;
+  createdAt?: string;
 }
+
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  loginWithFacebook: () => Promise<void>;
+  loginWithInstagram: () => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   requestPasswordReset: (email: string) => Promise<void>;
-  requestOTP: (email: string) => Promise<void>;
-  verifyOTP: (email: string, otp: string) => Promise<void>;
-  resendOTP: (email: string) => Promise<{ cooldownMs?: number }>;
+  requestVerification: (email: string) => Promise<void>;
+  resendVerification: (email: string) => Promise<{ cooldownMs?: number }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Convert Supabase user to our User type
+  const convertSupabaseUser = (supabaseUser: SupabaseUser): User => {
+    return {
+      id: supabaseUser.id,
+      name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
+      email: supabaseUser.email || '',
+      photoURL: supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture,
+      createdAt: supabaseUser.created_at,
+    };
+  };
+
+  // Listen to auth state changes
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(convertSupabaseUser(session.user));
+      }
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(convertSupabaseUser(session.user));
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        localStorage.setItem("auth_token", data.token);
-      } else {
-        throw new Error("Login failed");
+      if (error) throw error;
+
+      if (data.user) {
+        setUser(convertSupabaseUser(data.user));
+
+        // Check for intended booking and redirect
+        const intendedBooking = sessionStorage.getItem('intendedBooking');
+        if (intendedBooking) {
+          sessionStorage.removeItem('intendedBooking');
+          setTimeout(() => window.location.href = intendedBooking, 100);
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      throw error;
+      throw new Error(error.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -55,166 +96,198 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithGoogle = async () => {
     setIsLoading(true);
     try {
-      // Sign in with Google popup
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-
-      // Get Firebase ID token
-      const idToken = await user.getIdToken();
-
-      // Send ID token to backend for verification and user creation/login
-      const response = await fetch("/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Google authentication failed");
-      }
+      if (error) throw error;
 
-      const data = await response.json();
-      setUser(data.user);
-      localStorage.setItem("auth_token", data.token);
+      // Check for intended booking and redirect (handled after OAuth callback)
+      const intendedBooking = sessionStorage.getItem('intendedBooking');
+      if (intendedBooking) {
+        // Store in localStorage temporarily as sessionStorage may be cleared during OAuth flow
+        localStorage.setItem('intendedBookingOAuth', intendedBooking);
+        sessionStorage.removeItem('intendedBooking');
+      }
     } catch (error: any) {
       console.error("Google login error:", error);
-
-      // Handle specific Firebase errors
-      if (error.code === "auth/popup-blocked") {
-        throw new Error(
-          "Popup was blocked. Please allow popups for this site and try again."
-        );
-      } else if (error.code === "auth/popup-closed-by-user") {
-        throw new Error("Sign-in was cancelled. Please try again.");
-      } else if (error.code === "auth/cancelled-popup-request") {
-        // User opened another popup, ignore this error
-        return;
-      }
-
-      throw error;
-    } finally {
       setIsLoading(false);
+      throw new Error(error.message || "Google authentication failed");
     }
+    // Don't set isLoading to false here - the auth state change listener will handle it
   };
 
+  const loginWithFacebook = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (error) throw error;
+
+      // Check for intended booking and redirect (handled after OAuth callback)
+      const intendedBooking = sessionStorage.getItem('intendedBooking');
+      if (intendedBooking) {
+        // Store in localStorage temporarily as sessionStorage may be cleared during OAuth flow
+        localStorage.setItem('intendedBookingOAuth', intendedBooking);
+        sessionStorage.removeItem('intendedBooking');
+      }
+    } catch (error: any) {
+      console.error("Facebook login error:", error);
+      setIsLoading(false);
+      throw new Error(error.message || "Facebook authentication failed");
+    }
+    // Don't set isLoading to false here - the auth state change listener will handle it
+  };
+
+  const loginWithInstagram = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'instagram' as any, // Instagram OAuth - types may not be updated but Supabase supports it
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (error) throw error;
+
+      // Check for intended booking and redirect (handled after OAuth callback)
+      const intendedBooking = sessionStorage.getItem('intendedBooking');
+      if (intendedBooking) {
+        // Store in localStorage temporarily as sessionStorage may be cleared during OAuth flow
+        localStorage.setItem('intendedBookingOAuth', intendedBooking);
+        sessionStorage.removeItem('intendedBooking');
+      }
+    } catch (error: any) {
+      console.error("Instagram login error:", error);
+      setIsLoading(false);
+      throw new Error(error.message || "Instagram authentication failed");
+    }
+    // Don't set isLoading to false here - the auth state change listener will handle it
+  };
 
   const signup = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        localStorage.setItem("auth_token", data.token);
-      } else {
-        throw new Error("Signup failed");
+      if (error) throw error;
+
+      if (data.user) {
+        setUser(convertSupabaseUser(data.user));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Signup error:", error);
-      throw error;
+      throw new Error(error.message || "Signup failed");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("auth_token");
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   const requestPasswordReset = async (email: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
-      if (!response.ok) {
-        throw new Error("Password reset request failed");
-      }
-    } catch (error) {
+      if (error) throw error;
+    } catch (error: any) {
       console.error("Password reset error:", error);
-      throw error;
+      throw new Error(error.message || "Password reset request failed");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const requestOTP = async (email: string) => {
+  const requestVerification = async (email: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/request-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+      console.log('Requesting verification for:', email);
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/verify-email`,
+        },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to request OTP");
-      }
-    } catch (error) {
-      console.error("Request OTP error:", error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      console.log('Supabase OTP response:', { data, error });
 
-  const verifyOTP = async (email: string, otp: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
-      });
+      if (error) {
+        console.error('Supabase error details:', error);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "OTP verification failed");
-      }
-
-      const data = await response.json();
-      setUser(data.user);
-      localStorage.setItem("auth_token", data.token);
-    } catch (error) {
-      console.error("Verify OTP error:", error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const resendOTP = async (email: string): Promise<{ cooldownMs?: number }> => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/resend-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        if (response.status === 429) {
-          return { cooldownMs: errorData.cooldownMs };
+        // Provide more helpful error messages based on common issues
+        if (error.message.includes('Email rate limit exceeded')) {
+          throw new Error('Too many requests. Please wait a minute before trying again.');
         }
-        throw new Error(errorData.error || "Failed to resend OTP");
+
+        if (error.message.includes('SMTP') || error.message.includes('email') || error.message.includes('mail')) {
+          throw new Error('Email service not configured. Please contact support or try again later.');
+        }
+
+        throw error;
+      }
+
+      console.log('Verification email sent successfully via Supabase');
+    } catch (error: any) {
+      console.error("Request verification error:", error);
+      throw new Error(error.message || "Failed to send verification email");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+  const resendVerification = async (email: string): Promise<{ cooldownMs?: number }> => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/verify-email`,
+        },
+      });
+
+      if (error) {
+        // Supabase has built-in rate limiting
+        if (error.message.includes('Email rate limit exceeded')) {
+          return { cooldownMs: 60000 }; // 1 minute cooldown
+        }
+        throw error;
       }
 
       return { cooldownMs: undefined };
-    } catch (error) {
-      console.error("Resend OTP error:", error);
-      throw error;
+    } catch (error: any) {
+      console.error("Resend verification error:", error);
+      throw new Error(error.message || "Failed to resend verification email");
     } finally {
       setIsLoading(false);
     }
@@ -227,12 +300,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         login,
         loginWithGoogle,
+        loginWithFacebook,
+        loginWithInstagram,
         signup,
         logout,
         requestPasswordReset,
-        requestOTP,
-        verifyOTP,
-        resendOTP,
+        requestVerification,
+        resendVerification,
       }}
     >
       {children}

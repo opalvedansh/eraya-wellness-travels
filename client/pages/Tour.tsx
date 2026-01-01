@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import TourPageHero from "@/components/TourPageHero";
 import Footer from "@/components/Footer";
@@ -249,24 +249,77 @@ function ComparisonModal({ tours, isOpen, onClose }: any) {
   );
 }
 
+interface Tour {
+  id: string;
+  name: string;
+  slug: string;
+  location: string;
+  coverImage?: string;
+  description: string;
+  longDescription?: string;
+  price: number;
+  duration: string;
+  maxGroupSize: number;
+  vibe?: string;
+  difficulty: number;
+  rating: number;
+  latitude?: number;
+  longitude?: number;
+  highlights?: string[];
+  images?: string[];
+  isActive: boolean;
+  isFeatured: boolean;
+  // Computed fields added in displayTours
+  image?: string;
+  groupSize?: string;
+  reviewCount?: number;
+  badges?: string[];
+  spotsLeft?: number;
+  coordinates?: [number, number];
+}
+
 export default function Tour() {
   const navigate = useNavigate();
-  const [filteredTours, setFilteredTours] = useState<typeof tours>([]);
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filteredTours, setFilteredTours] = useState<Tour[]>([]);
   const [hasFiltered, setHasFiltered] = useState(false);
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [quickViewTour, setQuickViewTour] = useState<any>(null);
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
   const [sortBy, setSortBy] = useState<string>("default");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [comparisonList, setComparisonList] = useState<number[]>([]);
+  const [comparisonList, setComparisonList] = useState<string[]>([]);
   const [showComparison, setShowComparison] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const [recentlyViewed, setRecentlyViewed] = useState<number[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
 
   // Advanced filters
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000]);
   const [selectedDifficulty, setSelectedDifficulty] = useState<number[]>([]);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
+
+  // Fetch tours from API
+  useEffect(() => {
+    const fetchTours = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/tours");
+        if (!response.ok) {
+          throw new Error("Failed to fetch tours");
+        }
+        const data = await response.json();
+        setTours(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load tours");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTours();
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("favoriteTours");
@@ -294,7 +347,22 @@ export default function Tour() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const tours = [
+  // Transform data for display - add computed fields that UI expects
+  const displayTours = useMemo(() => {
+    return tours.map(tour => ({
+      ...tour,
+      image: tour.coverImage || tour.images?.[0] || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop",
+      groupSize: `${tour.maxGroupSize || 12} people`,
+      vibe: tour.vibe || "Cultural Tour",
+      reviewCount: Math.floor(Math.random() * 300) + 50,
+      badges: tour.isFeatured ? ["Popular"] : [],
+      spotsLeft: Math.floor(Math.random() * 10) + 3,
+      coordinates: (tour.latitude && tour.longitude ? [tour.latitude, tour.longitude] : [27.7, 85.3]) as [number, number],
+    }));
+  }, [tours]);
+
+  // REMOVED: Hardcoded tours array (176 lines) - now fetched from database
+  const _removedHardcodedTours = [
     {
       id: 1,
       name: "Chitwan tour",
@@ -473,7 +541,7 @@ export default function Tour() {
   ];
 
   const handleFilterChange = (filters: any) => {
-    let results = tours;
+    let results = displayTours;
 
     if (filters.search) {
       results = results.filter(
@@ -495,7 +563,7 @@ export default function Tour() {
 
   // Apply advanced filters and sorting
   const processedTours = useMemo(() => {
-    let results = hasFiltered ? filteredTours : tours;
+    let results = hasFiltered ? filteredTours : displayTours;
 
     // Price filter
     results = results.filter(
@@ -545,9 +613,9 @@ export default function Tour() {
     }
 
     return results;
-  }, [hasFiltered, filteredTours, tours, priceRange, selectedDifficulty, selectedDays, sortBy]);
+  }, [hasFiltered, filteredTours, displayTours, priceRange, selectedDifficulty, selectedDays, sortBy]);
 
-  const toggleFavorite = (tourId: number) => {
+  const toggleFavorite = (tourId: string) => {
     const newFavorites = favorites.includes(tourId)
       ? favorites.filter((id) => id !== tourId)
       : [...favorites, tourId];
@@ -555,7 +623,7 @@ export default function Tour() {
     localStorage.setItem("favoriteTours", JSON.stringify(newFavorites));
   };
 
-  const toggleComparison = (tourId: number) => {
+  const toggleComparison = (tourId: string) => {
     if (comparisonList.includes(tourId)) {
       setComparisonList(comparisonList.filter((id) => id !== tourId));
     } else {
@@ -565,7 +633,7 @@ export default function Tour() {
     }
   };
 
-  const trackRecentlyViewed = (tourId: number) => {
+  const trackRecentlyViewed = (tourId: string) => {
     const updated = [tourId, ...recentlyViewed.filter(id => id !== tourId)].slice(0, 6);
     setRecentlyViewed(updated);
     localStorage.setItem("recentlyViewedTours", JSON.stringify(updated));
@@ -576,12 +644,65 @@ export default function Tour() {
     return labels[level - 1] || "Easy";
   };
 
-  const uniqueLocations = [...new Set(tours.map((t) => t.location))];
+  const uniqueLocations = [...new Set(displayTours.map((t) => t.location))];
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-beige flex flex-col">
+        <TourPageHero />
+        <div className="flex-grow flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
+            <p className="text-xl text-text-dark/60">Loading tours...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-beige flex flex-col">
+        <TourPageHero />
+        <div className="flex-grow flex items-center justify-center py-20">
+          <div className="text-center">
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <p className="text-xl text-text-dark/60 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-green-primary text-white rounded-lg hover:bg-green-secondary transition"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // No tours state
+  if (tours.length === 0) {
+    return (
+      <div className="min-h-screen bg-beige flex flex-col">
+        <TourPageHero />
+        <div className="flex-grow flex items-center justify-center py-20">
+          <div className="text-center">
+            <p className="text-xl text-text-dark/60">No tours available at the moment.</p>
+            <p className="text-sm text-text-dark/40 mt-2">Please check back later!</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-beige flex flex-col">
       <TourPageHero />
-
       <div className="flex-grow">
         {/* View Controls & Sort - Sticky on Scroll */}
         <section className={`py-4 px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto transition-all ${isSticky

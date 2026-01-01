@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2, AlertCircle } from "lucide-react";
 import GoogleSignInButton from "./GoogleSignInButton";
+import FacebookSignInButton from "./FacebookSignInButton";
+import InstagramSignInButton from "./InstagramSignInButton";
 
 interface LoginPanelProps {
   onSignupClick: () => void;
@@ -14,15 +16,18 @@ export default function LoginPanel({
   onForgotPasswordClick,
   onClose,
 }: LoginPanelProps) {
-  const { login, loginWithGoogle, isLoading } = useAuth();
+  const { login, loginWithGoogle, loginWithFacebook, loginWithInstagram, isLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isFacebookLoading, setIsFacebookLoading] = useState(false);
+  const [isInstagramLoading, setIsInstagramLoading] = useState(false);
 
   const isValid = email.trim() !== "" && password.trim() !== "";
+  const isAnyOAuthLoading = isGoogleLoading || isFacebookLoading || isInstagramLoading;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +61,46 @@ export default function LoginPanel({
       );
     } finally {
       setIsGoogleLoading(false);
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    setError("");
+    setIsFacebookLoading(true);
+    try {
+      await loginWithFacebook();
+      setIsSubmitted(true);
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Facebook sign-in failed. Please try again."
+      );
+    } finally {
+      setIsFacebookLoading(false);
+    }
+  };
+
+  const handleInstagramSignIn = async () => {
+    setError("");
+    setIsInstagramLoading(true);
+    try {
+      await loginWithInstagram();
+      setIsSubmitted(true);
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Instagram sign-in failed. Please try again."
+      );
+    } finally {
+      setIsInstagramLoading(false);
     }
   };
 
@@ -140,7 +185,7 @@ export default function LoginPanel({
 
         <button
           type="submit"
-          disabled={!isValid || isLoading || isGoogleLoading}
+          disabled={!isValid || isLoading || isAnyOAuthLoading}
           className="w-full bg-green-primary hover:bg-green-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           {isLoading ? (
@@ -163,7 +208,19 @@ export default function LoginPanel({
       <GoogleSignInButton
         onClick={handleGoogleSignIn}
         isLoading={isGoogleLoading}
-        disabled={isLoading}
+        disabled={isLoading || isFacebookLoading || isInstagramLoading}
+      />
+
+      <FacebookSignInButton
+        onClick={handleFacebookSignIn}
+        isLoading={isFacebookLoading}
+        disabled={isLoading || isGoogleLoading || isInstagramLoading}
+      />
+
+      <InstagramSignInButton
+        onClick={handleInstagramSignIn}
+        isLoading={isInstagramLoading}
+        disabled={isLoading || isGoogleLoading || isFacebookLoading}
       />
 
       <div className="mt-6 space-y-3 text-center">

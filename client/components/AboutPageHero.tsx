@@ -17,8 +17,8 @@ export default function AboutPageHero() {
         const interval = duration / steps;
 
         const targets = {
-            travelers: 40000,
-            destinations: 50,
+            travelers: 2000,
+            destinations: 20,
             rating: 4.9,
         };
 
@@ -81,11 +81,11 @@ export default function AboutPageHero() {
                         transition={{ duration: 0.6 }}
                         className="flex items-center justify-center gap-2 mb-8 text-sm text-text-dark/60 flex-wrap"
                     >
-                        <span className="font-semibold text-green-primary">2015</span>
+                        <span className="font-semibold text-green-primary">2023</span>
                         <span>→</span>
                         <span>First Trek</span>
                         <span>→</span>
-                        <span>40K Lives Changed</span>
+                        <span>2K Lives Changed</span>
                         <span>→</span>
                         <span className="font-semibold text-green-primary">Your Adventure</span>
                     </motion.div>
@@ -103,7 +103,7 @@ export default function AboutPageHero() {
                                 {/* Founding Year Badge */}
                                 <div className="absolute top-4 left-4 z-10 bg-green-primary text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg flex items-center gap-2">
                                     <Award className="h-4 w-4" />
-                                    Since 2015
+                                    Since 2023
                                 </div>
 
                                 {/* Main Image */}
@@ -127,7 +127,7 @@ export default function AboutPageHero() {
                                 <p className="text-sm italic text-text-dark/80 leading-relaxed mb-2">
                                     "Travel isn't about ticking boxes—it's about transformation"
                                 </p>
-                                <p className="text-xs font-bold text-green-primary">— Rajesh Kumar, Founder</p>
+                                <p className="text-xs font-bold text-green-primary">— Reeju, Founder</p>
                             </motion.div>
                         </motion.div>
 

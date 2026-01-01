@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import { RequestHandler, ErrorRequestHandler } from "express";
 import logger from "../services/logger";
 
 /**
@@ -37,7 +37,7 @@ export const requestLogger: RequestHandler = (req, res, next) => {
  * Error logging middleware
  * Should be used after all other middleware and routes
  */
-export const errorLogger: RequestHandler = (err, req, res, next) => {
+export const errorLogger: ErrorRequestHandler = (err, req, res, next) => {
     logger.error("Request error", {
         error: err.message,
         stack: err.stack,

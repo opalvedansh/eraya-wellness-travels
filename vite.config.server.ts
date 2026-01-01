@@ -4,15 +4,9 @@ import path from "path";
 // Server build configuration
 export default defineConfig({
   build: {
-    lib: {
-      entry: path.resolve(__dirname, "server/node-build.ts"),
-      name: "server",
-      fileName: "production",
-      formats: ["es"],
-    },
     outDir: "dist/server",
     target: "node22",
-    ssr: true,
+    ssr: "server/node-build.ts",
     rollupOptions: {
       external: [
         // Node.js built-ins
@@ -32,10 +26,12 @@ export default defineConfig({
         // External dependencies that should not be bundled
         "express",
         "cors",
+        "@prisma/client",
+        ".prisma/client",
       ],
       output: {
         format: "es",
-        entryFileNames: "[name].mjs",
+        entryFileNames: "node-build.mjs",
       },
     },
     minify: false, // Keep readable for debugging

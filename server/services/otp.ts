@@ -1,44 +1,23 @@
-import bcryptjs from "bcryptjs";
 import crypto from "crypto";
 import { prisma } from "./prisma";
 import logger from "./logger";
 
-const OTP_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
-const RESEND_COOLDOWN_MS = 30 * 1000; // 30 seconds
-const MAX_OTP_ATTEMPTS = 5;
+const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+const RESEND_COOLDOWN_MS = 60 * 1000; // 1 minute
 
 /**
- * Generate a cryptographically secure OTP
+ * Generate a cryptographically secure verification token
  */
-function generateOTP(length: number = 6): string {
-  let otp = "";
-  for (let i = 0; i < length; i++) {
-    otp += crypto.randomInt(0, 10).toString();
-  }
-  return otp;
+function generateVerificationToken(): string {
+  return crypto.randomBytes(32).toString('hex');
 }
 
 /**
- * Hash OTP for secure storage
- */
-async function hashOTP(otp: string): Promise<string> {
-  const salt = await bcryptjs.genSalt(10);
-  return bcryptjs.hash(otp, salt);
-}
-
-/**
- * Verify OTP against hash
- */
-async function verifyOTPHash(otp: string, hash: string): Promise<boolean> {
-  return bcryptjs.compare(otp, hash);
-}
-
-/**
- * Initiate signup by creating user and sending OTP
+ * Initiate signup by creating user and sending verification token
  */
 export async function initiateSignup(
   email: string
-): Promise<{ success: boolean; otp?: string; error?: string }> {
+): Promise<{ success: boolean; token?: string; error?: string }> {
   const emailLower = email.toLowerCase();
 
   try {
@@ -56,8 +35,8 @@ export async function initiateSignup(
       };
     }
 
-    // Check for recent OTP (cooldown)
-    const recentOTP = await prisma.oTP.findFirst({
+    // Check for recent verification token (cooldown)
+    const recentToken = await prisma.verificationToken.findFirst({
       where: {
         email: emailLower,
       },
@@ -69,22 +48,20 @@ export async function initiateSignup(
       },
     });
 
-    if (recentOTP) {
-      const timeSinceLastOTP = Date.now() - new Date(recentOTP.createdAt).getTime();
-      if (timeSinceLastOTP < 60000) {
-        // 1 minute cooldown
-        logger.warn("OTP requested too soon", { email: emailLower });
+    if (recentToken) {
+      const timeSinceLastToken = Date.now() - new Date(recentToken.createdAt).getTime();
+      if (timeSinceLastToken < RESEND_COOLDOWN_MS) {
+        logger.warn("Verification token requested too soon", { email: emailLower });
         return {
           success: false,
-          error: "Signup already in progress. Please check your email.",
+          error: "Verification email already sent. Please check your inbox.",
         };
       }
     }
 
-    // Generate and hash OTP
-    const otp = generateOTP(6);
-    const otpHash = await hashOTP(otp);
-    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
+    // Generate verification token
+    const token = generateVerificationToken();
+    const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_MS);
 
     // Create user if doesn't exist
     if (!user) {
@@ -97,18 +74,22 @@ export async function initiateSignup(
       logger.info("New user created", { email: emailLower });
     }
 
-    // Create OTP record
-    await prisma.oTP.create({
+    // Delete any existing tokens for this email
+    await prisma.verificationToken.deleteMany({
+      where: { email: emailLower },
+    });
+
+    // Create verification token record
+    await prisma.verificationToken.create({
       data: {
         email: emailLower,
-        otpHash,
+        token,
         expiresAt,
-        attempts: 0,
       },
     });
 
-    logger.info("OTP generated", { email: emailLower });
-    return { success: true, otp };
+    logger.info("Verification token generated", { email: emailLower });
+    return { success: true, token };
   } catch (error) {
     logger.error("Error initiating signup", {
       email: emailLower,
@@ -119,90 +100,72 @@ export async function initiateSignup(
 }
 
 /**
- * Verify OTP for a user
+ * Verify email using verification token
  */
-export async function verifyOTP(
-  email: string,
-  otp: string
-): Promise<{ success: boolean; error?: string }> {
-  const emailLower = email.toLowerCase();
-
+export async function verifyEmailToken(
+  token: string
+): Promise<{ success: boolean; user?: any; error?: string }> {
   try {
-    // Get the latest OTP for this email
-    const otpRecord = await prisma.oTP.findFirst({
-      where: {
-        email: emailLower,
-      },
-      orderBy: {
-        createdAt: "desc",
+    // Find the token in database
+    const tokenRecord = await prisma.verificationToken.findUnique({
+      where: { token },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            photoURL: true,
+            isVerified: true,
+          },
+        },
       },
     });
 
-    if (!otpRecord) {
-      logger.warn("OTP verification failed - no OTP found", { email: emailLower });
-      return { success: false, error: "No OTP found for this email" };
+    if (!tokenRecord) {
+      logger.warn("Email verification failed - token not found", { token: token.substring(0, 10) + "..." });
+      return { success: false, error: "Invalid verification link" };
     }
 
-    // Check if too many attempts
-    if (otpRecord.attempts >= MAX_OTP_ATTEMPTS) {
-      logger.warn("OTP verification failed - too many attempts", { email: emailLower });
-      await prisma.oTP.delete({ where: { id: otpRecord.id } });
+    // Check if token is expired
+    if (new Date() > tokenRecord.expiresAt) {
+      logger.warn("Email verification failed - token expired", { email: tokenRecord.email });
+      await prisma.verificationToken.delete({ where: { id: tokenRecord.id } });
       return {
         success: false,
-        error: "Too many failed attempts. Please request a new OTP.",
+        error: "Verification link has expired. Please request a new one.",
       };
     }
 
-    // Check if expired
-    if (new Date() > otpRecord.expiresAt) {
-      logger.warn("OTP verification failed - expired", { email: emailLower });
-      await prisma.oTP.delete({ where: { id: otpRecord.id } });
-      return {
-        success: false,
-        error: "OTP has expired. Please request a new one.",
-      };
-    }
-
-    // Verify OTP
-    const isValid = await verifyOTPHash(otp, otpRecord.otpHash);
-
-    if (!isValid) {
-      // Increment attempts
-      await prisma.oTP.update({
-        where: { id: otpRecord.id },
-        data: {
-          attempts: otpRecord.attempts + 1,
-          lastAttemptAt: new Date(),
+    // Token is valid - verify user and cleanup
+    const user = await prisma.$transaction(async (tx) => {
+      const updatedUser = await tx.user.update({
+        where: { email: tokenRecord.email },
+        data: { isVerified: true },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          photoURL: true,
+          isVerified: true,
+          createdAt: true,
         },
       });
 
-      logger.warn("OTP verification failed - invalid OTP", {
-        email: emailLower,
-        attempts: otpRecord.attempts + 1,
+      await tx.verificationToken.delete({
+        where: { id: tokenRecord.id },
       });
 
-      return { success: false, error: "Invalid OTP. Please try again." };
-    }
+      return updatedUser;
+    });
 
-    // OTP is valid - verify user and cleanup
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { email: emailLower },
-        data: { isVerified: true },
-      }),
-      prisma.oTP.delete({
-        where: { id: otpRecord.id },
-      }),
-    ]);
-
-    logger.info("OTP verified successfully", { email: emailLower });
-    return { success: true };
+    logger.info("Email verified successfully", { email: user.email });
+    return { success: true, user };
   } catch (error) {
-    logger.error("Error verifying OTP", {
-      email: emailLower,
+    logger.error("Error verifying email token", {
       error: error instanceof Error ? error.message : String(error),
     });
-    return { success: false, error: "Failed to verify OTP" };
+    return { success: false, error: "Failed to verify email" };
   }
 }
 
@@ -233,34 +196,34 @@ export async function getUser(email: string) {
 }
 
 /**
- * Check if user can resend OTP (cooldown check)
+ * Check if user can resend verification email (cooldown check)
  */
-export async function canResendOTP(email: string): Promise<{
+export async function canResendVerification(email: string): Promise<{
   canResend: boolean;
   cooldownMs?: number;
 }> {
   const emailLower = email.toLowerCase();
 
   try {
-    const latestOTP = await prisma.oTP.findFirst({
+    const latestToken = await prisma.verificationToken.findFirst({
       where: { email: emailLower },
       orderBy: { createdAt: "desc" },
       select: { createdAt: true },
     });
 
-    if (!latestOTP) {
+    if (!latestToken) {
       return { canResend: true };
     }
 
-    const timeSinceLastOTP = Date.now() - new Date(latestOTP.createdAt).getTime();
+    const timeSinceLastToken = Date.now() - new Date(latestToken.createdAt).getTime();
 
-    if (timeSinceLastOTP >= RESEND_COOLDOWN_MS) {
+    if (timeSinceLastToken >= RESEND_COOLDOWN_MS) {
       return { canResend: true };
     }
 
     return {
       canResend: false,
-      cooldownMs: RESEND_COOLDOWN_MS - timeSinceLastOTP,
+      cooldownMs: RESEND_COOLDOWN_MS - timeSinceLastToken,
     };
   } catch (error) {
     logger.error("Error checking resend cooldown", {
@@ -273,30 +236,11 @@ export async function canResendOTP(email: string): Promise<{
 }
 
 /**
- * Clear all OTPs for an email
+ * Clean up expired verification tokens (should run periodically)
  */
-export async function clearOTPAttempts(email: string): Promise<void> {
-  const emailLower = email.toLowerCase();
-
+export async function cleanupExpiredTokens(): Promise<number> {
   try {
-    await prisma.oTP.deleteMany({
-      where: { email: emailLower },
-    });
-    logger.info("OTP attempts cleared", { email: emailLower });
-  } catch (error) {
-    logger.error("Error clearing OTP attempts", {
-      email: emailLower,
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-}
-
-/**
- * Clean up expired OTPs (should run periodically)
- */
-export async function cleanupExpiredOTPs(): Promise<number> {
-  try {
-    const result = await prisma.oTP.deleteMany({
+    const result = await prisma.verificationToken.deleteMany({
       where: {
         expiresAt: {
           lt: new Date(),
@@ -305,12 +249,12 @@ export async function cleanupExpiredOTPs(): Promise<number> {
     });
 
     if (result.count > 0) {
-      logger.info("Expired OTPs cleaned up", { count: result.count });
+      logger.info("Expired verification tokens cleaned up", { count: result.count });
     }
 
     return result.count;
   } catch (error) {
-    logger.error("Error cleaning up expired OTPs", {
+    logger.error("Error cleaning up expired verification tokens", {
       error: error instanceof Error ? error.message : String(error),
     });
     return 0;

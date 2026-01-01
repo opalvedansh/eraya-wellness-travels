@@ -491,7 +491,7 @@ export default function ToursMap() {
                             initial={{ x: -400, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             exit={{ x: -400, opacity: 0 }}
-                            transition={{ duration: 0.4, easeInOut: "easeInOut" }}
+                            transition={{ duration: 0.4, ease: "easeInOut" }}
                             className="hidden lg:flex w-[380px] bg-white/95 backdrop-blur-sm shadow-xl flex-col border-r border-border"
                         >
                             <div className="flex-1 overflow-y-auto overscroll-contain" ref={sidebarScrollRef}>

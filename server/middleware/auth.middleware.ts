@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { verifyToken } from "../services/jwt";
+import { verifySupabaseToken } from "../services/supabase.service";
 import logger from "../services/logger";
 
 // Extend Express Request to include user data
@@ -9,14 +9,14 @@ declare global {
             user?: {
                 userId: string;
                 email: string;
-                sessionId: string;
+                sessionId?: string;
             };
         }
     }
 }
 
 /**
- * Middleware to authenticate requests using JWT tokens
+ * Middleware to authenticate requests using Supabase JWT tokens
  * Expects token in Authorization header: "Bearer <token>"
  */
 export const authenticate: RequestHandler = async (req, res, next) => {
@@ -33,10 +33,10 @@ export const authenticate: RequestHandler = async (req, res, next) => {
 
         const token = authHeader.substring(7); // Remove "Bearer " prefix
 
-        const decoded = await verifyToken(token);
+        const userData = await verifySupabaseToken(token);
 
-        if (!decoded) {
-            logger.warn("Invalid or expired token", { path: req.path });
+        if (!userData) {
+            logger.warn("Invalid or expired Supabase token", { path: req.path });
             return res.status(401).json({
                 error: "Invalid or expired token",
                 message: "Please log in again",
@@ -45,12 +45,12 @@ export const authenticate: RequestHandler = async (req, res, next) => {
 
         // Attach user data to request
         req.user = {
-            userId: decoded.userId,
-            email: decoded.email,
-            sessionId: decoded.sessionId,
+            userId: userData.userId,
+            email: userData.email,
+            sessionId: undefined, // Supabase manages sessions
         };
 
-        logger.debug("User authenticated", { userId: decoded.userId, path: req.path });
+        logger.debug("User authenticated via Supabase", { userId: userData.userId, path: req.path });
         next();
     } catch (error) {
         logger.error("Authentication middleware error", {
@@ -66,7 +66,7 @@ export const authenticate: RequestHandler = async (req, res, next) => {
 
 /**
  * Optional authentication - doesn't fail if no token provided
- * But validates token if present
+ * But validates token if present using Supabase
  */
 export const optionalAuthenticate: RequestHandler = async (req, res, next) => {
     try {
@@ -78,13 +78,13 @@ export const optionalAuthenticate: RequestHandler = async (req, res, next) => {
         }
 
         const token = authHeader.substring(7);
-        const decoded = await verifyToken(token);
+        const userData = await verifySupabaseToken(token);
 
-        if (decoded) {
+        if (userData) {
             req.user = {
-                userId: decoded.userId,
-                email: decoded.email,
-                sessionId: decoded.sessionId,
+                userId: userData.userId,
+                email: userData.email,
+                sessionId: undefined,
             };
         }
 

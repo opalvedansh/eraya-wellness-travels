@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import logger from "./logger";
 
 export interface EmailOptions {
@@ -8,46 +8,30 @@ export interface EmailOptions {
   text?: string;
 }
 
-const EMAIL_PROVIDER = process.env.EMAIL_PROVIDER || "console";
-const SMTP_HOST = process.env.SMTP_HOST;
-const SMTP_PORT = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587;
-const SMTP_USER = process.env.SMTP_USER;
-const SMTP_PASS = process.env.SMTP_PASS;
-const SMTP_FROM = process.env.SMTP_FROM || "erayawellnesstravels@gmail.com";
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
-let transporter: any = null;
+let resendClient: Resend | null = null;
 
-async function initializeNodemailer(): Promise<any> {
-  if (transporter) return transporter;
+function initializeResend(): Resend | null {
+  if (resendClient) return resendClient;
 
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
+  if (!RESEND_API_KEY) {
     logger.info(
-      "SMTP not configured (missing SMTP_HOST, SMTP_USER, or SMTP_PASS). Using console mode."
+      "RESEND_API_KEY not configured. Email sending will be in console mode."
     );
     return null;
   }
 
   try {
-    logger.info(`Initializing SMTP connection to ${SMTP_HOST}:${SMTP_PORT}`);
-    transporter = nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: SMTP_PORT,
-      secure: SMTP_PORT === 465,
-      auth: {
-        user: SMTP_USER,
-        pass: SMTP_PASS,
-      },
-    });
-
-    await transporter.verify();
-    logger.info("✓ Email service configured with SMTP");
-    return transporter;
+    resendClient = new Resend(RESEND_API_KEY);
+    logger.info("✓ Email service configured with Resend");
+    return resendClient;
   } catch (error) {
-    logger.error("Failed to initialize SMTP", {
+    logger.error("Failed to initialize Resend", {
       error: error instanceof Error ? error.message : String(error),
     });
-    logger.error("Check your SMTP credentials. For Gmail, use an App Password instead of your regular password.");
-    transporter = null;
+    resendClient = null;
     return null;
   }
 }
@@ -55,34 +39,45 @@ async function initializeNodemailer(): Promise<any> {
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
   const { to, subject, html, text } = options;
 
-  if (EMAIL_PROVIDER === "console" || !SMTP_HOST) {
+  if (!RESEND_API_KEY) {
     logger.info("EMAIL NOTIFICATION (Console Mode)", {
       to,
       subject,
       text: text || "(No plain text)",
     });
-    return true;
+    return true; // Return true in console mode for development
   }
 
   try {
-    const mail = await initializeNodemailer();
+    const resend = initializeResend();
 
-    if (!mail) {
-      logger.warn(`SMTP not available. Would send email to: ${to}`, {
+    if (!resend) {
+      logger.warn(`Resend not available. Would send email to: ${to}`, {
         subject,
       });
       return false;
     }
 
-    await mail.sendMail({
-      from: SMTP_FROM,
-      to,
+    const { data, error } = await resend.emails.send({
+      from: RESEND_FROM_EMAIL,
+      to: [to],
       subject,
-      text,
       html,
+      text,
     });
 
-    logger.info(`✓ Email sent successfully to ${to}`, { subject });
+    if (error) {
+      logger.error(`Resend API error when sending to ${to}`, {
+        subject,
+        error: error.message || String(error),
+      });
+      return false;
+    }
+
+    logger.info(`✓ Email sent successfully to ${to}`, {
+      subject,
+      emailId: data?.id
+    });
     return true;
   } catch (error) {
     logger.error(`Failed to send email to ${to}`, {
@@ -93,7 +88,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
   }
 }
 
-export function generateOTPEmailHTML(otp: string): string {
+export function generateVerificationEmailHTML(verificationLink: string): string {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background: linear-gradient(135deg, #2d5016 0%, #3a6b1f 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
@@ -104,22 +99,26 @@ export function generateOTPEmailHTML(otp: string): string {
       <div style="background: #f5f1e8; padding: 40px 20px; text-align: center;">
         <h2 style="color: #2d5016; margin-top: 0;">Verify Your Email Address</h2>
         <p style="color: #666; font-size: 16px; margin-bottom: 30px;">
-          Thank you for signing up! Enter the code below to verify your email address.
+          Thank you for signing up! Click the button below to verify your email address and activate your account.
         </p>
         
-        <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #2d5016; margin: 20px 0;">
-          <p style="margin: 0; font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 2px;">Your Verification Code</p>
-          <p style="margin: 15px 0 0 0; font-size: 36px; font-weight: bold; color: #2d5016; letter-spacing: 5px;">
-            ${otp}
-          </p>
-        </div>
+        <a href="${verificationLink}" style="display: inline-block; background: #2d5016; color: white; padding: 16px 40px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; margin: 20px 0;">
+          Verify Email Address
+        </a>
         
-        <p style="color: #999; font-size: 14px; margin: 20px 0;">
-          This code will expire in 5 minutes.
+        <p style="color: #999; font-size: 14px; margin: 30px 0 10px 0;">
+          This link will expire in 24 hours.
         </p>
         
-        <p style="color: #666; font-size: 12px;">
-          If you didn't request this code, please ignore this email. Your account remains secure.
+        <p style="color: #666; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+          If the button doesn't work, copy and paste this link into your browser:
+        </p>
+        <p style="color: #2d5016; font-size: 12px; word-break: break-all; margin: 10px 0;">
+          ${verificationLink}
+        </p>
+        
+        <p style="color: #666; font-size: 12px; margin-top: 30px;">
+          If you didn't request this email, please ignore it. Your account remains secure.
         </p>
       </div>
       

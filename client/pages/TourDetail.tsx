@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Footer from "@/components/Footer";
+import AuthModal from "@/components/AuthModal";
+import { useAuth } from "@/context/AuthContext";
 import FloatingWhatsAppButton from "@/components/FloatingWhatsAppButton";
 import { RouteMap } from "@/components/RouteMap";
 import {
@@ -23,7 +25,7 @@ import { additionalNepalReviews, nepalRouteCoordinates } from "@/data/tourReview
 
 
 // Sticky Booking Widget Component
-function StickyBookingWidget({ tour }: { tour: any }) {
+function StickyBookingWidget({ tour, onBookClick }: { tour: any; onBookClick: () => void }) {
   const [isSticky, setIsSticky] = useState(false);
 
   useEffect(() => {
@@ -77,7 +79,10 @@ function StickyBookingWidget({ tour }: { tour: any }) {
           </div>
         </div>
 
-        <button className="w-full bg-green-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-green-primary/90 transition-colors shadow-lg">
+        <button
+          onClick={onBookClick}
+          className="w-full bg-green-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-green-primary/90 transition-colors shadow-lg"
+        >
           Book This Tour
         </button>
 
@@ -219,6 +224,8 @@ function SimilarToursCarousel({ tours, currentTourId }: any) {
 export default function TourDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const tourDatabase = [
     {
@@ -645,6 +652,15 @@ export default function TourDetail() {
 
   const tour = tourDatabase.find((t) => t.slug === slug);
 
+  const handleBookNow = () => {
+    if (user) {
+      navigate(`/booking/tour/${slug}`);
+    } else {
+      sessionStorage.setItem('intendedBooking', `/booking/tour/${slug}`);
+      setAuthModalOpen(true);
+    }
+  };
+
   if (!tour) {
     return (
       <div className="min-h-screen bg-beige flex flex-col">
@@ -844,7 +860,7 @@ export default function TourDetail() {
 
           {/* Sticky Booking Widget Sidebar */}
           <div className="hidden lg:block">
-            <StickyBookingWidget tour={tour} />
+            <StickyBookingWidget tour={tour} onBookClick={handleBookNow} />
           </div>
         </div>
       </div>
@@ -876,7 +892,7 @@ export default function TourDetail() {
               <p className="text-white/90">Book now and start your journey of a lifetime</p>
             </div>
             <button
-              onClick={() => navigate(`/booking/tour/${tour.slug}`)}
+              onClick={handleBookNow}
               className="bg-white text-green-primary px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transition-colors text-lg shadow-lg"
             >
               Book This Tour - ${tour.price}
@@ -886,6 +902,12 @@ export default function TourDetail() {
       </section>
 
       <Footer />
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+      />
     </div >
   );
 }
