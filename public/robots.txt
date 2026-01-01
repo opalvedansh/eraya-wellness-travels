@@ -14,4 +14,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://your-domain.com/sitemap.xml
+Sitemap: https://erayawellness.com/sitemap.xml

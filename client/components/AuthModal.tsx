@@ -2,12 +2,11 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import LoginPanel from "./LoginPanel";
 import SignupPanel from "./SignupPanel";
-import ForgotPasswordPanel from "./ForgotPasswordPanel";
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialMode?: "login" | "signup" | "forgot-password";
+  initialMode?: "login" | "signup";
 }
 
 export default function AuthModal({
@@ -15,9 +14,7 @@ export default function AuthModal({
   onClose,
   initialMode = "login",
 }: AuthModalProps) {
-  const [mode, setMode] = useState<"login" | "signup" | "forgot-password">(
-    initialMode,
-  );
+  const [mode, setMode] = useState<"login" | "signup">(initialMode);
 
   if (!isOpen) return null;
 
@@ -26,11 +23,7 @@ export default function AuthModal({
       <div className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-background rounded-lg">
         <div className="sticky top-0 flex items-center justify-between p-6 border-b border-border bg-background">
           <h1 className="text-lg font-black text-green-primary">
-            {mode === "login"
-              ? "Login"
-              : mode === "signup"
-                ? "Create Account"
-                : "Reset Password"}
+            {mode === "login" ? "Sign In" : "Get Started"}
           </h1>
           <button
             onClick={onClose}
@@ -45,16 +38,11 @@ export default function AuthModal({
           {mode === "login" ? (
             <LoginPanel
               onSignupClick={() => setMode("signup")}
-              onForgotPasswordClick={() => setMode("forgot-password")}
-              onClose={onClose}
-            />
-          ) : mode === "signup" ? (
-            <SignupPanel
-              onLoginClick={() => setMode("login")}
+              onForgotPasswordClick={() => { }} // No longer needed but keeping for compatibility
               onClose={onClose}
             />
           ) : (
-            <ForgotPasswordPanel
+            <SignupPanel
               onLoginClick={() => setMode("login")}
               onClose={onClose}
             />

@@ -28,6 +28,7 @@ import contentRoutes from "./routes/content.routes";
 import publicRoutes from "./routes/public.routes";
 import uploadRoutes from "./routes/upload.routes";
 import { corsConfig } from "./config/cors.config";
+import settingsRoutes from "./routes/settings.routes";
 import { requestLogger, errorLogger } from "./middleware/logging.middleware";
 import {
   generalRateLimit,
@@ -185,6 +186,9 @@ export function createServer() {
 
   // Admin endpoints (protected, admin only)
   app.use("/api/admin", adminRoutes);
+
+  // Settings routes (admin for write, public for read)
+  app.use("/api/settings", settingsRoutes);
 
   // Public Content routes
   app.use("/api/content", contentRoutes);

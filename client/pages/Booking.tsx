@@ -95,6 +95,24 @@ export default function Booking() {
   const [error, setError] = useState<string | null>(null);
 
   // Fetch trek or tour data from API based on type and slug
+  // Check if payments are enabled
+  useEffect(() => {
+    const checkPaymentSettings = async () => {
+      try {
+        const response = await fetch('/api/settings/payments_enabled');
+        if (response.ok) {
+          const data = await response.json();
+          setPaymentsEnabled(data.value === true);
+        }
+      } catch (error) {
+        console.error('Failed to fetch payment settings:', error);
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+    checkPaymentSettings();
+  }, []);
+
   useEffect(() => {
     const fetchItem = async () => {
       if (!type || !slug) {
@@ -140,6 +158,8 @@ export default function Booking() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [paymentsEnabled, setPaymentsEnabled] = useState(true);
+  const [settingsLoading, setSettingsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEmailValid = formData.email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
@@ -238,7 +258,15 @@ export default function Booking() {
       const booking = await bookingResponse.json();
       console.log('[Booking] Booking created successfully:', booking.id);
 
-      // Create Stripe checkout session
+      // Check if payments are enabled
+      if (!paymentsEnabled) {
+        // Payments disabled - show success message and redirect to contact
+        alert('Booking request submitted! We will contact you via email to complete the payment.');
+        navigate('/contact?booking=' + booking.id);
+        return;
+      }
+
+      // Create Stripe checkout session (only if payments enabled)
       console.log('[Booking] Creating Stripe checkout session...');
       const sessionResponse = await fetch("/api/create-checkout-session", {
         method: "POST",
@@ -613,10 +641,29 @@ export default function Booking() {
                 )}
 
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  <Lock className="h-5 w-5" />
-                  Continue to Secure Payment
+                  {paymentsEnabled ? (
+                    <>
+                      <Lock className="h-5 w-5" />
+                      Continue to Secure Payment
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="h-5 w-5" />
+                      Submit Booking Request
+                    </>
+                  )}
                 </span>
               </motion.button>
+
+              {/* Payment Status Info */}
+              {!paymentsEnabled && isFormValid && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 font-semibold mb-1">📧 We'll Contact You</p>
+                  <p className="text-xs text-blue-700">
+                    Online payments are currently unavailable. We'll send you payment instructions via email within 24 hours.
+                  </p>
+                </div>
+              )}
 
               {!isFormValid && (
                 <p className="text-xs text-text-dark/60 text-center mt-3">

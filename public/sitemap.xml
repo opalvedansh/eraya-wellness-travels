@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Homepage -->
   <url>
-    <loc>https://your-domain.com/</loc>
+    <loc>https://erayawellness.com/</loc>
     <lastmod>2026-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -10,7 +10,7 @@
   
   <!-- About Page -->
   <url>
-    <loc>https://your-domain.com/about</loc>
+    <loc>https://erayawellness.com/about</loc>
     <lastmod>2026-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -18,7 +18,7 @@
   
   <!-- Contact Page -->
   <url>
-    <loc>https://your-domain.com/contact</loc>
+    <loc>https://erayawellness.com/contact</loc>
     <lastmod>2026-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -26,7 +26,7 @@
   
   <!-- Tours Listing -->
   <url>
-    <loc>https://your-domain.com/tour</loc>
+    <loc>https://erayawellness.com/tour</loc>
     <lastmod>2026-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -34,7 +34,7 @@
   
   <!-- Treks Listing -->
   <url>
-    <loc>https://your-domain.com/trek</loc>
+    <loc>https://erayawellness.com/trek</loc>
     <lastmod>2026-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -42,7 +42,7 @@
   
   <!-- Trek Map View -->
   <url>
-    <loc>https://your-domain.com/trek/map</loc>
+    <loc>https://erayawellness.com/trek/map</loc>
     <lastmod>2026-01-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -53,7 +53,7 @@
     After deployment, generate a complete sitemap using your database content
     Example individual trek URL:
     <url>
-      <loc>https://your-domain.com/trek/everest-base-camp</loc>
+      <loc>https://erayawellness.com/trek/everest-base-camp</loc>
       <lastmod>2026-01-01</lastmod>
       <changefreq>monthly</changefreq>
       <priority>0.8</priority>
