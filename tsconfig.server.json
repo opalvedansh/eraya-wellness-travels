@@ -1,0 +1,31 @@
+{
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "target": "ES2020",
+        "outDir": "./dist/server",
+        "rootDir": ".",
+        "noEmit": false,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "strict": false,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noImplicitAny": false,
+        "noFallthroughCasesInSwitch": false,
+        "strictNullChecks": false
+    },
+    "include": [
+        "server/**/*",
+        "shared/**/*",
+        "prisma.config.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "client"
+    ]
+}
