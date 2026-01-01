@@ -4,8 +4,13 @@ import { sendEmail } from "../services/email";
 import logger from "../services/logger";
 import fs from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "erayawellnesstravels@gmail.com";
+
+// ES module compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const handleContact: RequestHandler = async (req, res) => {
   try {
