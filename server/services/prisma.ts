@@ -71,7 +71,12 @@ export const prisma = new Proxy({} as any, {
     }
 });
 
-// Initialize in background but don't block
-getPrismaClient().catch(err => {
-    console.error("Background Prisma initialization failed:", err);
-});
+// Initialize in background but don't crash if DATABASE_URL is missing
+// This allows the server to start even if database is not configured
+if (process.env.DATABASE_URL) {
+    getPrismaClient().catch(err => {
+        console.error("Background Prisma initialization failed:", err);
+    });
+} else {
+    console.warn("DATABASE_URL not set - database features will not be available");
+}

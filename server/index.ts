@@ -252,3 +252,17 @@ function setupCleanupIntervals() {
 
   logger.info("Cleanup intervals configured");
 }
+
+// Start server only when this file is run directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const PORT = process.env.PORT || 8080;
+  const app = createServer();
+
+  app.listen(PORT, () => {
+    logger.info("Server started successfully", {
+      port: PORT,
+      environment: process.env.NODE_ENV || "development",
+    });
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+}

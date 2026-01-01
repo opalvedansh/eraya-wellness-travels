@@ -3,138 +3,143 @@ import { sendEmail } from "../services/email";
 import logger from "../services/logger";
 import fs from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "erayawellnesstravels@gmail.com";
+
+// ES module compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Helper function to read/write JSON file
 const dataFilePath = path.join(__dirname, "../data/submissions.json");
 
 async function readSubmissionsData() {
-    try {
-        const data = await fs.readFile(dataFilePath, "utf-8");
-        return JSON.parse(data);
-    } catch (error) {
-        // If file doesn't exist, return default structure
-        return { reviews: [], transformations: [], customizeTrips: [] };
-    }
+  try {
+    const data = await fs.readFile(dataFilePath, "utf-8");
+    return JSON.parse(data);
+  } catch (error) {
+    // If file doesn't exist, return default structure
+    return { reviews: [], transformations: [], customizeTrips: [] };
+  }
 }
 
 async function writeSubmissionsData(data: any) {
-    // Ensure directory exists
-    const dir = path.dirname(dataFilePath);
-    await fs.mkdir(dir, { recursive: true });
-    await fs.writeFile(dataFilePath, JSON.stringify(data, null, 2));
+  // Ensure directory exists
+  const dir = path.dirname(dataFilePath);
+  await fs.mkdir(dir, { recursive: true });
+  await fs.writeFile(dataFilePath, JSON.stringify(data, null, 2));
 }
 
 // Customize trip request handler
 export const handleCustomizeTrip: RequestHandler = async (req, res) => {
-    try {
-        // Validation is handled by middleware
-        const {
-            name,
-            email,
-            phone,
-            startDate,
-            endDate,
-            groupSize,
-            budget,
-            interests,
-            additionalNotes,
-            tripName,
-        } = req.body;
+  try {
+    // Validation is handled by middleware
+    const {
+      name,
+      email,
+      phone,
+      startDate,
+      endDate,
+      groupSize,
+      budget,
+      interests,
+      additionalNotes,
+      tripName,
+    } = req.body;
 
-        const customizeTripData = {
-            id: Date.now().toString(),
-            name,
-            email,
-            phone: phone || null,
-            startDate,
-            endDate,
-            groupSize,
-            budget,
-            interests: interests || [],
-            additionalNotes: additionalNotes || "",
-            tripName: tripName || null,
-            createdAt: new Date().toISOString(),
-            status: "pending",
-        };
+    const customizeTripData = {
+      id: Date.now().toString(),
+      name,
+      email,
+      phone: phone || null,
+      startDate,
+      endDate,
+      groupSize,
+      budget,
+      interests: interests || [],
+      additionalNotes: additionalNotes || "",
+      tripName: tripName || null,
+      createdAt: new Date().toISOString(),
+      status: "pending",
+    };
 
-        // Read existing data
-        const data = await readSubmissionsData();
-        if (!data.customizeTrips) {
-            data.customizeTrips = [];
-        }
-        data.customizeTrips.push(customizeTripData);
-        await writeSubmissionsData(data);
-
-        logger.info("Customize trip request received", {
-            id: customizeTripData.id,
-            email: customizeTripData.email,
-            tripName: customizeTripData.tripName,
-        });
-
-        // Send email notification to admin
-        const adminEmailSent = await sendEmail({
-            to: ADMIN_EMAIL,
-            subject: `New Trip Customization Request${tripName ? `: ${tripName}` : ""}`,
-            html: generateAdminNotificationHTML(customizeTripData),
-            text: generateAdminNotificationText(customizeTripData),
-        });
-
-        if (!adminEmailSent) {
-            logger.warn("Failed to send admin notification email", {
-                requestId: customizeTripData.id,
-            });
-        }
-
-        // Send confirmation email to user
-        const userEmailSent = await sendEmail({
-            to: email,
-            subject: "We received your trip customization request - Eraya Wellness Travels",
-            html: generateUserConfirmationHTML(name, tripName),
-            text: generateUserConfirmationText(name, tripName),
-        });
-
-        if (!userEmailSent) {
-            logger.warn("Failed to send user confirmation email", {
-                requestId: customizeTripData.id,
-                userEmail: email,
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            message:
-                "Your customization request has been received. Our trip expert will contact you shortly to finalize your itinerary.",
-        });
-    } catch (error) {
-        logger.error("Error handling customize trip request", {
-            error: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined,
-        });
-
-        res.status(500).json({
-            success: false,
-            message:
-                "An error occurred while processing your request. Please try again later.",
-        });
+    // Read existing data
+    const data = await readSubmissionsData();
+    if (!data.customizeTrips) {
+      data.customizeTrips = [];
     }
+    data.customizeTrips.push(customizeTripData);
+    await writeSubmissionsData(data);
+
+    logger.info("Customize trip request received", {
+      id: customizeTripData.id,
+      email: customizeTripData.email,
+      tripName: customizeTripData.tripName,
+    });
+
+    // Send email notification to admin
+    const adminEmailSent = await sendEmail({
+      to: ADMIN_EMAIL,
+      subject: `New Trip Customization Request${tripName ? `: ${tripName}` : ""}`,
+      html: generateAdminNotificationHTML(customizeTripData),
+      text: generateAdminNotificationText(customizeTripData),
+    });
+
+    if (!adminEmailSent) {
+      logger.warn("Failed to send admin notification email", {
+        requestId: customizeTripData.id,
+      });
+    }
+
+    // Send confirmation email to user
+    const userEmailSent = await sendEmail({
+      to: email,
+      subject: "We received your trip customization request - Eraya Wellness Travels",
+      html: generateUserConfirmationHTML(name, tripName),
+      text: generateUserConfirmationText(name, tripName),
+    });
+
+    if (!userEmailSent) {
+      logger.warn("Failed to send user confirmation email", {
+        requestId: customizeTripData.id,
+        userEmail: email,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Your customization request has been received. Our trip expert will contact you shortly to finalize your itinerary.",
+    });
+  } catch (error) {
+    logger.error("Error handling customize trip request", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
+    res.status(500).json({
+      success: false,
+      message:
+        "An error occurred while processing your request. Please try again later.",
+    });
+  }
 };
 
 function generateAdminNotificationHTML(data: {
-    name: string;
-    email: string;
-    phone: string | null;
-    startDate: string;
-    endDate: string;
-    groupSize: string;
-    budget: string;
-    interests: string[];
-    additionalNotes: string;
-    tripName: string | null;
-    createdAt: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  startDate: string;
+  endDate: string;
+  groupSize: string;
+  budget: string;
+  interests: string[];
+  additionalNotes: string;
+  tripName: string | null;
+  createdAt: string;
 }): string {
-    return `
+  return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background: linear-gradient(135deg, #2d5016 0%, #3a6b1f 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
         <h1 style="margin: 0; font-size: 24px;">New Trip Customization Request</h1>
@@ -185,18 +190,18 @@ function generateAdminNotificationHTML(data: {
 }
 
 function generateAdminNotificationText(data: {
-    name: string;
-    email: string;
-    phone: string | null;
-    startDate: string;
-    endDate: string;
-    groupSize: string;
-    budget: string;
-    interests: string[];
-    additionalNotes: string;
-    tripName: string | null;
+  name: string;
+  email: string;
+  phone: string | null;
+  startDate: string;
+  endDate: string;
+  groupSize: string;
+  budget: string;
+  interests: string[];
+  additionalNotes: string;
+  tripName: string | null;
 }): string {
-    return `
+  return `
 New Trip Customization Request
 ${data.tripName ? `Trip: ${data.tripName}\n` : ""}
 Name: ${data.name}
@@ -212,7 +217,7 @@ ${data.additionalNotes ? `\nAdditional Notes:\n${data.additionalNotes}` : ""}
 }
 
 function generateUserConfirmationHTML(name: string, tripName: string | null): string {
-    return `
+  return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background: linear-gradient(135deg, #2d5016 0%, #3a6b1f 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
         <h1 style="margin: 0; font-size: 28px;">Eraya Wellness Travels</h1>
@@ -250,7 +255,7 @@ function generateUserConfirmationHTML(name: string, tripName: string | null): st
 }
 
 function generateUserConfirmationText(name: string, tripName: string | null): string {
-    return `
+  return `
 Dear ${name},
 
 Thank you${tripName ? ` for your interest in ${tripName}` : ""}!
