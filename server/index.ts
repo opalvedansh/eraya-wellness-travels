@@ -254,7 +254,14 @@ function setupCleanupIntervals() {
 }
 
 // Start server only when this file is run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+// For tsx/ts-node, we need to properly compare import.meta.url with process.argv[1]
+// import.meta.url is URL-encoded while process.argv[1] is not
+const fileUrlFromArgv = process.argv[1] ? `file://${process.argv[1]}` : null;
+const isMainModule = (fileUrlFromArgv && import.meta.url === fileUrlFromArgv) ||
+  (fileUrlFromArgv && decodeURIComponent(import.meta.url) === fileUrlFromArgv) ||
+  (process.argv[1] === undefined && import.meta.url.endsWith('/server/index.ts'));
+
+if (isMainModule) {
   const PORT = process.env.PORT || 8080;
   const app = createServer();
 

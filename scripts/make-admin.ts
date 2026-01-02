@@ -4,10 +4,15 @@
  * Usage: tsx scripts/make-admin.ts your-email@example.com
  */
 
-import { prisma } from "../server/services/prisma";
+import "dotenv/config";
+import { getPrismaClient } from "../server/services/prisma";
 
 async function makeAdmin(email: string) {
+    let prisma: any = null;
     try {
+        // Initialize Prisma client
+        prisma = await getPrismaClient();
+
         // Check if user exists
         const existingUser = await prisma.user.findUnique({
             where: { email },
@@ -39,7 +44,9 @@ async function makeAdmin(email: string) {
         console.error("❌ Error making user admin:", error);
         process.exit(1);
     } finally {
-        await prisma.$disconnect();
+        if (prisma) {
+            await prisma.$disconnect();
+        }
     }
 }
 
