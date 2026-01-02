@@ -1,0 +1,66 @@
+{
+    "version": 2,
+    "buildCommand": "pnpm run build",
+    "devCommand": "pnpm run dev:client",
+    "installCommand": "pnpm install",
+    "framework": null,
+    "outputDirectory": "dist/spa",
+    "regions": [
+        "iad1"
+    ],
+    "functions": {
+        "api/index.ts": {
+            "memory": 1024,
+            "maxDuration": 10
+        }
+    },
+    "rewrites": [
+        {
+            "source": "/api/(.*)",
+            "destination": "/api"
+        },
+        {
+            "source": "/uploads/(.*)",
+            "destination": "/api"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/assets/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
+        },
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "X-Frame-Options",
+                    "value": "DENY"
+                },
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                },
+                {
+                    "key": "X-XSS-Protection",
+                    "value": "1; mode=block"
+                },
+                {
+                    "key": "Referrer-Policy",
+                    "value": "strict-origin-when-cross-origin"
+                }
+            ]
+        }
+    ],
+    "env": {
+        "NODE_ENV": "production"
+    }
+}
