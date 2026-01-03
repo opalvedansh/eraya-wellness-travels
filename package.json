@@ -17,6 +17,7 @@
     "build:server": "echo 'Server uses tsx at runtime'",
     "build": "pnpm run build:client",
     "start": "NODE_ENV=production tsx server/index.ts",
+    "start:server": "tsx server/index.ts",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
