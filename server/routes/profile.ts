@@ -1,10 +1,11 @@
-import express from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../services/prisma';
+import logger from '../services/logger';
 
-const router = express.Router();
+const router = Router();
 
 // Middleware to check if user is authenticated
-const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+const requireAuth = (req: Request, res: Response, next: NextFunction) => {
     const userId = req.headers['x-user-id'] as string;
 
     if (!userId) {
@@ -16,7 +17,7 @@ const requireAuth = (req: express.Request, res: express.Response, next: express.
 };
 
 // GET /api/profile - Get current user profile data
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, async (req: Request, res: Response) => {
     try {
         const userId = (req as any).userId;
 
@@ -62,13 +63,13 @@ router.get('/', requireAuth, async (req, res) => {
             stats,
         });
     } catch (error) {
-        console.error('Error fetching profile:', error);
+        logger.error('Error fetching profile:', error);
         res.status(500).json({ error: 'Failed to fetch profile' });
     }
 });
 
 // PATCH /api/profile - Update user profile information
-router.patch('/', requireAuth, async (req, res) => {
+router.patch('/', requireAuth, async (req: Request, res: Response) => {
     try {
         const userId = (req as any).userId;
         const { name, photoURL } = req.body;
@@ -91,7 +92,7 @@ router.patch('/', requireAuth, async (req, res) => {
 
         res.json(user);
     } catch (error) {
-        console.error('Error updating profile:', error);
+        logger.error('Error updating profile:', error);
         res.status(500).json({ error: 'Failed to update profile' });
     }
 });

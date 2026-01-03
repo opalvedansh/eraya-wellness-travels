@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import { prisma } from "../services/prisma";
 import { authenticate } from "../middleware/auth.middleware";
 import logger from "../services/logger";
@@ -6,7 +6,7 @@ import logger from "../services/logger";
 const router = Router();
 
 // Middleware to check if user is admin
-async function requireAdmin(req: Request, res: Response, next: Function) {
+async function requireAdmin(req: Request, res: Response, next: NextFunction) {
     try {
         const user = req.user;
 

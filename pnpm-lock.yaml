@@ -270,6 +270,9 @@ importers:
       '@types/uuid':
         specifier: ^11.0.0
         version: 11.0.0
+      '@vercel/ncc':
+        specifier: ^0.38.4
+        version: 0.38.4
       '@vercel/node':
         specifier: ^5.5.16
         version: 5.5.16(@swc/core@1.13.3)(rollup@4.46.2)
@@ -2117,6 +2120,10 @@ packages:
 
   '@vercel/error-utils@2.0.3':
     resolution: {integrity: sha512-CqC01WZxbLUxoiVdh9B/poPbNpY9U+tO1N9oWHwTl5YAZxcqXmmWJ8KNMFItJCUUWdY3J3xv8LvAuQv2KZ5YdQ==}
+
+  '@vercel/ncc@0.38.4':
+    resolution: {integrity: sha512-8LwjnlP39s08C08J5NstzriPvW1SP8Zfpp1BvC2sI35kPeZnHfxVkCwu4/+Wodgnd60UtT1n8K8zw+Mp7J9JmQ==}
+    hasBin: true
 
   '@vercel/nft@1.1.1':
     resolution: {integrity: sha512-mKMGa7CEUcXU75474kOeqHbtvK1kAcu4wiahhmlUenB5JbTQB8wVlDI8CyHR3rpGo0qlzoRWqcDzI41FUoBJCA==}
@@ -6639,6 +6646,8 @@ snapshots:
   '@vercel/build-utils@13.2.4': {}
 
   '@vercel/error-utils@2.0.3': {}
+
+  '@vercel/ncc@0.38.4': {}
 
   '@vercel/nft@1.1.1(rollup@4.46.2)':
     dependencies:

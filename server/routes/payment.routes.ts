@@ -1,4 +1,4 @@
-import express from "express";
+import { Router, Request, Response } from "express";
 import { prisma } from "../services/prisma";
 import {
     createCheckoutSession,
@@ -14,7 +14,7 @@ import { validateRequest } from "../middleware/validation.middleware";
 import { createCheckoutSessionSchema } from "../validation/schemas";
 import Stripe from "stripe";
 
-const router = express.Router();
+const router = Router();
 
 /**
  * POST /api/create-checkout-session
@@ -25,7 +25,7 @@ router.post(
     "/create-checkout-session",
     authenticate,
     validateRequest(createCheckoutSessionSchema),
-    async (req, res) => {
+    async (req: Request, res: Response) => {
         try {
             const userId = req.user?.userId;
             const { bookingId, guests } = req.body;
@@ -144,7 +144,7 @@ router.post(
  * Handle Stripe webhook events
  * NO authentication - verified via webhook signature
  */
-router.post("/stripe-webhook", async (req, res) => {
+router.post("/stripe-webhook", async (req: Request, res: Response) => {
     const signature = req.headers["stripe-signature"];
 
     if (!signature || typeof signature !== "string") {
@@ -207,7 +207,7 @@ router.post("/stripe-webhook", async (req, res) => {
  * Create a refund for a booking
  * Requires authentication
  */
-router.post("/bookings/:id/refund", authenticate, async (req, res) => {
+router.post("/bookings/:id/refund", authenticate, async (req: Request, res: Response) => {
     try {
         const userId = req.user?.userId;
         const { id } = req.params;
@@ -267,7 +267,7 @@ router.post("/bookings/:id/refund", authenticate, async (req, res) => {
  * Get payment history for a booking
  * Requires authentication
  */
-router.get("/bookings/:id/payment-history", authenticate, async (req, res) => {
+router.get("/bookings/:id/payment-history", authenticate, async (req: Request, res: Response) => {
     try {
         const userId = req.user?.userId;
         const { id } = req.params;

@@ -1,12 +1,12 @@
-import express from 'express';
+import { Router, Request, Response } from 'express';
 import { prisma } from '../services/prisma';
 import { authenticate } from '../middleware/auth.middleware';
 import logger from '../services/logger';
 
-const router = express.Router();
+const router = Router();
 
 // GET /api/bookings - Get all bookings for authenticated user
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, async (req: Request, res: Response) => {
     try {
         const userId = req.user?.userId;
 
@@ -31,7 +31,7 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // GET /api/bookings/:id - Get specific booking details
-router.get('/:id', authenticate, async (req, res) => {
+router.get('/:id', authenticate, async (req: Request, res: Response) => {
     try {
         const userId = req.user?.userId;
         const { id } = req.params;
@@ -64,7 +64,7 @@ router.get('/:id', authenticate, async (req, res) => {
 });
 
 // POST /api/bookings - Create new booking
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, async (req: Request, res: Response) => {
     try {
         const userId = req.user?.userId;
 
@@ -199,7 +199,7 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 // PATCH /api/bookings/:id/status - Update booking status
-router.patch('/:id/status', authenticate, async (req, res) => {
+router.patch('/:id/status', authenticate, async (req: Request, res: Response) => {
     try {
         const userId = req.user?.userId;
         const { id } = req.params;

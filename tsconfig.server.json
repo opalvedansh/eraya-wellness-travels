@@ -16,7 +16,15 @@
         "noUnusedParameters": false,
         "noImplicitAny": false,
         "noFallthroughCasesInSwitch": false,
-        "strictNullChecks": false
+        "strictNullChecks": false,
+        "types": [
+            "node",
+            "express"
+        ],
+        "typeRoots": [
+            "./node_modules/@types",
+            "./server/types"
+        ]
     },
     "include": [
         "server/**/*",

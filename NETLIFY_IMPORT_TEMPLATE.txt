@@ -1,0 +1,35 @@
+# Environment Variables for Netlify Import
+
+Copy everything below and paste into Netlify's "Import environment variables" text box:
+
+```
+NODE_ENV=production
+FRONTEND_URL=https://temp.netlify.app
+JWT_EXPIRES_IN=7d
+GEMINI_MODEL=gemini-1.5-flash
+ALLOWED_ORIGINS=https://temp.netlify.app
+```
+
+Then add these from your .env file (copy values after the = sign):
+
+```
+DATABASE_URL=<copy from your .env>
+JWT_SECRET=<copy from your .env>
+VITE_SUPABASE_URL=<copy from your .env>
+VITE_SUPABASE_ANON_KEY=<copy from your .env>
+RESEND_API_KEY=<copy from your .env>
+RESEND_FROM_EMAIL=<copy from your .env>
+ADMIN_EMAIL=erayawellnesstravels@gmail.com
+STRIPE_SECRET_KEY=<copy from your .env>
+STRIPE_PUBLISHABLE_KEY=<copy from your .env>
+STRIPE_WEBHOOK_SECRET=<copy from your .env>
+GEMINI_API_KEY=<copy from your .env>
+```
+
+Instructions:
+1. Open your .env file
+2. Replace <copy from your .env> with actual values
+3. Paste everything into the text box
+4. Check "Contains secret values"
+5. Keep "All scopes" and "All deploy contexts" selected
+6. Click Import
