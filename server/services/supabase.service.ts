@@ -25,7 +25,7 @@ export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_KEY, {
 export async function verifySupabaseToken(token: string): Promise<{ userId: string; email: string } | null> {
     try {
         // Verify the token with Supabase
-        const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+        const { data: { user }, error } = await (supabaseAdmin.auth as any).getUser(token);
 
         if (error || !user) {
             logger.warn('Invalid Supabase token', { error: error?.message });
