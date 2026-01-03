@@ -43,7 +43,6 @@ export async function generateToken(
     };
 
     // Sign the token
-    // @ts-expect-error - TypeScript has strict type checking for expiresIn that doesn't match our string type, but at runtime this works correctly
     const token = jwt.sign(payload, JWT_SECRET, {
         expiresIn: JWT_EXPIRES_IN,
     });
