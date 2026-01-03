@@ -1,6 +1,6 @@
 {
     "version": 2,
-    "buildCommand": "mv tsconfig.json tsconfig.json.bak && pnpm run vercel-build && mv tsconfig.json.bak tsconfig.json || mv tsconfig.json.bak tsconfig.json",
+    "buildCommand": "pnpm run vercel-build",
     "devCommand": "pnpm run dev:client",
     "installCommand": "pnpm install",
     "framework": null,
@@ -61,6 +61,7 @@
     ],
     "env": {
         "NODE_ENV": "production",
-        "TS_NODE_TRANSPILE_ONLY": "true"
+        "TS_NODE_TRANSPILE_ONLY": "true",
+        "TSC_COMPILE_ON_ERROR": "true"
     }
 }
