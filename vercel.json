@@ -5,7 +5,6 @@
     "installCommand": "pnpm install",
     "framework": null,
     "outputDirectory": "dist/spa",
-    "ignoreCommand": "exit 0",
     "regions": [
         "iad1"
     ],
