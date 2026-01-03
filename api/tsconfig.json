@@ -1,9 +1,15 @@
 {
-    "extends": "./tsconfig.json",
     "compilerOptions": {
         "lib": [
             "ES2020"
         ],
+        "target": "ES2020",
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "strict": false,
+        "noEmit": true,
         "types": [
             "node",
             "express"
@@ -11,18 +17,13 @@
         "typeRoots": [
             "./node_modules/@types",
             "./server/types"
-        ],
-        "noEmit": false,
-        "module": "CommonJS",
-        "moduleResolution": "Node"
+        ]
     },
     "include": [
-        "server/**/*",
         "api/**/*"
     ],
     "exclude": [
         "node_modules",
-        "dist",
-        "client"
+        "dist"
     ]
 }
