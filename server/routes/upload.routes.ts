@@ -1,10 +1,11 @@
-import express from 'express';
+import { Router, Request, Response, NextFunction, RequestHandler } from 'express';
 import multer from 'multer';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { authenticate } from '../middleware/auth.middleware';
+import logger from '../services/logger';
 
-const router = express.Router();
+const router = Router();
 
 // Configure multer storage
 const storage = multer.diskStorage({
@@ -42,7 +43,7 @@ const upload = multer({
 });
 
 // Middleware to check if user is admin
-const checkAdmin: express.RequestHandler = (req, res, next) => {
+const checkAdmin: RequestHandler = (req, res, next) => {
     const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
     if (!req.user || !adminEmails.includes(req.user.email)) {
         return res.status(403).json({ error: 'Admin access required' });
@@ -51,7 +52,7 @@ const checkAdmin: express.RequestHandler = (req, res, next) => {
 };
 
 // Upload single image
-router.post('/upload', authenticate, checkAdmin, upload.single('image'), (req, res) => {
+router.post('/upload', authenticate, checkAdmin, upload.single('image'), (req: Request, res: Response) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
@@ -70,13 +71,13 @@ router.post('/upload', authenticate, checkAdmin, upload.single('image'), (req, r
             mimetype: req.file.mimetype
         });
     } catch (error) {
-        console.error('Upload error:', error);
+        logger.error('Upload error:', error);
         res.status(500).json({ error: 'Failed to upload image' });
     }
 });
 
 // Upload multiple images
-router.post('/upload-multiple', authenticate, checkAdmin, upload.array('images', 10), (req, res) => {
+router.post('/upload-multiple', authenticate, checkAdmin, upload.array('images', 10), (req: Request, res: Response) => {
     try {
         if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
             return res.status(400).json({ error: 'No files uploaded' });
@@ -97,13 +98,13 @@ router.post('/upload-multiple', authenticate, checkAdmin, upload.array('images',
             images: imageUrls
         });
     } catch (error) {
-        console.error('Upload error:', error);
+        logger.error('Upload error:', error);
         res.status(500).json({ error: 'Failed to upload images' });
     }
 });
 
 // Error handling middleware for multer
-router.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+router.use((error: any, req: Request, res: Response, next: NextFunction) => {
     if (error instanceof multer.MulterError) {
         if (error.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({ error: 'File size too large. Maximum size is 5MB.' });

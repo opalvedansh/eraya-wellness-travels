@@ -1,8 +1,8 @@
-import express, { Request, Response } from "express";
+import { Router, Request, Response } from "express";
 import { prisma } from "../services/prisma";
 import logger from "../services/logger";
 
-const router = express.Router();
+const router = Router();
 
 // ==================== TOURS ====================
 

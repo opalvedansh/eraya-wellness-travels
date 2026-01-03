@@ -1,42 +1,40 @@
-import type { Request, Response } from "express";
+import { RequestHandler, Request, Response } from "express";
 import { getChatCompletion } from "../services/gemini.service";
 import logger from "../services/logger";
+import { z } from "zod";
 
-export async function handleChat(req: Request, res: Response) {
+export const handleChat: RequestHandler = async (req: Request, res: Response) => {
+    const { message } = req.body;
+
+    // Rate limiting context
+    const userId = (req as any).userId || "anonymous";
+    const ipAddress = req.ip || "unknown";
+
     try {
-        const { message } = req.body as { message: string };
-
-        logger.info("Chat request received", {
-            messageLength: message.length,
-            ip: req.ip,
+        // Validate input
+        const chatSchema = z.object({
+            message: z.string().min(1).max(500),
         });
 
-        // Call OpenAI service
-        const aiResponse = await getChatCompletion(message);
+        chatSchema.parse({ message });
 
-        logger.info("Chat response generated", {
-            responseLength: aiResponse.length,
-        });
-
-        // Return AI response
-        res.json({
-            reply: aiResponse,
-            success: true,
-        });
+        const reply = await getChatCompletion(message);
+        res.json({ reply });
     } catch (error) {
-        logger.error("Error in chat handler", {
+        if (error instanceof z.ZodError) {
+            logger.warn("Invalid chat message format", { userId, error: error.errors });
+            return res.status(400).json({
+                error: "Invalid message format",
+                details: error.errors,
+            });
+        }
+
+        logger.error("Chat error", {
             error: error instanceof Error ? error.message : String(error),
+            userId,
+            ipAddress,
         });
 
-        // Return user-friendly error message
-        const errorMessage =
-            error instanceof Error
-                ? error.message
-                : "Failed to process your message. Please try again.";
-
-        res.status(500).json({
-            error: errorMessage,
-            success: false,
-        });
+        res.status(500).json({ error: "Failed to process chat message" });
     }
-}
+};
