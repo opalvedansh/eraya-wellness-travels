@@ -14,9 +14,6 @@
             "maxDuration": 10
         }
     },
-    "typescript": {
-        "ignoreBuildErrors": true
-    },
     "rewrites": [
         {
             "source": "/api/(.*)",
