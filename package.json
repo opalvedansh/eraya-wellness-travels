@@ -21,7 +21,7 @@
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && pnpm run build:client"
+    "vercel-build": "export TS_NODE_SKIP_IGNORE=true && prisma generate && pnpm run build:client"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

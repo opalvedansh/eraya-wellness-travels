@@ -61,6 +61,7 @@
         }
     ],
     "env": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "TS_NODE_TRANSPILE_ONLY": "true"
     }
 }
