@@ -2,7 +2,7 @@
  * Vercel Serverless Function
  * This file wraps the Express server to work as a Vercel serverless function
  */
-import { createServer } from "../server/index";
+import { createServer } from "./server.js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 // Create the Express app
