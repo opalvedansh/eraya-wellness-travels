@@ -1,5 +1,9 @@
 import { RequestHandler } from "express";
-import { DemoResponse } from "@shared/api";
+
+// Inline type definition (originally from @shared/api)
+type DemoResponse = {
+  message: string;
+};
 
 export const handleDemo: RequestHandler = (req, res) => {
   const response: DemoResponse = {
