@@ -38,7 +38,8 @@
     "client/**/*",
     "vite.config.ts",
     "api/index.ts",
-    "api/server.ts"
+    "api/server.ts",
+    "server/types/express.d.ts"
   ],
   "exclude": [
     "node_modules",
