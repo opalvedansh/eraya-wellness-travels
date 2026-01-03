@@ -1,6 +1,6 @@
 {
     "version": 2,
-    "buildCommand": "pnpm run vercel-build",
+    "buildCommand": "mv tsconfig.json tsconfig.json.bak && pnpm run vercel-build && mv tsconfig.json.bak tsconfig.json || mv tsconfig.json.bak tsconfig.json",
     "devCommand": "pnpm run dev:client",
     "installCommand": "pnpm install",
     "framework": null,
