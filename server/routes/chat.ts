@@ -1,9 +1,9 @@
-import { RequestHandler, Request, Response } from "express";
+import { Request, Response } from "express";
 import { getChatCompletion } from "../services/gemini.service";
 import logger from "../services/logger";
 import { z } from "zod";
 
-export const handleChat: RequestHandler = async (req: Request, res: Response) => {
+export const handleChat = async (req: Request, res: Response) => {
     const { message } = req.body;
 
     // Rate limiting context
