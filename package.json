@@ -19,7 +19,9 @@
     "start": "NODE_ENV=production tsx server/index.ts",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && pnpm run build:client"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -111,6 +113,7 @@
     "@types/react-dom": "^18.3.7",
     "@types/three": "^0.176.0",
     "@types/uuid": "^11.0.0",
+    "@vercel/ncc": "^0.38.4",
     "@vercel/node": "^5.5.16",
     "@vitejs/plugin-react-swc": "^4.0.0",
     "autoprefixer": "^10.4.21",

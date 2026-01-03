@@ -1,6 +1,6 @@
 {
     "version": 2,
-    "buildCommand": "pnpm run build",
+    "buildCommand": "pnpm run vercel-build",
     "devCommand": "pnpm run dev:client",
     "installCommand": "pnpm install",
     "framework": null,
@@ -9,10 +9,9 @@
         "iad1"
     ],
     "functions": {
-        "api/index.ts": {
+        "api/**/*.ts": {
             "memory": 1024,
-            "maxDuration": 10,
-            "includeFiles": "server/**"
+            "maxDuration": 10
         }
     },
     "rewrites": [
