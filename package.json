@@ -14,7 +14,7 @@
     "dev": "tsx server/index.ts",
     "dev:client": "vite",
     "build:client": "vite build",
-    "prisma:generate": "prisma generate",
+    "prisma:generate": "rm -f prisma.config.ts && prisma generate",
     "build:server": "pnpm prisma:generate && tsc -p server/tsconfig.json",
     "build": "pnpm run build:server && pnpm run build:client",
     "start": "NODE_ENV=production node dist/server/index.js",
