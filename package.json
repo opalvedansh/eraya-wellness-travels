@@ -16,11 +16,10 @@
     "build:client": "vite build",
     "build:server": "tsc -p server/tsconfig.json",
     "build": "pnpm run build:server && pnpm run build:client",
-    "start": "NODE_ENV=production node dist/server/index.js",
+    "start": "prisma generate && NODE_ENV=production node dist/server/index.js",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
-    "postinstall": "prisma generate",
     "vercel-build": "export TS_NODE_SKIP_IGNORE=true && prisma generate && tsc --noEmit && pnpm run build:client"
   },
   "engines": {
