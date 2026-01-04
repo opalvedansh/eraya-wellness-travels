@@ -43,9 +43,10 @@ export async function generateToken(
     };
 
     // Sign the token
+    // @ts-ignore - Known typing issue with jsonwebtoken@9.x and string expiresIn
     const token = jwt.sign(payload, JWT_SECRET, {
-        expiresIn: JWT_EXPIRES_IN,
-    } as SignOptions);
+        expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+    });
 
     // Store session in database
     try {

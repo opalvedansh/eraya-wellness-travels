@@ -14,15 +14,17 @@
     "dev": "tsx server/index.ts",
     "dev:client": "vite",
     "build:client": "vite build",
-    "build:server": "echo 'Server uses tsx at runtime'",
-    "build": "pnpm run build:client",
-    "start": "NODE_ENV=production tsx server/index.ts",
-    "start:server": "tsx server/index.ts",
+    "build:server": "tsc -p server/tsconfig.json",
+    "build": "pnpm run build:server && pnpm run build:client",
+    "start": "NODE_ENV=production node dist/server/index.js",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
     "postinstall": "prisma generate",
     "vercel-build": "export TS_NODE_SKIP_IGNORE=true && prisma generate && tsc --noEmit && pnpm run build:client"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

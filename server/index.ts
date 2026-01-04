@@ -47,6 +47,42 @@ import logger from "./services/logger";
 import { authenticate } from "./middleware/auth.middleware";
 import { cleanupExpiredSessions } from "./services/jwt";
 import { cleanupExpiredTokens } from "./services/otp";
+import { getPrismaClient } from "./services/prisma";
+
+/**
+ * Validate required environment variables on startup
+ */
+function validateEnvironment() {
+  const required = [
+    'DATABASE_URL',
+    'JWT_SECRET',
+    'RESEND_API_KEY',
+    'GEMINI_API_KEY',
+    'STRIPE_SECRET_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'VITE_SUPABASE_URL',
+    'VITE_SUPABASE_ANON_KEY'
+  ];
+
+  const missing = required.filter(key => !process.env[key]);
+
+  if (missing.length > 0) {
+    logger.error('Missing required environment variables', { missing });
+    console.error('❌ Missing required environment variables:', missing.join(', '));
+    console.error('Please set these in your .env file or Railway dashboard');
+    process.exit(1);
+  }
+
+  // Warn about optional but recommended variables
+  const recommended = ['ALLOWED_ORIGINS', 'FRONTEND_URL', 'ADMIN_EMAIL'];
+  const missingRecommended = recommended.filter(key => !process.env[key]);
+
+  if (missingRecommended.length > 0) {
+    logger.warn('Missing recommended environment variables', { missingRecommended });
+  }
+
+  logger.info('Environment validation passed');
+}
 
 export function createServer() {
   const app = express();
@@ -78,6 +114,30 @@ export function createServer() {
   app.use("/api", generalRateLimit);
 
   // Health check endpoint (no auth required)
+  app.get("/health", async (_req, res) => {
+    try {
+      // Check database connectivity
+      const prisma = await getPrismaClient();
+      await prisma.$queryRaw`SELECT 1`;
+
+      res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        database: 'connected',
+        environment: process.env.NODE_ENV || 'development'
+      });
+    } catch (error) {
+      logger.error('Health check failed', { error });
+      res.status(503).json({
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        database: 'disconnected',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Legacy ping endpoint (kept for backwards compatibility)
   app.get("/api/ping", (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
@@ -254,20 +314,42 @@ function setupCleanupIntervals() {
 }
 
 
+// Global error handlers for production safety
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', { promise, reason });
+  // Don't exit in production to avoid downtime from unhandled promises
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', { error: error.message, stack: error.stack });
+  // Always exit on uncaught exceptions as the process state is unreliable
+  process.exit(1);
+});
+
 // Start server only when this file is run directly
-// For Vercel, this block won't execute (uses api/index.ts wrapper instead)
-// Check if this file is being run directly (ES module compatible)
+// ESM-compatible entry point detection (import.meta.url check)
 const isMainModule = import.meta.url === `file://${process.argv[1]}`;
 
 if (isMainModule) {
-  const PORT = process.env.PORT || 8080;
+  // Validate environment variables before starting
+  validateEnvironment();
+
+  const PORT = parseInt(process.env.PORT || '8080', 10);
+  const HOST = '0.0.0.0'; // Bind to all interfaces for Railway/Docker
   const app = createServer();
 
-  app.listen(PORT, () => {
-    logger.info("Server started successfully", {
+  app.listen(PORT, HOST, () => {
+    logger.info('Server started successfully', {
       port: PORT,
-      environment: process.env.NODE_ENV || "development",
+      host: HOST,
+      environment: process.env.NODE_ENV || 'development',
+      nodeVersion: process.version
     });
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🚀 Server running on ${HOST}:${PORT}`);
+    console.log(`📊 Health check: http://${HOST}:${PORT}/health`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 }

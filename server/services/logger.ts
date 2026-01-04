@@ -20,7 +20,6 @@ const logFormat = printf(({ level, message, timestamp, stack, ...metadata }) => 
     return msg;
 });
 
-// Create the logger
 const logger = winston.createLogger({
     level: process.env.LOG_LEVEL || "info",
     format: combine(
@@ -29,29 +28,13 @@ const logger = winston.createLogger({
         logFormat
     ),
     transports: [
-        // Console output (format is inherited from logger config)
+        // Console output - Railway captures this automatically
         new winston.transports.Console(),
     ],
 });
 
-// Add file transports in production
-if (process.env.NODE_ENV === "production") {
-    logger.add(
-        new winston.transports.File({
-            filename: "logs/error.log",
-            // level: "error", // Not supported in FileTransportOptions
-            maxsize: 5242880, // 5MB
-            maxFiles: 5,
-        })
-    );
-
-    logger.add(
-        new winston.transports.File({
-            filename: "logs/combined.log",
-            maxsize: 5242880, // 5MB
-            maxFiles: 5,
-        })
-    );
-}
+// NOTE: Railway captures console logs automatically
+// File-based logging is disabled because Railway uses ephemeral filesystem
+// Logs are available in Railway dashboard's log viewer
 
 export default logger;

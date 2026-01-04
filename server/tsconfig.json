@@ -1,15 +1,17 @@
 {
     "compilerOptions": {
         "target": "ES2020",
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
+        "module": "ES2020",
+        "moduleResolution": "bundler",
+        "outDir": "../dist/server",
         "strict": false,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "resolveJsonModule": true,
         "isolatedModules": true,
-        "noEmit": true,
+        "noEmit": false,
+        "allowSyntheticDefaultImports": true,
         "types": [
             "node",
             "express"
