@@ -1,8 +1,8 @@
 import pg from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
+import type { PrismaClient as PrismaClientType } from "@prisma/client";
 
-let prismaInstance: PrismaClient | null = null;
+let prismaInstance: PrismaClientType | null = null;
 let isInitializing = false;
 
 export async function getPrismaClient() {
@@ -28,6 +28,10 @@ export async function getPrismaClient() {
             throw new Error("DATABASE_URL environment variable is required");
         }
 
+        // Dynamic import for runtime Prisma Client (works after prisma generate)
+        // @ts-expect-error - PrismaClient exists at runtime after generation
+        const { PrismaClient } = await import("@prisma/client");
+
         // Prisma 7 with pg adapter
         const pool = new pg.Pool({ connectionString: databaseUrl });
         const adapter = new PrismaPg(pool);
@@ -35,7 +39,7 @@ export async function getPrismaClient() {
         prismaInstance = new PrismaClient({
             adapter,
             log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-        });
+        }) as PrismaClientType;
 
         // Graceful shutdown
         const cleanup = async () => {
@@ -60,12 +64,12 @@ export async function getPrismaClient() {
 }
 
 // Create a proxy object that will initialize on first use
-export const prisma = new Proxy({} as PrismaClient, {
+export const prisma = new Proxy({} as PrismaClientType, {
     get(target, prop) {
         if (!prismaInstance) {
             throw new Error("Prisma client not initialized. Call getPrismaClient() first or await initialization.");
         }
-        return prismaInstance[prop as keyof PrismaClient];
+        return (prismaInstance as any)[prop];
     }
 });
 
