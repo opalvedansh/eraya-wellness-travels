@@ -1,7 +1,8 @@
 import pg from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
 
-let prismaInstance: any = null;
+let prismaInstance: PrismaClient | null = null;
 let isInitializing = false;
 
 export async function getPrismaClient() {
@@ -26,10 +27,6 @@ export async function getPrismaClient() {
         if (!databaseUrl) {
             throw new Error("DATABASE_URL environment variable is required");
         }
-
-        // Use standard Prisma Client import (dynamic for ESM compatibility)
-        const prismaModule = await import("@prisma/client");
-        const PrismaClient = prismaModule.default.PrismaClient || prismaModule.PrismaClient;
 
         // Prisma 7 with pg adapter
         const pool = new pg.Pool({ connectionString: databaseUrl });
@@ -63,12 +60,12 @@ export async function getPrismaClient() {
 }
 
 // Create a proxy object that will initialize on first use
-export const prisma = new Proxy({} as any, {
+export const prisma = new Proxy({} as PrismaClient, {
     get(target, prop) {
         if (!prismaInstance) {
             throw new Error("Prisma client not initialized. Call getPrismaClient() first or await initialization.");
         }
-        return prismaInstance[prop];
+        return prismaInstance[prop as keyof PrismaClient];
     }
 });
 
