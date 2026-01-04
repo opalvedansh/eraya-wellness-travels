@@ -2,6 +2,8 @@
 
 This project is configured for Railway deployment.
 
+> **📖 For detailed step-by-step instructions, see [RAILWAY_DEPLOYMENT_GUIDE.md](./RAILWAY_DEPLOYMENT_GUIDE.md)**
+
 ## Quick Start
 
 1. Add a PostgreSQL database in Railway
