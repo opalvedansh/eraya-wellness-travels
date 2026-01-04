@@ -5,10 +5,12 @@
 nixPkgs = ["nodejs_18", "pnpm"]
 
 [phases.install]
-cmds = ["pnpm install --frozen-lockfile"]
+# Skip postinstall to avoid Prisma ESM/CJS conflict
+cmds = ["pnpm install --frozen-lockfile --ignore-scripts"]
 
 [phases.build]
-cmds = ["pnpm run build"]
+# Run prisma generate before building
+cmds = ["pnpm exec prisma generate", "pnpm run build"]
 
 [start]
 cmd = "pnpm run start"
