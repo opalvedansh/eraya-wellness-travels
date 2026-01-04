@@ -256,7 +256,10 @@ function setupCleanupIntervals() {
 
 // Start server only when this file is run directly
 // For Vercel, this block won't execute (uses api/index.ts wrapper instead)
-if (require.main === module) {
+// Check if this file is being run directly (ES module compatible)
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+
+if (isMainModule) {
   const PORT = process.env.PORT || 8080;
   const app = createServer();
 

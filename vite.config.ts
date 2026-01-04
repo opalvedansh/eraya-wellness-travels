@@ -6,7 +6,8 @@ import path from "path";
 export default defineConfig({
   server: {
     host: "::",
-    port: 8080,
+    port: 8081,
+    strictPort: true, // Always use port 8081, fail if not available
     proxy: {
       // Proxy API requests to backend server during development
       '/api': {
