@@ -9,8 +9,8 @@ nixPkgs = ["nodejs_18", "pnpm"]
 cmds = ["pnpm install --frozen-lockfile --ignore-scripts"]
 
 [phases.build]
-# Use npx instead of pnpm exec to avoid ESM/CJS issues
-cmds = ["npx prisma generate", "pnpm run build"]
+# Call Prisma CLI directly to avoid npx/pnpm exec module resolution issues
+cmds = ["node node_modules/.bin/prisma generate", "pnpm run build"]
 
 [start]
 cmd = "pnpm run start"
