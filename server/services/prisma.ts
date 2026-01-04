@@ -27,8 +27,9 @@ export async function getPrismaClient() {
             throw new Error("DATABASE_URL environment variable is required");
         }
 
-        // Use standard Prisma Client import
-        const { PrismaClient } = await import("@prisma/client");
+        // Use standard Prisma Client import (dynamic for ESM compatibility)
+        const prismaModule = await import("@prisma/client");
+        const PrismaClient = prismaModule.default.PrismaClient || prismaModule.PrismaClient;
 
         // Prisma 7 with pg adapter
         const pool = new pg.Pool({ connectionString: databaseUrl });
