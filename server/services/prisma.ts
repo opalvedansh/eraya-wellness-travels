@@ -27,8 +27,8 @@ export async function getPrismaClient() {
             throw new Error("DATABASE_URL environment variable is required");
         }
 
-        // Dynamic import to avoid vite config loading issues
-        const { PrismaClient } = await import("../../generated/prisma/client.js");
+        // Use standard Prisma Client import
+        const { PrismaClient } = await import("@prisma/client");
 
         // Prisma 7 with pg adapter
         const pool = new pg.Pool({ connectionString: databaseUrl });
