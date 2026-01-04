@@ -45,7 +45,7 @@ export async function generateToken(
     // Sign the token
     const token = jwt.sign(payload, JWT_SECRET, {
         expiresIn: JWT_EXPIRES_IN,
-    });
+    } as SignOptions);
 
     // Store session in database
     try {
