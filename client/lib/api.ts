@@ -25,12 +25,10 @@ export async function authenticatedFetch(
         "Content-Type": "application/json",
     };
 
-};
-
-console.log(`[API] Fetching: ${fullUrl}`);
-return fetch(fullUrl, {
-    ...options,
-    headers,
-    credentials: "include",
-});
+    console.log(`[API] Fetching: ${fullUrl}`);
+    return fetch(fullUrl, {
+        ...options,
+        headers,
+        credentials: "include",
+    });
 }
