@@ -3,11 +3,13 @@
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": [
-      "ES2020"
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
     ],
-    "module": "ESNext",
+    "module": "ES2020",
     "skipLibCheck": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
@@ -33,16 +35,15 @@
     }
   },
   "include": [
+    "api/**/*",
+    "server/**/*",
+    "shared/**/*",
     "client/**/*",
     "vite.config.ts",
-    "api/index.ts",
-    "api/server.ts",
     "server/types/express.d.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "server/**/*",
-    "server"
+    "dist"
   ]
 }
