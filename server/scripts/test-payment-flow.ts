@@ -34,7 +34,7 @@ async function main() {
             // Ensure we use a valid price that meets Stripe minimums (e.g. > $0.50)
             price: 100,
             travelDate: travelDate,
-            fullName: user.fullName || "Test User",
+            fullName: user.name || "Test User",
             email: user.email,
             phone: "1234567890",
             guests: 2,
