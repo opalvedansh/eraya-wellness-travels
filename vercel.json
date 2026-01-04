@@ -1,27 +1,11 @@
 {
     "version": 2,
-    "buildCommand": "pnpm run vercel-build",
+    "buildCommand": "pnpm run build:client",
     "devCommand": "pnpm run dev:client",
     "installCommand": "pnpm install",
-    "framework": null,
+    "framework": "vite",
     "outputDirectory": "dist/spa",
-    "regions": [
-        "iad1"
-    ],
-    "functions": {
-        "api/**/*.ts": {
-            "maxDuration": 10
-        }
-    },
     "rewrites": [
-        {
-            "source": "/api/(.*)",
-            "destination": "/api"
-        },
-        {
-            "source": "/uploads/(.*)",
-            "destination": "/api"
-        },
         {
             "source": "/(.*)",
             "destination": "/index.html"
@@ -58,10 +42,5 @@
                 }
             ]
         }
-    ],
-    "env": {
-        "NODE_ENV": "production",
-        "TS_NODE_TRANSPILE_ONLY": "true",
-        "TSC_COMPILE_ON_ERROR": "true"
-    }
+    ]
 }

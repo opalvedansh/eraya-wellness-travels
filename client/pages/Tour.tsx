@@ -24,6 +24,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { Icon } from "leaflet";
+import { API_BASE_URL } from "@/lib/config";
 
 // Fix Leaflet default icon issue
 const defaultIcon = new Icon({
@@ -305,7 +306,7 @@ export default function Tour() {
     const fetchTours = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/tours");
+        const response = await fetch(`${API_BASE_URL}/api/tours`);
         if (!response.ok) {
           throw new Error("Failed to fetch tours");
         }

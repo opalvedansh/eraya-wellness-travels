@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Compass, X, Mountain, Map, Navigation, Phone, Send, Mail } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getWhatsAppLink } from "@/config/siteConfig";
+import { API_BASE_URL } from "@/lib/config";
 
 interface Message {
     role: "user" | "assistant";
@@ -91,7 +92,7 @@ export default function TravelAssistantChatbot() {
         setShowExpertOptions(false);
 
         try {
-            const response = await fetch("/api/chat", {
+            const response = await fetch(`${API_BASE_URL}/api/chat`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

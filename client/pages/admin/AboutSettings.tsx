@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Save, Plus, Trash2 } from "lucide-react";
 import AdminLayout from "./AdminLayout";
 import { authenticatedFetch } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/config";
 
 // Interfaces to match the content structure
 // Hero: title, subtitle
@@ -103,7 +104,7 @@ export default function AboutSettings() {
 
     const fetchSettings = async () => {
         try {
-            const response = await fetch("/api/content/about_page");
+            const response = await fetch(`${API_BASE_URL}/api/content/about_page`);
             if (response.ok) {
                 const data = await response.json();
                 if (data) {

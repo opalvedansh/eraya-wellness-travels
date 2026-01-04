@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
+import { API_BASE_URL } from "./config";
 
 /**
  * Make an authenticated API call with Supabase token
@@ -7,6 +8,7 @@ export async function authenticatedFetch(
     url: string,
     options: RequestInit = {}
 ): Promise<Response> {
+    const fullUrl = url.startsWith("http") ? url : `${API_BASE_URL}${url}`;
     // Get current Supabase session
     const {
         data: { session },
@@ -23,9 +25,12 @@ export async function authenticatedFetch(
         "Content-Type": "application/json",
     };
 
-    return fetch(url, {
-        ...options,
-        headers,
-        credentials: "include",
-    });
+};
+
+console.log(`[API] Fetching: ${fullUrl}`);
+return fetch(fullUrl, {
+    ...options,
+    headers,
+    credentials: "include",
+});
 }

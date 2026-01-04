@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Save, Settings as SettingsIcon } from "lucide-react";
 import AdminLayout from "./AdminLayout";
+import { API_BASE_URL } from "@/lib/config";
 
 interface Settings {
     payments_enabled: boolean;
@@ -25,7 +26,7 @@ export default function AdminSettings() {
 
     const fetchSettings = async () => {
         try {
-            const response = await fetch("/api/admin/settings", {
+            const response = await fetch(`${API_BASE_URL}/api/admin/settings`, {
                 credentials: "include",
             });
             if (response.ok) {
@@ -51,7 +52,7 @@ export default function AdminSettings() {
         try {
             // Save each setting individually
             const promises = Object.entries(settings).map(([key, value]) =>
-                fetch(`/api/admin/settings/${key}`, {
+                fetch(`${API_BASE_URL}/api/admin/settings/${key}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     credentials: "include",
@@ -143,8 +144,8 @@ export default function AdminSettings() {
                                     <div className="mt-3">
                                         <span
                                             className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${settings[key]
-                                                    ? "bg-green-100 text-green-800"
-                                                    : "bg-gray-100 text-gray-800"
+                                                ? "bg-green-100 text-green-800"
+                                                : "bg-gray-100 text-gray-800"
                                                 }`}
                                         >
                                             {settings[key] ? "Enabled" : "Disabled"}

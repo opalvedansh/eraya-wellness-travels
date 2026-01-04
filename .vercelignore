@@ -1,0 +1,12 @@
+# Ignore backend and unnecessary directories for Vercel deployment
+server/
+api/
+prisma/
+scripts/
+generated/
+logs/
+.env
+.env.*
+netlify/
+railway.json
+docker-compose.yml

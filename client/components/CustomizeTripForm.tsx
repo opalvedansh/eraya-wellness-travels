@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { API_BASE_URL } from "@/lib/config";
 
 interface CustomizeTripFormData {
   name: string;
@@ -76,7 +77,7 @@ export default function CustomizeTripForm({
       if (onSubmit) {
         onSubmit(formData);
       } else {
-        const response = await fetch("/api/customize-trip", {
+        const response = await fetch(`${API_BASE_URL}/api/customize-trip`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

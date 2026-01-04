@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { siteConfig, getMailtoLink, getTelLink } from "@/config/siteConfig";
 import StarRating from "@/components/StarRating";
+import { API_BASE_URL } from "@/lib/config";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -35,7 +36,7 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/contact", {
+      const response = await fetch(`${API_BASE_URL}/api/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -383,7 +384,7 @@ function ReviewSubmissionForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/contact/review", {
+      const response = await fetch(`${API_BASE_URL}/api/contact/review`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -553,7 +554,7 @@ function TransformationSubmissionForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/contact/transformation", {
+      const response = await fetch(`${API_BASE_URL}/api/contact/transformation`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

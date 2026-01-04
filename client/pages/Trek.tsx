@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // Dynamically import TrekMap to avoid SSR issues with Leaflet
 const TrekMap = lazy(() => import("@/components/TrekMap"));
+import { API_BASE_URL } from "@/lib/config";
 
 // Quick View Modal Component
 function QuickViewModal({ trek, isOpen, onClose }: any) {
@@ -304,7 +305,7 @@ export default function Trek() {
     const fetchTreks = async () => {
       try {
         setLoading(true);
-        const response = await fetch("/api/treks");
+        const response = await fetch(`${API_BASE_URL}/api/treks`);
         if (!response.ok) {
           throw new Error("Failed to fetch treks");
         }

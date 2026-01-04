@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Calendar, DollarSign, User, Mail, Phone } from "lucide-react";
 import AdminLayout from "./AdminLayout";
+import { API_BASE_URL } from "@/lib/config";
 
 interface Booking {
     id: string;
@@ -33,7 +34,7 @@ export default function BookingsManagement() {
 
     const fetchBookings = async () => {
         try {
-            const response = await fetch("/api/admin/bookings", {
+            const response = await fetch(`${API_BASE_URL}/api/admin/bookings`, {
                 credentials: "include",
             });
             if (response.ok) {
@@ -49,7 +50,7 @@ export default function BookingsManagement() {
 
     const updateBookingStatus = async (id: string, status: string) => {
         try {
-            const response = await fetch(`/api/admin/bookings/${id}/status`, {
+            const response = await fetch(`${API_BASE_URL}/api/admin/bookings/${id}/status`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -160,8 +161,8 @@ export default function BookingsManagement() {
                                 key={status}
                                 onClick={() => setFilter(status)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${filter === status
-                                        ? "bg-green-primary text-white"
-                                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                    ? "bg-green-primary text-white"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                                     }`}
                             >
                                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -237,10 +238,10 @@ export default function BookingsManagement() {
                                             <td className="py-4 px-4">
                                                 <span
                                                     className={`px-2 py-1 rounded-full text-xs font-medium ${booking.paymentStatus === "paid"
-                                                            ? "bg-green-100 text-green-800"
-                                                            : booking.paymentStatus === "pending"
-                                                                ? "bg-yellow-100 text-yellow-800"
-                                                                : "bg-red-100 text-red-800"
+                                                        ? "bg-green-100 text-green-800"
+                                                        : booking.paymentStatus === "pending"
+                                                            ? "bg-yellow-100 text-yellow-800"
+                                                            : "bg-red-100 text-red-800"
                                                         }`}
                                                 >
                                                     {booking.paymentStatus}
@@ -251,12 +252,12 @@ export default function BookingsManagement() {
                                                     value={booking.status}
                                                     onChange={(e) => updateBookingStatus(booking.id, e.target.value)}
                                                     className={`px-3 py-1 rounded-lg text-sm font-medium border-2 ${booking.status === "confirmed"
-                                                            ? "border-green-200 bg-green-50 text-green-800"
-                                                            : booking.status === "pending"
-                                                                ? "border-yellow-200 bg-yellow-50 text-yellow-800"
-                                                                : booking.status === "cancelled"
-                                                                    ? "border-red-200 bg-red-50 text-red-800"
-                                                                    : "border-gray-200 bg-gray-50 text-gray-800"
+                                                        ? "border-green-200 bg-green-50 text-green-800"
+                                                        : booking.status === "pending"
+                                                            ? "border-yellow-200 bg-yellow-50 text-yellow-800"
+                                                            : booking.status === "cancelled"
+                                                                ? "border-red-200 bg-red-50 text-red-800"
+                                                                : "border-gray-200 bg-gray-50 text-gray-800"
                                                         }`}
                                                 >
                                                     <option value="pending">Pending</option>

@@ -22,6 +22,7 @@ import {
   Loader2,
   Users
 } from "lucide-react";
+import { API_BASE_URL } from "@/lib/config";
 
 // Helper Components
 function ProgressStep({ number, label, active = false, completed = false }: { number: number; label: string; active?: boolean; completed?: boolean }) {
@@ -99,7 +100,7 @@ export default function Booking() {
   useEffect(() => {
     const checkPaymentSettings = async () => {
       try {
-        const response = await fetch('/api/settings/payments_enabled');
+        const response = await fetch(`${API_BASE_URL}/api/settings/payments_enabled`);
         if (response.ok) {
           const data = await response.json();
           setPaymentsEnabled(data.value === true);
@@ -123,7 +124,7 @@ export default function Booking() {
 
       try {
         setLoading(true);
-        const endpoint = type === "trek" ? `/api/treks` : `/api/tours`;
+        const endpoint = type === "trek" ? `${API_BASE_URL}/api/treks` : `${API_BASE_URL}/api/tours`;
         const response = await fetch(endpoint);
 
         if (!response.ok) {
@@ -223,7 +224,7 @@ export default function Booking() {
       console.log('[Booking] Creating booking...');
 
       // Create booking in database
-      const bookingResponse = await fetch("/api/bookings", {
+      const bookingResponse = await fetch(`${API_BASE_URL}/api/bookings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -268,7 +269,7 @@ export default function Booking() {
 
       // Create Stripe checkout session (only if payments enabled)
       console.log('[Booking] Creating Stripe checkout session...');
-      const sessionResponse = await fetch("/api/create-checkout-session", {
+      const sessionResponse = await fetch(`${API_BASE_URL}/api/create-checkout-session`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

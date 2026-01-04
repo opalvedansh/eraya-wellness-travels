@@ -5,6 +5,7 @@ import { motion, useInView } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { Helmet } from "react-helmet-async";
+import { API_BASE_URL } from "@/lib/config";
 
 // Timeline Item Component
 function TimelineItem({ milestone, index }: { milestone: any; index: number }) {
@@ -59,7 +60,7 @@ function CustomerStoriesCarousel() {
 
   // Fetch submitted transformation stories from API
   useEffect(() => {
-    fetch("/api/transformations")
+    fetch(`${API_BASE_URL}/api/transformations`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {

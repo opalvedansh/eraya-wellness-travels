@@ -1,20 +1,15 @@
 import { Star, Quote } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { API_BASE_URL } from "@/lib/config";
 
 export default function Testimonials() {
   const [submittedReviews, setSubmittedReviews] = useState<any[]>([]);
 
   // Fetch submitted reviews from API
   useEffect(() => {
-    fetch("/api/reviews")
+    fetch(`${API_BASE_URL}/api/reviews`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
