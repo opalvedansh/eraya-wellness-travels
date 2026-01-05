@@ -10,7 +10,8 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction) {
     try {
         const user = req.user;
 
-        if (!user) {
+        if (!user || !user.userId) {
+            logger.warn("Unauthorized admin access attempt - no user ID", { user });
             return res.status(401).json({ error: "Not authenticated" });
         }
 

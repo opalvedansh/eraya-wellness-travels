@@ -35,8 +35,8 @@ export const authenticate: RequestHandler = async (req, res, next) => {
 
         const userData = await verifySupabaseToken(token);
 
-        if (!userData) {
-            logger.warn("Invalid or expired Supabase token", { path: req.path });
+        if (!userData || !userData.userId) {
+            logger.warn("Invalid or expired Supabase token - missing user ID", { path: req.path });
             return res.status(401).json({
                 error: "Invalid or expired token",
                 message: "Please log in again",
