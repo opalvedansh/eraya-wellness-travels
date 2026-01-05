@@ -28,6 +28,14 @@ export async function getPrismaClient() {
             throw new Error("DATABASE_URL environment variable is required");
         }
 
+        // DEBUG: Log the host portion of DATABASE_URL to diagnose connection issues
+        try {
+            const url = new URL(databaseUrl);
+            console.log(`[Prisma] Connecting to database host: ${url.hostname}:${url.port}`);
+        } catch {
+            console.log(`[Prisma] DATABASE_URL format check failed`);
+        }
+
         // Prisma 7 with pg adapter
         const pool = new pg.Pool({ connectionString: databaseUrl });
         const adapter = new PrismaPg(pool);
