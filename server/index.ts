@@ -30,6 +30,7 @@ import profileRoutes from "./routes/profile";
 import debugRoutes from "./routes/debug.routes";
 import paymentRoutes from "./routes/payment.routes";
 import adminRoutes from "./routes/admin.routes";
+import debugAdminRoutes from "./routes/debug.admin.routes";
 import contentRoutes from "./routes/content.routes";
 import publicRoutes from "./routes/public.routes";
 import uploadRoutes from "./routes/upload.routes";
@@ -268,6 +269,9 @@ export function createServer() {
 
   // Admin endpoints (protected, admin only)
   app.use("/api/admin", adminRoutes);
+
+  // Debug admin endpoints (for diagnostics)
+  app.use("/api/admin", debugAdminRoutes);
 
   // Settings routes (admin for write, public for read)
   app.use("/api/settings", settingsRoutes);
