@@ -35,8 +35,15 @@ export async function getPrismaClient() {
         }
 
         // DEBUG: Log the host portion of DATABASE_URL to diagnose connection issues
+        // Check for common configuration errors (quotes, whitespace)
+        if (databaseUrl.startsWith('"') || databaseUrl.startsWith("'") || databaseUrl.endsWith('"') || databaseUrl.endsWith("'")) {
+            console.error('\n\n❌ CRITICAL ERROR: DATABASE_URL is surrounded by quotes! ❌');
+            console.error('Please remove the quotes around the URL in Railway variables.');
+            console.error('Current value starts with:', databaseUrl.substring(0, 5));
+        }
+
         try {
-            const url = new URL(databaseUrl);
+            const url = new URL(databaseUrl.trim()); // Try trimming
             console.log(`[Prisma] Connecting to database host: ${url.hostname}:${url.port}`);
             console.log(`[Prisma] Database name: ${url.pathname}`);
 
@@ -53,6 +60,7 @@ export async function getPrismaClient() {
             }
         } catch (parseError) {
             console.log(`[Prisma] DATABASE_URL format check failed:`, parseError);
+            console.log(`[Prisma] Raw value (first 30 chars): ${databaseUrl.substring(0, 30)}...`);
         }
 
         // Prisma 7 with pg adapter
