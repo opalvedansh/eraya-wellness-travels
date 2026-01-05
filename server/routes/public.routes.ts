@@ -19,7 +19,16 @@ router.get("/tours", async (req: Request, res: Response) => {
         res.json(tours);
     } catch (error) {
         logger.error("Failed to fetch tours", { error });
-        res.status(500).json({ error: "Failed to fetch tours" });
+
+        // Return more specific error for debugging
+        if (error instanceof Error) {
+            res.status(500).json({
+                error: "Failed to fetch tours",
+                details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        } else {
+            res.status(500).json({ error: "Failed to fetch tours" });
+        }
     }
 });
 
@@ -62,7 +71,16 @@ router.get("/treks", async (req: Request, res: Response) => {
         res.json(treks);
     } catch (error) {
         logger.error("Failed to fetch treks", { error });
-        res.status(500).json({ error: "Failed to fetch treks" });
+
+        // Return more specific error for debugging
+        if (error instanceof Error) {
+            res.status(500).json({
+                error: "Failed to fetch treks",
+                details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        } else {
+            res.status(500).json({ error: "Failed to fetch treks" });
+        }
     }
 });
 
