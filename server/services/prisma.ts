@@ -78,18 +78,32 @@ export async function getPrismaClient() {
 export const prisma = new Proxy({} as PrismaClient, {
     get(target, prop) {
         if (!prismaInstance) {
-            throw new Error("Prisma client not initialized. Call getPrismaClient() first or await initialization.");
+            throw new Error("Prisma client not initialized. Call initializePrisma() at server startup.");
         }
         return prismaInstance[prop as keyof PrismaClient];
     }
 });
 
-// Initialize in background but don't crash if DATABASE_URL is missing
-// This allows the server to start even if database is not configured
-if (process.env.DATABASE_URL) {
-    getPrismaClient().catch(err => {
-        console.error("Background Prisma initialization failed:", err);
-    });
-} else {
-    console.warn("DATABASE_URL not set - database features will not be available");
+// Initialization promise for startup wait
+let initPromise: Promise<PrismaClient> | null = null;
+
+/**
+ * Initialize Prisma client - call this at server startup and await it
+ * before starting to accept requests.
+ */
+export function initializePrisma(): Promise<PrismaClient> {
+    if (!process.env.DATABASE_URL) {
+        return Promise.reject(new Error("DATABASE_URL environment variable is required"));
+    }
+    if (!initPromise) {
+        initPromise = getPrismaClient();
+    }
+    return initPromise;
+}
+
+/**
+ * Check if Prisma is ready (for health checks, etc.)
+ */
+export function isPrismaReady(): boolean {
+    return prismaInstance !== null;
 }

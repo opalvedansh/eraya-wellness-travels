@@ -52,7 +52,7 @@ import logger from "./services/logger";
 import { authenticate } from "./middleware/auth.middleware";
 import { cleanupExpiredSessions } from "./services/jwt";
 import { cleanupExpiredTokens } from "./services/otp";
-import { getPrismaClient } from "./services/prisma";
+import { initializePrisma, isPrismaReady } from "./services/prisma";
 
 /**
  * Validate required environment variables on startup
@@ -137,8 +137,8 @@ export function createServer() {
   // Health check endpoint (no auth required)
   app.get("/health", async (_req, res) => {
     try {
-      // Check database connectivity
-      const prisma = await getPrismaClient();
+      // Check database connectivity - prisma is guaranteed to be initialized at startup
+      const { prisma } = await import("./services/prisma");
       await prisma.$queryRaw`SELECT 1`;
 
       res.json({
@@ -355,22 +355,35 @@ process.on('uncaughtException', (error) => {
 const isMainModule = import.meta.url === `file://${process.argv[1]}`;
 
 if (isMainModule) {
-  // Validate environment variables before starting
-  validateEnvironment();
+  // Wrap in async IIFE to allow top-level await
+  (async () => {
+    try {
+      // Validate environment variables before starting
+      validateEnvironment();
 
-  const PORT = parseInt(process.env.PORT || '8080', 10);
-  const HOST = '0.0.0.0'; // Bind to all interfaces for Railway/Docker
-  const app = createServer();
+      // Initialize database connection before starting server
+      console.log('⏳ Connecting to database...');
+      await initializePrisma();
+      console.log('✅ Database connected successfully');
 
-  app.listen(PORT, HOST, () => {
-    logger.info('Server started successfully', {
-      port: PORT,
-      host: HOST,
-      environment: process.env.NODE_ENV || 'development',
-      nodeVersion: process.version
-    });
-    console.log(`🚀 Server running on ${HOST}:${PORT}`);
-    console.log(`📊 Health check: http://${HOST}:${PORT}/health`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
+      const PORT = parseInt(process.env.PORT || '8080', 10);
+      const HOST = '0.0.0.0'; // Bind to all interfaces for Railway/Docker
+      const app = createServer();
+
+      app.listen(PORT, HOST, () => {
+        logger.info('Server started successfully', {
+          port: PORT,
+          host: HOST,
+          environment: process.env.NODE_ENV || 'development',
+          nodeVersion: process.version
+        });
+        console.log(`🚀 Server running on ${HOST}:${PORT}`);
+        console.log(`📊 Health check: http://${HOST}:${PORT}/health`);
+        console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      });
+    } catch (error) {
+      console.error('❌ Failed to start server:', error);
+      process.exit(1);
+    }
+  })();
 }
