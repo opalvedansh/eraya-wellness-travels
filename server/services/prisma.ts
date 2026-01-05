@@ -39,6 +39,18 @@ export async function getPrismaClient() {
             const url = new URL(databaseUrl);
             console.log(`[Prisma] Connecting to database host: ${url.hostname}:${url.port}`);
             console.log(`[Prisma] Database name: ${url.pathname}`);
+
+            // CRITICAL: Check for localhost in production
+            if (process.env.NODE_ENV === 'production') {
+                const hostname = url.hostname.toLowerCase();
+                if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
+                    console.error('\n\n❌ CRITICAL MISCONFIGURATION DETECTED ❌');
+                    console.error('The application is running in PRODUCTION mode but is configured to connect to a LOCALHOST database.');
+                    console.error('This means the backend is trying to connect to itself instead of your Supabase database.');
+                    console.error('Current DATABASE_URL host:', hostname);
+                    console.error('👉 ACTION REQUIRED: Go to Railway Dashboard > Variables and update DATABASE_URL to your actual Supabase connection string.\n\n');
+                }
+            }
         } catch (parseError) {
             console.log(`[Prisma] DATABASE_URL format check failed:`, parseError);
         }

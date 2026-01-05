@@ -20,6 +20,11 @@ NODE_ENV=production
 # Port (Railway provides this automatically)
 PORT=8080
 
+# Database (Supabase PostgreSQL)
+# Get this from: Supabase Dashboard → Project Settings → Database → Connection string (URI)
+# Use the "Transaction pooler" connection string for serverless
+DATABASE_URL=postgresql://postgres.xxxxx:password@aws-0-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+
 # JWT Authentication
 JWT_SECRET=your-secure-jwt-secret-here
 JWT_EXPIRES_IN=7d
@@ -57,7 +62,7 @@ PING_MESSAGE=ping pong
 
 ## Notes
 
-- **DATABASE_URL**: Automatically set by Railway PostgreSQL service - don't add this manually
+- **DATABASE_URL**: Get from Supabase Dashboard → Project Settings → Database → Connection string (URI). Use the **Transaction pooler** string.
 - **JWT_SECRET**: Generate with: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
 - **FRONTEND_URL & ALLOWED_ORIGINS**: Update after you have your Vercel deployment URL
 - **Multiple Origins**: Use comma-separated values like: `https://domain1.com,https://domain2.com`
