@@ -9,25 +9,55 @@ const router = Router();
 async function requireAdmin(req: Request, res: Response, next: NextFunction) {
     try {
         const user = req.user;
+        const requestId = Math.random().toString(36).substring(7);
+
+        logger.info(`[AdminAuth:${requestId}] Checking admin access`, {
+            userId: user?.userId,
+            email: user?.email,
+            path: req.path
+        });
 
         if (!user || !user.userId) {
-            logger.warn("Unauthorized admin access attempt - no user ID", { user });
+            logger.warn(`[AdminAuth:${requestId}] Unauthorized: No user attached to request`, { user });
             return res.status(401).json({ error: "Not authenticated" });
         }
 
-        const dbUser = await prisma.user.findUnique({
-            where: { id: user.userId },
-            select: { isAdmin: true },
-        });
-
-        if (!dbUser?.isAdmin) {
-            logger.warn("Unauthorized admin access attempt", { userId: user.userId });
-            return res.status(403).json({ error: "Admin access required" });
+        // Validate userId format if possible (e.g. check if it's empty string)
+        if (typeof user.userId !== 'string' || user.userId.trim() === '') {
+            logger.error(`[AdminAuth:${requestId}] Invalid userId format`, { userId: user.userId });
+            return res.status(401).json({ error: "Invalid user ID" });
         }
 
-        next();
+        logger.debug(`[AdminAuth:${requestId}] Querying database for user role...`);
+
+        try {
+            const dbUser = await prisma.user.findUnique({
+                where: { id: user.userId },
+                select: { isAdmin: true },
+            });
+
+            if (!dbUser) {
+                logger.warn(`[AdminAuth:${requestId}] User not found in database`, { userId: user.userId });
+                return res.status(403).json({ error: "User not found" });
+            }
+
+            if (!dbUser.isAdmin) {
+                logger.warn(`[AdminAuth:${requestId}] Access denied: User is not admin`, { userId: user.userId });
+                return res.status(403).json({ error: "Admin access required" });
+            }
+
+            logger.info(`[AdminAuth:${requestId}] Access granted`);
+            next();
+
+        } catch (dbError) {
+            logger.error(`[AdminAuth:${requestId}] Database error during admin check`, {
+                error: dbError instanceof Error ? dbError.message : String(dbError),
+                userId: user.userId
+            });
+            return res.status(500).json({ error: "Database error verifying admin status" });
+        }
     } catch (error) {
-        logger.error("Admin middleware error", { error });
+        logger.error("Admin middleware unexpected error", { error });
         res.status(500).json({ error: "Failed to verify admin status" });
     }
 }

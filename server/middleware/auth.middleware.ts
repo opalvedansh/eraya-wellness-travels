@@ -24,7 +24,11 @@ export const authenticate: RequestHandler = async (req, res, next) => {
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            logger.warn("Missing or invalid authorization header", { path: req.path });
+            logger.warn("Missing or invalid authorization header", {
+                path: req.path,
+                headerExists: !!authHeader,
+                headerStart: authHeader ? authHeader.substring(0, 10) : 'null'
+            });
             return res.status(401).json({
                 error: "Authentication required",
                 message: "Please provide a valid token in the Authorization header",
@@ -36,7 +40,10 @@ export const authenticate: RequestHandler = async (req, res, next) => {
         const userData = await verifySupabaseToken(token);
 
         if (!userData || !userData.userId) {
-            logger.warn("Invalid or expired Supabase token - missing user ID", { path: req.path });
+            logger.warn("Invalid or expired Supabase token - missing user ID", {
+                path: req.path,
+                tokenLength: token.length
+            });
             return res.status(401).json({
                 error: "Invalid or expired token",
                 message: "Please log in again",
