@@ -27,6 +27,7 @@ import {
 import { handleChat } from "./routes/chat";
 import bookingRoutes from "./routes/bookings";
 import profileRoutes from "./routes/profile";
+import debugRoutes from "./routes/debug.routes";
 import paymentRoutes from "./routes/payment.routes";
 import adminRoutes from "./routes/admin.routes";
 import contentRoutes from "./routes/content.routes";
@@ -273,6 +274,10 @@ export function createServer() {
 
   // Public Content routes
   app.use("/api/content", contentRoutes);
+
+  // DEBUG ROUTE (Temporary)
+  // Used to diagnose database connection issues in production
+  app.use("/api", debugRoutes);
 
   // Catch-all middleware: pass non-API routes to Vite for SPA routing
   // This ensures React Router can handle client-side routes in development
