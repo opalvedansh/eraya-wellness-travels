@@ -24,6 +24,12 @@ export async function getPrismaClient() {
     try {
         const databaseUrl = process.env.DATABASE_URL;
 
+        // ENHANCED DEBUG: Log environment variable status
+        console.log(`[Prisma] NODE_ENV: ${process.env.NODE_ENV}`);
+        console.log(`[Prisma] DATABASE_URL exists: ${!!databaseUrl}`);
+        console.log(`[Prisma] DATABASE_URL length: ${databaseUrl?.length || 0}`);
+        console.log(`[Prisma] DATABASE_URL starts with: ${databaseUrl?.substring(0, 30)}...`);
+
         if (!databaseUrl) {
             throw new Error("DATABASE_URL environment variable is required");
         }
@@ -32,8 +38,9 @@ export async function getPrismaClient() {
         try {
             const url = new URL(databaseUrl);
             console.log(`[Prisma] Connecting to database host: ${url.hostname}:${url.port}`);
-        } catch {
-            console.log(`[Prisma] DATABASE_URL format check failed`);
+            console.log(`[Prisma] Database name: ${url.pathname}`);
+        } catch (parseError) {
+            console.log(`[Prisma] DATABASE_URL format check failed:`, parseError);
         }
 
         // Prisma 7 with pg adapter

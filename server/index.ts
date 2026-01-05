@@ -58,6 +58,22 @@ import { getPrismaClient } from "./services/prisma";
  * Validate required environment variables on startup
  */
 function validateEnvironment() {
+  // ENHANCED DEBUG: Log environment variable status at startup
+  console.log('=== ENVIRONMENT DEBUG START ===');
+  console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+  console.log(`DATABASE_URL exists: ${!!process.env.DATABASE_URL}`);
+  console.log(`DATABASE_URL length: ${process.env.DATABASE_URL?.length || 0}`);
+  if (process.env.DATABASE_URL) {
+    try {
+      const url = new URL(process.env.DATABASE_URL);
+      console.log(`DATABASE_URL host: ${url.hostname}`);
+      console.log(`DATABASE_URL port: ${url.port}`);
+    } catch (e) {
+      console.log(`DATABASE_URL parse error: ${e}`);
+    }
+  }
+  console.log('=== ENVIRONMENT DEBUG END ===');
+
   const required = [
     'DATABASE_URL',
     'JWT_SECRET',
