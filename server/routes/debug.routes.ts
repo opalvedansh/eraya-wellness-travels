@@ -4,7 +4,31 @@ import pg from "pg";
 const router = Router();
 
 router.get("/debug-db", async (req: Request, res: Response) => {
-    const dbUrl = process.env.DATABASE_URL;
+    let dbUrl = process.env.DATABASE_URL;
+
+    // --- SANITIZATION LOGIC (Matched with prisma.ts) ---
+    if (dbUrl) {
+        let sanitized = dbUrl.trim();
+        // 1. Fix Protocol
+        if (!sanitized.startsWith("postgresql://") && !sanitized.startsWith("postgres://")) {
+            sanitized = `postgresql://${sanitized}`;
+        }
+        try {
+            const urlObj = new URL(sanitized);
+            // 2. Auto-configure for Supabase Transaction Pooler
+            if (urlObj.port === "6543" && !urlObj.searchParams.has("pgbouncer")) {
+                urlObj.searchParams.set("pgbouncer", "true");
+            }
+            // 3. Ensure SSL/Pool constraints
+            if (!urlObj.searchParams.has("sslmode")) {
+                urlObj.searchParams.set("sslmode", "require");
+            }
+            dbUrl = urlObj.toString();
+        } catch (e) {
+            // Keep original if parse fails
+        }
+    }
+    // ----------------------------------------------------
 
     const report: any = {
         nodeEnv: process.env.NODE_ENV,
@@ -27,6 +51,7 @@ router.get("/debug-db", async (req: Request, res: Response) => {
             hostname: url.hostname, // This is what matters!
             port: url.port,
             pathname: url.pathname,
+            params: Object.fromEntries(url.searchParams),
             // DO NOT LOG PASSWORD or partial url
         };
     } catch (e) {
@@ -37,7 +62,7 @@ router.get("/debug-db", async (req: Request, res: Response) => {
     // Try raw connection
     const pool = new pg.Pool({
         connectionString: dbUrl,
-        connectionTimeoutMillis: 3000, // Fail fast
+        connectionTimeoutMillis: 5000, // Fail fast
     });
 
     try {
