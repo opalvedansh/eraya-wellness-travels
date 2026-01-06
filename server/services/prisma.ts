@@ -1,5 +1,3 @@
-import pg from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
 let prismaInstance: PrismaClient | null = null;
@@ -27,48 +25,14 @@ export async function getPrismaClient() {
         // ENHANCED DEBUG: Log environment variable status
         console.log(`[Prisma] NODE_ENV: ${process.env.NODE_ENV}`);
         console.log(`[Prisma] DATABASE_URL exists: ${!!databaseUrl}`);
-        console.log(`[Prisma] DATABASE_URL length: ${databaseUrl?.length || 0}`);
-        console.log(`[Prisma] DATABASE_URL starts with: ${databaseUrl?.substring(0, 30)}...`);
 
         if (!databaseUrl) {
             throw new Error("DATABASE_URL environment variable is required");
         }
 
-        // DEBUG: Log the host portion of DATABASE_URL to diagnose connection issues
-        // Check for common configuration errors (quotes, whitespace)
-        if (databaseUrl.startsWith('"') || databaseUrl.startsWith("'") || databaseUrl.endsWith('"') || databaseUrl.endsWith("'")) {
-            console.error('\n\n❌ CRITICAL ERROR: DATABASE_URL is surrounded by quotes! ❌');
-            console.error('Please remove the quotes around the URL in Railway variables.');
-            console.error('Current value starts with:', databaseUrl.substring(0, 5));
-        }
-
-        try {
-            const url = new URL(databaseUrl.trim()); // Try trimming
-            console.log(`[Prisma] Connecting to database host: ${url.hostname}:${url.port}`);
-            console.log(`[Prisma] Database name: ${url.pathname}`);
-
-            // CRITICAL: Check for localhost in production
-            if (process.env.NODE_ENV === 'production') {
-                const hostname = url.hostname.toLowerCase();
-                if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
-                    console.error('\n\n❌ CRITICAL MISCONFIGURATION DETECTED ❌');
-                    console.error('The application is running in PRODUCTION mode but is configured to connect to a LOCALHOST database.');
-                    console.error('This means the backend is trying to connect to itself instead of your Supabase database.');
-                    console.error('Current DATABASE_URL host:', hostname);
-                    console.error('👉 ACTION REQUIRED: Go to Railway Dashboard > Variables and update DATABASE_URL to your actual Supabase connection string.\n\n');
-                }
-            }
-        } catch (parseError) {
-            console.log(`[Prisma] DATABASE_URL format check failed:`, parseError);
-            console.log(`[Prisma] Raw value (first 30 chars): ${databaseUrl.substring(0, 30)}...`);
-        }
-
-        // Prisma 7 with pg adapter
-        const pool = new pg.Pool({ connectionString: databaseUrl });
-        const adapter = new PrismaPg(pool);
-
+        // Standard Prisma Client initialization
+        // This natively supports the postgresql:// protocol in DATABASE_URL
         prismaInstance = new PrismaClient({
-            adapter,
             log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
         });
 
@@ -76,7 +40,6 @@ export async function getPrismaClient() {
         const cleanup = async () => {
             if (prismaInstance) {
                 await prismaInstance.$disconnect();
-                await pool.end();
                 prismaInstance = null;
             }
         };
@@ -98,9 +61,14 @@ export async function getPrismaClient() {
 export const prisma = new Proxy({} as PrismaClient, {
     get(target, prop) {
         if (!prismaInstance) {
-            throw new Error("Prisma client not initialized. Call initializePrisma() at server startup.");
+            // If accessed before initialization, try to return current instance or throw
+            if (prismaInstance) return prismaInstance[prop as keyof PrismaClient];
+            // Allow access to $queryRaw etc if instance exists, otherwise it might throw
+            // But usually index.ts calls initializePrisma first.
         }
-        return prismaInstance[prop as keyof PrismaClient];
+        // If still null, it will likely lose strict type safety or throw runtime error
+        // But preventing crash allows checking isPrismaReady()
+        return prismaInstance ? prismaInstance[prop as keyof PrismaClient] : undefined;
     }
 });
 
