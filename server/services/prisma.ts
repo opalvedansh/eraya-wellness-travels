@@ -20,7 +20,7 @@ export async function getPrismaClient() {
     isInitializing = true;
 
     try {
-        const databaseUrl = process.env.DATABASE_URL;
+        let databaseUrl = process.env.DATABASE_URL;
 
         // ENHANCED DEBUG: Log environment variable status
         console.log(`[Prisma] NODE_ENV: ${process.env.NODE_ENV}`);
@@ -30,9 +30,19 @@ export async function getPrismaClient() {
             throw new Error("DATABASE_URL environment variable is required");
         }
 
+        // Fix: Ensure protocol is present
+        if (!databaseUrl.startsWith("postgresql://") && !databaseUrl.startsWith("postgres://")) {
+            console.log("[Prisma] Fixing missing protocol in DATABASE_URL");
+            databaseUrl = `postgresql://${databaseUrl}`;
+        }
+
         // Standard Prisma Client initialization
-        // This natively supports the postgresql:// protocol in DATABASE_URL
         prismaInstance = new PrismaClient({
+            datasources: {
+                db: {
+                    url: databaseUrl,
+                },
+            },
             log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
         });
 
