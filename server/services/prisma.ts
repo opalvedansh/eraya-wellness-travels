@@ -36,6 +36,20 @@ export async function getPrismaClient() {
             databaseUrl = `postgresql://${databaseUrl}`;
         }
 
+        // ENHANCED DEBUGGING: Log connection parameters for verification
+        try {
+            const url = new URL(databaseUrl);
+            console.log(`[Prisma] Connection Details:`);
+            console.log(`  - Host: ${url.hostname}`);
+            console.log(`  - Port: ${url.port || "5432"}`);
+            // Use 'postgres' as fallback database name if pathname is empty or just '/'
+            console.log(`  - Database: ${url.pathname ? url.pathname.substring(1) : "postgres"}`);
+            console.log(`  - User: ${url.username}`);
+            console.log(`  - Password provided: ${url.password ? "YES " + "(".repeat(url.password.length) + ")" : "NO"}`);
+        } catch (e) {
+            console.error("[Prisma] Failed to parse DATABASE_URL for logging:", e);
+        }
+
         // Standard Prisma Client initialization
         prismaInstance = new PrismaClient({
             datasources: {
