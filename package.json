@@ -21,7 +21,14 @@
     "test": "vitest --run",
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
-    "vercel-build": "export TS_NODE_SKIP_IGNORE=true && prisma generate && tsc --noEmit && pnpm run build:client"
+    "vercel-build": "export TS_NODE_SKIP_IGNORE=true && prisma generate && tsc --noEmit && pnpm run build:client",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:test": "tsx scripts/test-db.ts",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "engines": {
     "node": ">=20.0.0"
