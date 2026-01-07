@@ -196,7 +196,8 @@ function CustomerStoriesCarousel() {
 }
 
 export default function About() {
-  const whyChooseUs = [
+  // Default hardcoded data (used as fallback)
+  const defaultWhyChooseUs = [
     {
       icon: Heart,
       title: "Authentic Experiences",
@@ -219,7 +220,7 @@ export default function About() {
     },
   ];
 
-  const teamMembers = [
+  const defaultTeamMembers = [
     {
       name: "Reeju",
       role: "Founder & CEO",
@@ -254,7 +255,7 @@ export default function About() {
     },
   ];
 
-  const partners = [
+  const defaultPartners = [
     { name: "Himalayan Tourism Board", logo: "🏔️" },
     { name: "Adventure Safety Alliance", logo: "🛡️" },
     { name: "Sustainable Travel Initiative", logo: "🌱" },
@@ -263,7 +264,7 @@ export default function About() {
     { name: "Community Development Programs", logo: "🤝" },
   ];
 
-  const milestones = [
+  const defaultMilestones = [
     {
       year: "2023",
       title: "The Beginning",
@@ -289,6 +290,59 @@ export default function About() {
       image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=300&fit=crop",
     },
   ];
+
+  const defaultStats = [
+    { number: "2,000+", label: "Happy Travelers", icon: "😊" },
+    { number: "20+", label: "Destinations", icon: "🗺️" },
+    { number: "4.9/5", label: "Average Rating", icon: "⭐" },
+    { number: "200+", label: "Local Partners", icon: "🤝" },
+  ];
+
+  const defaultHero = {
+    title: "About Eraya",
+    subtitle: "Discover our mission to create meaningful adventure travel experiences that transform lives",
+    image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop"
+  };
+
+  const defaultStory = {
+    title: "From a Trek to a Movement",
+    paragraphs: [
+      "It all started in 2023 when our founder, Reeju, was trekking to Annapurna Base Camp. He met a local Sherpa family struggling to preserve their cultural heritage while adapting to mass tourism. That conversation changed everything.",
+      "We realized travelers wanted more than selfies at mountaintops—they craved authentic connections. Local communities needed sustainable income, not exploitative tourism. Eraya Wellness Travels was born to bridge that gap.",
+      "Today, we've facilitated over 2,000+ journeys that empower local guides, preserve cultural traditions, and transform travelers into advocates for responsible exploration."
+    ],
+    quote: "Travel isn't about ticking boxes on a bucket list. It's about becoming part of a global family that cares for each other and our planet.",
+    quoteAuthor: "Reeju, Founder",
+    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=500&fit=crop"
+  };
+
+  // State for dynamic content from API
+  const [aboutContent, setAboutContent] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch about page content from API
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/content/about_page`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          setAboutContent(data);
+        }
+      })
+      .catch((error) => console.error("Error fetching about page content:", error))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Use API data if available, otherwise use defaults
+  const hero = aboutContent?.hero || defaultHero;
+  const story = aboutContent?.story || defaultStory;
+  const milestones = aboutContent?.milestones || defaultMilestones;
+  const teamMembers = aboutContent?.team || defaultTeamMembers;
+  const partners = aboutContent?.partners || defaultPartners;
+  const stats = aboutContent?.stats || defaultStats;
+
+  // whyChooseUs is not customizable via admin (kept as static)
+  const whyChooseUs = defaultWhyChooseUs;
 
   return (
     <div className="min-h-screen bg-beige flex flex-col">
@@ -397,7 +451,7 @@ export default function About() {
       </Helmet>
 
       {/* Hero Banner */}
-      <AboutPageHero />
+      <AboutPageHero hero={hero} />
 
       {/* Main Content */}
       <div className="flex-grow">
@@ -443,12 +497,7 @@ export default function About() {
             </h2>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12">
-              {[
-                { number: "2,000+", label: "Happy Travelers", icon: "😊" },
-                { number: "20+", label: "Destinations", icon: "🗺️" },
-                { number: "4.9/5", label: "Average Rating", icon: "⭐" },
-                { number: "200+", label: "Local Partners", icon: "🤝" },
-              ].map((stat, index) => (
+              {stats.map((stat: any, index: number) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
@@ -475,37 +524,26 @@ export default function About() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
             <div>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-green-primary mb-4 sm:mb-6">
-                From a Trek to a Movement
+                {story.title}
               </h2>
-              <p className="text-xs sm:text-sm lg:text-base text-text-dark/70 leading-relaxed mb-3 sm:mb-4">
-                It all started in 2023 when our founder, Reeju, was trekking to Annapurna Base Camp.
-                He met a local Sherpa family struggling to preserve their cultural heritage while adapting
-                to mass tourism. That conversation changed everything.
-              </p>
-              <p className="text-xs sm:text-sm lg:text-base text-text-dark/70 leading-relaxed mb-3 sm:mb-4">
-                We realized travelers wanted more than selfies at mountaintops—they craved authentic
-                connections. Local communities needed sustainable income, not exploitative tourism.
-                Eraya Wellness Travels was born to bridge that gap.
-              </p>
-              <p className="text-xs sm:text-sm lg:text-base text-text-dark/70 leading-relaxed mb-6">
-                Today, we've facilitated over <strong className="text-green-primary">2,000+ journeys</strong> that
-                empower local guides, preserve cultural traditions, and transform travelers into advocates
-                for responsible exploration.
-              </p>
+              {story.paragraphs.map((paragraph: string, index: number) => (
+                <p key={index} className="text-xs sm:text-sm lg:text-base text-text-dark/70 leading-relaxed mb-3 sm:mb-4">
+                  {paragraph}
+                </p>
+              ))}
 
               {/* Founder Quote */}
               <div className="pl-4 border-l-4 border-green-primary bg-green-primary/5 p-4 rounded-r-lg">
                 <p className="text-sm sm:text-base italic text-text-dark/80 leading-relaxed">
-                  "Travel isn't about ticking boxes on a bucket list. It's about becoming part of
-                  a global family that cares for each other and our planet."
+                  "{story.quote}"
                 </p>
-                <p className="text-xs sm:text-sm text-green-primary font-bold mt-3">— Reeju, Founder</p>
+                <p className="text-xs sm:text-sm text-green-primary font-bold mt-3">— {story.quoteAuthor}</p>
               </div>
             </div>
             <div className="h-56 sm:h-72 lg:h-96 rounded-lg overflow-hidden shadow-premium">
               <img
-                src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=500&fit=crop"
-                alt="Mountain landscape"
+                src={story.image}
+                alt={story.title}
                 className="w-full h-full object-cover"
               />
             </div>

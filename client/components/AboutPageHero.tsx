@@ -3,7 +3,15 @@ import { motion } from "framer-motion";
 import NavBar from "./NavBar";
 import { Award, Users, MapPin, Star } from "lucide-react";
 
-export default function AboutPageHero() {
+interface AboutPageHeroProps {
+    hero?: {
+        title: string;
+        subtitle: string;
+        image: string;
+    };
+}
+
+export default function AboutPageHero({ hero }: AboutPageHeroProps) {
     const [counts, setCounts] = useState({
         travelers: 0,
         destinations: 0,
@@ -108,7 +116,7 @@ export default function AboutPageHero() {
 
                                 {/* Main Image */}
                                 <img
-                                    src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop"
+                                    src={hero?.image || "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop"}
                                     alt="Eraya Wellness - Our Journey"
                                     className="w-full h-full object-cover"
                                 />
@@ -141,10 +149,10 @@ export default function AboutPageHero() {
                             {/* Title */}
                             <div>
                                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-green-primary mb-4 leading-tight">
-                                    About Eraya
+                                    {hero?.title || "About Eraya"}
                                 </h1>
                                 <p className="text-base sm:text-lg text-text-dark/70 leading-relaxed">
-                                    Discover our mission to create meaningful adventure travel experiences that transform lives
+                                    {hero?.subtitle || "Discover our mission to create meaningful adventure travel experiences that transform lives"}
                                 </p>
                             </div>
 
