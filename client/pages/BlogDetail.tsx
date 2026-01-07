@@ -18,7 +18,25 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
-import { getPostBySlug, getRelatedPosts, BlogPost } from "@/data/blogPosts";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
+interface BlogPost {
+    id: string;
+    slug: string;
+    title: string;
+    excerpt: string;
+    content: string;
+    featuredImage?: string;
+    category: string;
+    tags: string[];
+    authorName: string;
+    authorAvatar?: string;
+    authorBio?: string;
+    publishDate: string;
+    readTime?: string;
+    featured: boolean;
+}
 
 // Share component
 function ShareButtons({ post }: { post: BlogPost }) {
@@ -177,7 +195,46 @@ function ReadingProgressBar() {
 export default function BlogDetail() {
     const { slug } = useParams();
     const navigate = useNavigate();
-    const post = getPostBySlug(slug || "");
+    const [post, setPost] = useState<BlogPost | null>(null);
+    const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!slug) return;
+
+        // Fetch main post
+        fetch(`${API_BASE_URL}/api/blog-posts/${slug}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Not found");
+                return res.json();
+            })
+            .then(data => {
+                setPost(data);
+                // Fetch related posts with same category
+                return fetch(`${API_BASE_URL}/api/blog-posts/category/${data.category}`);
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Filter out current post and limit to 4
+                setRelatedPosts(data.filter((p: BlogPost) => p.slug !== slug).slice(0, 4));
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Failed to fetch post:", err);
+                setLoading(false);
+            });
+    }, [slug]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-beige flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading article...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!post) {
         return (
@@ -200,7 +257,7 @@ export default function BlogDetail() {
         );
     }
 
-    const relatedPosts = getRelatedPosts(post, 4);
+
 
     return (
         <div className="min-h-screen bg-beige flex flex-col">
@@ -235,13 +292,13 @@ export default function BlogDetail() {
                     <div className="flex flex-wrap items-center gap-6 mb-6 pb-6 border-b border-border">
                         <div className="flex items-center gap-3">
                             <img
-                                src={post.author.avatar}
-                                alt={post.author.name}
+                                src={post.authorAvatar || "/default-avatar.png"}
+                                alt={post.authorName}
                                 className="w-12 h-12 rounded-full"
                             />
                             <div>
-                                <p className="font-bold text-text-dark">{post.author.name}</p>
-                                <p className="text-sm text-text-dark/60">{post.author.bio}</p>
+                                <p className="font-bold text-text-dark">{post.authorName}</p>
+                                {post.authorBio && <p className="text-sm text-text-dark/60">{post.authorBio}</p>}
                             </div>
                         </div>
                     </div>

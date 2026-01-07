@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "@/components/Footer";
 import FloatingWhatsAppButton from "@/components/FloatingWhatsAppButton";
@@ -12,17 +12,56 @@ import {
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { blogPosts, categories, BlogPost } from "@/data/blogPosts";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
+interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  featuredImage?: string;
+  category: string;
+  tags: string[];
+  authorName: string;
+  authorAvatar?: string;
+  authorBio?: string;
+  publishDate: string;
+  readTime?: string;
+  featured: boolean;
+}
+
+const categories = ["All", "Travel Tips", "Wellness Tips", "Cultural Insights", "Adventure Stories", "Spiritual Journey", "Local Cuisine"];
 
 export default function Blog() {
   const navigate = useNavigate();
 
   // State
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [featuredPosts, setFeaturedPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("latest");
   const [postsToShow, setPostsToShow] = useState(9);
+
+  // Fetch posts from API
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API_BASE_URL}/api/blog-posts`).then(res => res.json()),
+      fetch(`${API_BASE_URL}/api/blog-posts/featured`).then(res => res.json())
+    ])
+      .then(([postsData, featuredData]) => {
+        setBlogPosts(postsData.posts || []);
+        setFeaturedPosts(featuredData || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch posts:", err);
+        setLoading(false);
+      });
+  }, []);
 
   // Get all unique tags
   const allTags = useMemo(() => {
@@ -80,9 +119,6 @@ export default function Blog() {
   const visiblePosts = filteredPosts.slice(0, postsToShow);
   const hasMore = postsToShow < filteredPosts.length;
 
-  // Featured posts (separate from main listing)
-  const featuredPosts = blogPosts.filter(post => post.featured).slice(0, 2);
-
   // Toggle tag selection
   const toggleTag = (tag: string) => {
     setSelectedTags(prev =>
@@ -101,6 +137,17 @@ export default function Blog() {
   };
 
   const hasActiveFilters = searchQuery || selectedCategory !== "All" || selectedTags.length > 0;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-beige flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading blog posts...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-beige flex flex-col">
@@ -182,11 +229,11 @@ export default function Blog() {
                   <div className="flex items-center gap-4 text-sm text-text-dark/60">
                     <div className="flex items-center gap-2">
                       <img
-                        src={post.author.avatar}
-                        alt={post.author.name}
+                        src={post.authorAvatar || "/default-avatar.png"}
+                        alt={post.authorName}
                         className="w-6 h-6 rounded-full"
                       />
-                      <span>{post.author.name}</span>
+                      <span>{post.authorName}</span>
                     </div>
                     <span>•</span>
                     <div className="flex items-center gap-1">
@@ -213,8 +260,8 @@ export default function Blog() {
                   key={category}
                   onClick={() => setSelectedCategory(category)}
                   className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${selectedCategory === category
-                      ? "bg-green-primary text-white shadow-lg"
-                      : "bg-white text-text-dark border border-border hover:border-green-primary"
+                    ? "bg-green-primary text-white shadow-lg"
+                    : "bg-white text-text-dark border border-border hover:border-green-primary"
                     }`}
                 >
                   {category}
@@ -258,8 +305,8 @@ export default function Blog() {
                     key={tag}
                     onClick={() => toggleTag(tag)}
                     className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${selectedTags.includes(tag)
-                        ? "bg-blue-accent text-white"
-                        : "bg-white text-text-dark border border-border hover:border-blue-accent"
+                      ? "bg-blue-accent text-white"
+                      : "bg-white text-text-dark border border-border hover:border-blue-accent"
                       }`}
                   >
                     #{tag}
@@ -321,11 +368,11 @@ export default function Blog() {
                     <div className="flex items-center justify-between pt-4 border-t border-border">
                       <div className="flex items-center gap-2">
                         <img
-                          src={post.author.avatar}
-                          alt={post.author.name}
+                          src={post.authorAvatar || "/default-avatar.png"}
+                          alt={post.authorName}
                           className="w-6 h-6 rounded-full"
                         />
-                        <span className="text-xs text-text-dark/60">{post.author.name}</span>
+                        <span className="text-xs text-text-dark/60">{post.authorName}</span>
                       </div>
                       <div className="flex items-center gap-1 text-xs text-text-dark/60">
                         <Clock className="h-3 w-3" />
