@@ -21,6 +21,8 @@ import PaymentConfirmation from "./pages/PaymentConfirmation";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
 import SpiritualTravel from "./pages/SpiritualTravel";
+import SpiritualInsights from "./pages/SpiritualInsights";
+import SpiritualPostDetail from "./pages/SpiritualPostDetail";
 import Blog from "./pages/Blog";
 import BlogDetail from "./pages/BlogDetail";
 import Contact from "./pages/Contact";
@@ -41,6 +43,7 @@ import TrekForm from "./pages/admin/TrekForm";
 import BookingsManagement from "./pages/admin/BookingsManagement";
 import AboutSettings from "./pages/admin/AboutSettings";
 import AdminSettings from "./pages/admin/AdminSettings";
+import SpiritualPostsManagement from "./pages/admin/SpiritualPostsManagement";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +72,8 @@ export default function App() {
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/payment-cancel" element={<PaymentCancel />} />
                 <Route path="/spiritual" element={<SpiritualTravel />} />
+                <Route path="/spiritual-insights" element={<SpiritualInsights />} />
+                <Route path="/spiritual-insights/:slug" element={<SpiritualPostDetail />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogDetail />} />
                 <Route path="/contact" element={<Contact />} />
@@ -155,6 +160,14 @@ export default function App() {
                   element={
                     <ProtectedRoute requireAdmin>
                       <AdminSettings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/spiritual-posts"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <SpiritualPostsManagement />
                     </ProtectedRoute>
                   }
                 />

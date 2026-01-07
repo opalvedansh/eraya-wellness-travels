@@ -75,7 +75,7 @@ export default function Footer() {
                 { to: "/about", label: "About Us" },
                 { to: "/tour", label: "Tours" },
                 { to: "/trek", label: "Treks" },
-                { to: "/spiritual", label: "Spiritual Travel" },
+                { to: "/spiritual-insights", label: "Spiritual Insights" },
                 { to: "/blog", label: "Blog" },
                 { to: "/faq", label: "FAQ" }
               ].map((link) => (

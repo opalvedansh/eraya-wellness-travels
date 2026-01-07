@@ -16,6 +16,7 @@ export default function NavBar() {
     { href: "/about", label: "About" },
     { href: "/tour", label: "Tours" },
     { href: "/trek", label: "Treks" },
+    { href: "/spiritual-insights", label: "Spiritual" },
     { href: "/blog", label: "Blog" },
     { href: "/contact", label: "Contact" },
   ];

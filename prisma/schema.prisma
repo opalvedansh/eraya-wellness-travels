@@ -239,3 +239,26 @@ model SiteSettings {
 
   @@index([key])
 }
+
+model SpiritualPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  content     String   // Markdown content
+  coverImage  String?
+  category    String   @default("Spiritual Insights")
+  tags        String[]
+  author      String   @default("Eraya Team")
+  publishDate DateTime @default(now())
+  isPublished Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  readTime    String?  // e.g., "5 min read"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@index([publishDate])
+}
