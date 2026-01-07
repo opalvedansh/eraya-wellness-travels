@@ -262,3 +262,29 @@ model SpiritualPost {
   @@index([isFeatured])
   @@index([publishDate])
 }
+
+model BlogPost {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  excerpt       String
+  content       String   // Markdown content
+  featuredImage String?
+  category      String   @default("Travel Tips")
+  tags          String[]
+  authorName    String   @default("Eraya Team")
+  authorAvatar  String?
+  authorBio     String?
+  publishDate   DateTime @default(now())
+  readTime      String?  // e.g., "5 min read"
+  featured      Boolean  @default(false)
+  isPublished   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([featured])
+  @@index([category])
+  @@index([publishDate])
+}

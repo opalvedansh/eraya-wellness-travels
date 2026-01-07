@@ -23,6 +23,7 @@ const navigation = [
     { name: "Tours", href: "/admin/tours", icon: Map },
     { name: "Treks", href: "/admin/treks", icon: Compass },
     { name: "Bookings", href: "/admin/bookings", icon: Calendar },
+    { name: "Blog Posts", href: "/admin/blog", icon: Settings },
     { name: "Spiritual Insights", href: "/admin/spiritual-posts", icon: Sparkles },
     { name: "About Page", href: "/admin/about", icon: Settings },
     { name: "Settings", href: "/admin/settings", icon: Settings },

@@ -44,6 +44,7 @@ import BookingsManagement from "./pages/admin/BookingsManagement";
 import AboutSettings from "./pages/admin/AboutSettings";
 import AdminSettings from "./pages/admin/AdminSettings";
 import SpiritualPostsManagement from "./pages/admin/SpiritualPostsManagement";
+import BlogManagement from "./pages/admin/BlogManagement";
 
 const queryClient = new QueryClient();
 
@@ -168,6 +169,14 @@ export default function App() {
                   element={
                     <ProtectedRoute requireAdmin>
                       <SpiritualPostsManagement />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/blog"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <BlogManagement />
                     </ProtectedRoute>
                   }
                 />

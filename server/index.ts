@@ -35,6 +35,7 @@ import contentRoutes from "./routes/content.routes";
 import publicRoutes from "./routes/public.routes";
 import uploadRoutes from "./routes/upload.routes";
 import spiritualPostsRoutes from "./routes/spiritual-posts.routes";
+import blogPostsRoutes from "./routes/blog-posts.routes";
 import { corsConfig } from "./config/cors.config";
 import settingsRoutes from "./routes/settings.routes";
 import { requestLogger, errorLogger } from "./middleware/logging.middleware";
@@ -282,6 +283,9 @@ export function createServer() {
 
   // Spiritual Posts routes (public and admin)
   app.use("/api/spiritual-posts", spiritualPostsRoutes);
+
+  // Blog Posts routes (public and admin)
+  app.use("/api/blog-posts", blogPostsRoutes);
 
   // DEBUG ROUTE (Temporary)
   // Used to diagnose database connection issues in production
