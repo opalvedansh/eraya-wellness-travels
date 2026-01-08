@@ -1054,7 +1054,50 @@ export default function TrekDetail() {
     },
   ];
 
-  const trek = trekDatabase.find((t) => t.slug === slug);
+  // Fetch trek from API instead of hardcoded data
+  const [trek, setTrek] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTrek = async () => {
+      if (!slug) return;
+
+      try {
+        setLoading(true);
+        const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+        const response = await fetch(`${API_BASE_URL}/api/treks/${slug}`);
+
+        if (!response.ok) {
+          throw new Error("Trek not found");
+        }
+
+        const data = await response.json();
+
+        // Transform data to match UI expectations
+        const transformedTrek = {
+          ...data,
+          image: data.coverImage || data.images?.[0] || "/default-trek.jpg",
+          gallery: data.images && data.images.length > 0 ? data.images : [data.coverImage || "/default-trek.jpg"],
+          groupSize: `${data.maxGroupSize || 12} people`,
+          reviewCount: 0, // Will be populated from separate reviews API
+          included: [], // Will need to parse from includes/excludes if stored as JSON
+          faqs: data.faq || [],
+          itinerary: data.itinerary || [],
+          reviews: [], // Will be populated from separate reviews API
+        };
+
+        setTrek(transformedTrek);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching trek:", err);
+        setError(err instanceof Error ? err.message : "Failed to load trek");
+        setLoading(false);
+      }
+    };
+
+    fetchTrek();
+  }, [slug]);
 
   const handleBookNow = () => {
     if (user) {
@@ -1065,7 +1108,18 @@ export default function TrekDetail() {
     }
   };
 
-  if (!trek) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-beige flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading trek details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !trek) {
     return (
       <div className="min-h-screen bg-beige flex flex-col">
         <FloatingWhatsAppButton />

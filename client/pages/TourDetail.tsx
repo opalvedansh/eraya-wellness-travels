@@ -650,7 +650,50 @@ export default function TourDetail() {
     },
   ];
 
-  const tour = tourDatabase.find((t) => t.slug === slug);
+  // Fetch tour from API instead of hardcoded data
+  const [tour, setTour] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTour = async () => {
+      if (!slug) return;
+
+      try {
+        setLoading(true);
+        const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+        const response = await fetch(`${API_BASE_URL}/api/tours/${slug}`);
+
+        if (!response.ok) {
+          throw new Error("Tour not found");
+        }
+
+        const data = await response.json();
+
+        // Transform data to match UI expectations
+        const transformedTour = {
+          ...data,
+          image: data.coverImage || data.images?.[0] || "/default-tour.jpg",
+          gallery: data.images && data.images.length > 0 ? data.images : [data.coverImage || "/default-tour.jpg"],
+          groupSize: `${data.maxGroupSize || 12} people`,
+          reviewCount: 0, // Will be populated from separate reviews API
+          included: [], // Will need to parse from includes/excludes if stored as JSON
+          faqs: data.faq || [],
+          itinerary: data.itinerary || [],
+          reviews: [], // Will be populated from separate reviews API
+        };
+
+        setTour(transformedTour);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching tour:", err);
+        setError(err instanceof Error ? err.message : "Failed to load tour");
+        setLoading(false);
+      }
+    };
+
+    fetchTour();
+  }, [slug]);
 
   const handleBookNow = () => {
     if (user) {
@@ -661,7 +704,18 @@ export default function TourDetail() {
     }
   };
 
-  if (!tour) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-beige flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading tour details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !tour) {
     return (
       <div className="min-h-screen bg-beige flex flex-col">
         <FloatingWhatsAppButton />
