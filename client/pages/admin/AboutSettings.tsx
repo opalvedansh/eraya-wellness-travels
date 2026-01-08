@@ -219,8 +219,22 @@ export default function AboutSettings() {
                                 <textarea rows={2} value={content.hero.subtitle} onChange={e => updateHero("subtitle", e.target.value)} className="w-full px-4 py-2 border rounded-lg" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Hero Image URL</label>
-                                <input type="url" value={content.hero.image} onChange={e => updateHero("image", e.target.value)} className="w-full px-4 py-2 border rounded-lg" />
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Hero Image</label>
+                                {content.hero.image && (
+                                    <div className="mb-3">
+                                        <img src={content.hero.image} alt="Hero" className="w-full max-w-md h-48 object-cover rounded-lg border" />
+                                    </div>
+                                )}
+                                <ImageUpload
+                                    label=""
+                                    type="about"
+                                    subType="general"
+                                    currentImage={content.hero.image}
+                                    onUploadComplete={(url) => updateHero("image", url)}
+                                    helpText="Upload hero image (1920x1080 recommended)"
+                                />
+                                <p className="text-xs text-gray-500 mt-2">Or paste URL:</p>
+                                <input type="url" value={content.hero.image} onChange={e => updateHero("image", e.target.value)} className="w-full px-4 py-2 border rounded-lg mt-1" placeholder="https://..." />
                             </div>
                         </div>
                     </section>
@@ -251,8 +265,22 @@ export default function AboutSettings() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Story Image URL</label>
-                                <input type="url" value={content.story.image} onChange={e => updateStory("image", e.target.value)} className="w-full px-4 py-2 border rounded-lg" />
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Story Image</label>
+                                {content.story.image && (
+                                    <div className="mb-3">
+                                        <img src={content.story.image} alt="Story" className="w-full max-w-md h-48 object-cover rounded-lg border" />
+                                    </div>
+                                )}
+                                <ImageUpload
+                                    label=""
+                                    type="about"
+                                    subType="general"
+                                    currentImage={content.story.image}
+                                    onUploadComplete={(url) => updateStory("image", url)}
+                                    helpText="Upload story section image"
+                                />
+                                <p className="text-xs text-gray-500 mt-2">Or paste URL:</p>
+                                <input type="url" value={content.story.image} onChange={e => updateStory("image", e.target.value)} className="w-full px-4 py-2 border rounded-lg mt-1" placeholder="https://..." />
                             </div>
                         </div>
                     </section>
@@ -271,7 +299,26 @@ export default function AboutSettings() {
                                         <input type="text" placeholder="Year" value={item.year} onChange={e => updateListItem("milestones", i, "year", e.target.value)} className="border p-2 rounded" />
                                         <input type="text" placeholder="Title" value={item.title} onChange={e => updateListItem("milestones", i, "title", e.target.value)} className="border p-2 rounded md:col-span-3" />
                                         <textarea placeholder="Description" rows={2} value={item.description} onChange={e => updateListItem("milestones", i, "description", e.target.value)} className="border p-2 rounded md:col-span-4" />
-                                        <input type="url" placeholder="Image URL" value={item.image} onChange={e => updateListItem("milestones", i, "image", e.target.value)} className="border p-2 rounded md:col-span-4" />
+
+                                        {/* Milestone Image */}
+                                        <div className="md:col-span-4">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Milestone Image</label>
+                                            {item.image && (
+                                                <div className="mb-3">
+                                                    <img src={item.image} alt={item.title} className="w-full max-w-sm h-32 object-cover rounded-lg border" />
+                                                </div>
+                                            )}
+                                            <ImageUpload
+                                                label=""
+                                                type="about"
+                                                subType="general"
+                                                currentImage={item.image}
+                                                onUploadComplete={(url) => updateListItem("milestones", i, "image", url)}
+                                                helpText="Upload milestone image"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-2">Or paste URL:</p>
+                                            <input type="url" placeholder="Image URL" value={item.image} onChange={e => updateListItem("milestones", i, "image", e.target.value)} className="border p-2 rounded w-full mt-1" />
+                                        </div>
                                     </div>
                                 </div>
                             ))}
