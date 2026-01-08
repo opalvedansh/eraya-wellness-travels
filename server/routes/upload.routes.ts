@@ -1,58 +1,39 @@
-import { Router, Request, Response, NextFunction, RequestHandler } from 'express';
+import { Router, Request, Response } from 'express';
 import multer from 'multer';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { authenticate } from '../middleware/auth.middleware';
 import logger from '../services/logger';
+import { supabaseAdmin, STORAGE_BUCKET } from '../lib/supabase';
 
 const router = Router();
 
-// Configure multer storage
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        // Determine folder based on request body or default to 'general'
-        const folder = req.body.type === 'trek' ? 'treks' : req.body.type === 'tour' ? 'tours' : 'general';
-        const uploadPath = path.join(process.cwd(), 'public', 'uploads', folder);
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        // Generate unique filename: uuid-originalname
-        const uniqueName = `${uuidv4()}-${file.originalname}`;
-        cb(null, uniqueName);
-    }
-});
-
-// File filter - only allow images
-const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-
-    if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Invalid file type. Only JPG, PNG, and WebP images are allowed.'));
-    }
-};
-
-// Configure multer
+// Use memory storage for multer (files stay in memory, not saved to disk)
 const upload = multer({
-    storage,
-    fileFilter,
+    storage: multer.memoryStorage(),
     limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB max file size
-    }
+        fileSize: 5 * 1024 * 1024, // 5MB max
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only JPG, PNG, and WebP images are allowed.'));
+        }
+    },
 });
 
 // Middleware to check if user is admin
-const checkAdmin: RequestHandler = (req, res, next) => {
-    const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
+const checkAdmin = (req: Request, res: Response, next: Function) => {
+    const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(e => e.trim()) || [];
     if (!req.user || !adminEmails.includes(req.user.email)) {
         return res.status(403).json({ error: 'Admin access required' });
     }
     next();
 };
 
-// Upload single image
-router.post('/upload', authenticate, checkAdmin, upload.single('image'), (req: Request, res: Response) => {
+// Upload single image to Supabase Storage
+router.post('/upload', authenticate, checkAdmin, upload.single('image'), async (req: Request, res: Response) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
@@ -60,54 +41,104 @@ router.post('/upload', authenticate, checkAdmin, upload.single('image'), (req: R
 
         const folder = req.body.type === 'trek' ? 'treks' : req.body.type === 'tour' ? 'tours' : 'general';
 
-        // Return the full URL (backend URL + path)
-        // Images are stored on Railway, not Vercel, so we need the full backend URL
-        const backendUrl = process.env.BACKEND_URL || `http://localhost:8080`;
-        const imageUrl = `${backendUrl}/uploads/${folder}/${req.file.filename}`;
+        // Generate unique filename
+        const fileExt = req.file.originalname.split('.').pop();
+        const fileName = `${folder}/${uuidv4()}.${fileExt}`;
+
+        // Upload to Supabase Storage
+        const { data, error } = await supabaseAdmin.storage
+            .from(STORAGE_BUCKET)
+            .upload(fileName, req.file.buffer, {
+                contentType: req.file.mimetype,
+                upsert: false,
+            });
+
+        if (error) {
+            logger.error('Supabase upload error:', error);
+            return res.status(500).json({ error: 'Failed to upload to storage' });
+        }
+
+        // Get public URL
+        const { data: urlData } = supabaseAdmin.storage
+            .from(STORAGE_BUCKET)
+            .getPublicUrl(fileName);
 
         res.json({
             success: true,
-            url: imageUrl,
-            filename: req.file.filename,
+            url: urlData.publicUrl,
+            filename: fileName,
             size: req.file.size,
-            mimetype: req.file.mimetype
+            mimetype: req.file.mimetype,
         });
-    } catch (error) {
+
+        logger.info('Image uploaded to Supabase Storage', {
+            fileName,
+            size: req.file.size,
+            userId: req.user?.userId
+        });
+    } catch (error: any) {
         logger.error('Upload error:', error);
         res.status(500).json({ error: 'Failed to upload image' });
     }
 });
 
-// Upload multiple images
-router.post('/upload-multiple', authenticate, checkAdmin, upload.array('images', 10), (req: Request, res: Response) => {
+// Upload multiple images to Supabase Storage
+router.post('/upload-multiple', authenticate, checkAdmin, upload.array('images', 10), async (req: Request, res: Response) => {
     try {
         if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
             return res.status(400).json({ error: 'No files uploaded' });
         }
 
         const folder = req.body.type === 'trek' ? 'treks' : req.body.type === 'tour' ? 'tours' : 'general';
+        const uploadedImages = [];
 
-        // Return array of full URLs (backend URL + path)
-        const backendUrl = process.env.BACKEND_URL || `http://localhost:8080`;
-        const imageUrls = req.files.map(file => ({
-            url: `${backendUrl}/uploads/${folder}/${file.filename}`,
-            filename: file.filename,
-            size: file.size,
-            mimetype: file.mimetype
-        }));
+        // Upload each file to Supabase
+        for (const file of req.files) {
+            const fileExt = file.originalname.split('.').pop();
+            const fileName = `${folder}/${uuidv4()}.${fileExt}`;
+
+            const { data, error } = await supabaseAdmin.storage
+                .from(STORAGE_BUCKET)
+                .upload(fileName, file.buffer, {
+                    contentType: file.mimetype,
+                    upsert: false,
+                });
+
+            if (error) {
+                logger.error('Supabase upload error:', error);
+                continue; // Skip failed uploads
+            }
+
+            // Get public URL
+            const { data: urlData } = supabaseAdmin.storage
+                .from(STORAGE_BUCKET)
+                .getPublicUrl(fileName);
+
+            uploadedImages.push({
+                url: urlData.publicUrl,
+                filename: fileName,
+                size: file.size,
+                mimetype: file.mimetype,
+            });
+        }
 
         res.json({
             success: true,
-            images: imageUrls
+            images: uploadedImages,
         });
-    } catch (error) {
+
+        logger.info('Multiple images uploaded to Supabase Storage', {
+            count: uploadedImages.length,
+            userId: req.user?.userId
+        });
+    } catch (error: any) {
         logger.error('Upload error:', error);
         res.status(500).json({ error: 'Failed to upload images' });
     }
 });
 
 // Error handling middleware for multer
-router.use((error: any, req: Request, res: Response, next: NextFunction) => {
+router.use((error: any, req: Request, res: Response, next: Function) => {
     if (error instanceof multer.MulterError) {
         if (error.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({ error: 'File size too large. Maximum size is 5MB.' });

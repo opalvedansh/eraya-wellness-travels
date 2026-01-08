@@ -106,26 +106,6 @@ function validateEnvironment() {
   logger.info('Environment validation passed');
 }
 
-// Ensure upload directories exist
-async function ensureUploadDirectories() {
-  const fs = await import('fs/promises');
-  const directories = [
-    path.join(process.cwd(), 'public', 'uploads'),
-    path.join(process.cwd(), 'public', 'uploads', 'tours'),
-    path.join(process.cwd(), 'public', 'uploads', 'treks'),
-    path.join(process.cwd(), 'public', 'uploads', 'general'),
-  ];
-
-  for (const dir of directories) {
-    try {
-      await fs.mkdir(dir, { recursive: true });
-      logger.info(`Ensured directory exists: ${dir}`);
-    } catch (err) {
-      logger.error(`Failed to create directory ${dir}:`, err);
-    }
-  }
-}
-
 export function createServer() {
   const app = express();
 
@@ -399,11 +379,6 @@ if (isMainModule) {
       console.log('⏳ Connecting to database...');
       await initializePrisma();
       console.log('✅ Database connected successfully');
-
-      // Ensure upload directories exist
-      console.log('📁 Creating upload directories...');
-      await ensureUploadDirectories();
-      console.log('✅ Upload directories ready');
 
       const PORT = parseInt(process.env.PORT || '8080', 10);
       const HOST = '0.0.0.0'; // Bind to all interfaces for Railway/Docker
