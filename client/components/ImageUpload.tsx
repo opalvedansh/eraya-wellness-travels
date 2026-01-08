@@ -51,8 +51,6 @@ export default function ImageUpload({
             const response = await authenticatedFetch('/api/admin/upload', {
                 method: 'POST',
                 body: formData,
-                // Don't set Content-Type header - browser will set it with boundary for multipart
-                headers: undefined as any
             });
 
             if (!response.ok) {
@@ -96,8 +94,8 @@ export default function ImageUpload({
             {/* Upload Area */}
             <div
                 className={`relative border-2 border-dashed rounded-lg p-4 transition-colors ${dragOver
-                        ? 'border-green-primary bg-green-primary/5'
-                        : 'border-gray-300 hover:border-gray-400'
+                    ? 'border-green-primary bg-green-primary/5'
+                    : 'border-gray-300 hover:border-gray-400'
                     } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
