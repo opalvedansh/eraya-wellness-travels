@@ -19,11 +19,20 @@ export async function authenticatedFetch(
     }
 
     // Add Authorization header with Supabase token
-    const headers = {
-        ...options.headers,
+    // Don't set Content-Type for FormData - let browser set it with boundary
+    const baseHeaders: HeadersInit = {
         Authorization: `Bearer ${session.access_token}`,
-        "Content-Type": "application/json",
     };
+
+    // Only add Content-Type: application/json if headers are not explicitly set to undefined (FormData case)
+    const headers: HeadersInit =
+        options.headers === undefined
+            ? baseHeaders  // FormData: don't set Content-Type
+            : {
+                ...baseHeaders,
+                ...options.headers,
+                "Content-Type": "application/json",
+            };
 
     console.log(`[API] Fetching: ${fullUrl}`);
     return fetch(fullUrl, {
