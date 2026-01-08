@@ -253,9 +253,26 @@ router.put("/treks/:id", async (req: Request, res: Response) => {
 
         logger.info("Trek updated", { trekId: trek.id, userId: req.user?.userId });
         res.json(trek);
-    } catch (error) {
-        logger.error("Failed to update trek", { error });
-        res.status(500).json({ error: "Failed to update trek" });
+    } catch (error: any) {
+        logger.error("Failed to update trek", {
+            error: error.message,
+            code: error.code,
+            meta: error.meta,
+            trekId: req.params.id,
+            bodyKeys: Object.keys(req.body)
+        });
+
+        // Return more specific error message
+        const errorMessage = error.code === 'P2002'
+            ? 'A trek with this slug already exists'
+            : error.code === 'P2025'
+                ? 'Trek not found'
+                : error.message || 'Failed to update trek';
+
+        res.status(500).json({
+            error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 });
 
