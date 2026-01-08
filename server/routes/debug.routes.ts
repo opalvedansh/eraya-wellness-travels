@@ -86,4 +86,37 @@ router.get("/debug-db", async (req: Request, res: Response) => {
     res.json(report);
 });
 
+// Debug endpoint to check admin authentication
+router.get("/debug-admin", async (req: Request, res: Response) => {
+    try {
+        // Get token from Authorization header
+        const token = req.headers.authorization?.replace('Bearer ', '');
+
+        const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(e => e.trim()) || [];
+
+        // Try to decode the Supabase JWT to get email
+        let userEmail = 'NO_TOKEN';
+        if (token) {
+            try {
+                // JWT payload is the middle part (base64 encoded)
+                const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+                userEmail = payload.email || 'NO_EMAIL_IN_TOKEN';
+            } catch (e) {
+                userEmail = 'TOKEN_DECODE_ERROR';
+            }
+        }
+
+        res.json({
+            userEmail,
+            adminEmails,
+            isAdmin: adminEmails.includes(userEmail),
+            adminEmailsRaw: process.env.ADMIN_EMAILS,
+            emailsCount: adminEmails.length,
+            hasToken: !!token
+        });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 export default router;
