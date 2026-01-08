@@ -39,7 +39,13 @@ router.post('/upload', authenticate, checkAdmin, upload.single('image'), async (
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const folder = req.body.type === 'trek' ? 'treks' : req.body.type === 'tour' ? 'tours' : 'general';
+        const folder = req.body.type === 'trek'
+            ? 'treks'
+            : req.body.type === 'tour'
+                ? 'tours'
+                : req.body.type === 'about'
+                    ? `about/${req.body.subType || 'general'}` // team, partners, or general
+                    : 'general';
 
         // Generate unique filename
         const fileExt = req.file.originalname.split('.').pop();
@@ -89,7 +95,13 @@ router.post('/upload-multiple', authenticate, checkAdmin, upload.array('images',
             return res.status(400).json({ error: 'No files uploaded' });
         }
 
-        const folder = req.body.type === 'trek' ? 'treks' : req.body.type === 'tour' ? 'tours' : 'general';
+        const folder = req.body.type === 'trek'
+            ? 'treks'
+            : req.body.type === 'tour'
+                ? 'tours'
+                : req.body.type === 'about'
+                    ? `about/${req.body.subType || 'general'}`
+                    : 'general';
         const uploadedImages = [];
 
         // Upload each file to Supabase

@@ -3,6 +3,7 @@ import { Save, Plus, Trash2 } from "lucide-react";
 import AdminLayout from "./AdminLayout";
 import { authenticatedFetch } from "@/lib/api";
 import { API_BASE_URL } from "@/lib/config";
+import ImageUpload from "@/components/ImageUpload";
 
 // Interfaces to match the content structure
 // Hero: title, subtitle
@@ -274,6 +275,104 @@ export default function AboutSettings() {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </section>
+
+                    {/* Team Members */}
+                    <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold text-gray-900">Team Members</h2>
+                            <button onClick={() => addListItem("team", { name: "", role: "", bio: "", image: "", linkedin: "", instagram: "" })} className="text-sm bg-green-50 text-green-600 px-3 py-1 rounded-lg font-medium">+ Add Team Member</button>
+                        </div>
+                        <div className="space-y-4">
+                            {content.team.map((member, i) => (
+                                <div key={i} className="border p-4 rounded-lg relative bg-gray-50">
+                                    <button onClick={() => removeListItem("team", i)} className="absolute top-2 right-2 text-red-500 hover:text-red-700"><Trash2 className="w-4 h-4" /></button>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <input type="text" placeholder="Name" value={member.name} onChange={e => updateListItem("team", i, "name", e.target.value)} className="border p-2 rounded" />
+                                        <input type="text" placeholder="Role/Title" value={member.role} onChange={e => updateListItem("team", i, "role", e.target.value)} className="border p-2 rounded" />
+                                        <textarea placeholder="Bio" rows={3} value={member.bio} onChange={e => updateListItem("team", i, "bio", e.target.value)} className="border p-2 rounded md:col-span-2" />
+                                        <input type="url" placeholder="LinkedIn URL" value={member.linkedin} onChange={e => updateListItem("team", i, "linkedin", e.target.value)} className="border p-2 rounded" />
+                                        <input type="text" placeholder="Instagram Handle (e.g., @username)" value={member.instagram} onChange={e => updateListItem("team", i, "instagram", e.target.value)} className="border p-2 rounded" />
+
+                                        {/* Image Upload */}
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                                            {member.image && (
+                                                <div className="mb-3">
+                                                    <img src={member.image} alt={member.name} className="w-32 h-32 object-cover rounded-lg border" />
+                                                </div>
+                                            )}
+                                            <ImageUpload
+                                                label=""
+                                                type="about"
+                                                subType="team"
+                                                currentImage={member.image}
+                                                onUploadComplete={(url) => updateListItem("team", i, "image", url)}
+                                                helpText="Upload profile photo (JPG, PNG, or WebP)"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {content.team.length === 0 && (
+                                <p className="text-gray-500 text-sm text-center py-4">No team members added yet. Click "Add Team Member" to get started.</p>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* Partners/Organizations */}
+                    <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold text-gray-900">Partner Organizations</h2>
+                            <button onClick={() => addListItem("partners", { name: "", logo: "" })} className="text-sm bg-green-50 text-green-600 px-3 py-1 rounded-lg font-medium">+ Add Partner</button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {content.partners.map((partner, i) => (
+                                <div key={i} className="border p-4 rounded-lg relative bg-gray-50">
+                                    <button onClick={() => removeListItem("partners", i)} className="absolute top-2 right-2 text-red-500 hover:text-red-700"><Trash2 className="w-4 h-4" /></button>
+                                    <div className="space-y-3">
+                                        <input type="text" placeholder="Organization Name" value={partner.name} onChange={e => updateListItem("partners", i, "name", e.target.value)} className="w-full border p-2 rounded" />
+
+                                        {/* Logo Preview */}
+                                        {partner.logo && (
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <img src={partner.logo} alt={partner.name} className="w-20 h-20 object-contain rounded border bg-white p-2" />
+                                                <p className="text-xs text-gray-500">Current logo</p>
+                                            </div>
+                                        )}
+
+                                        {/* Logo Upload */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Logo</label>
+                                            <ImageUpload
+                                                label=""
+                                                type="about"
+                                                subType="partners"
+                                                currentImage={partner.logo}
+                                                onUploadComplete={(url) => updateListItem("partners", i, "logo", url)}
+                                                helpText="Upload logo (transparent PNG recommended)"
+                                            />
+                                        </div>
+
+                                        {/* Or Emoji Option */}
+                                        <div className="text-xs text-gray-500 text-center">
+                                            <span>Or use emoji: </span>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g., 🏔️"
+                                                value={partner.logo.length <= 4 ? partner.logo : ''}
+                                                onChange={e => updateListItem("partners", i, "logo", e.target.value)}
+                                                className="w-16 border p-1 rounded text-center ml-2"
+                                                maxLength={4}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {content.partners.length === 0 && (
+                                <p className="text-gray-500 text-sm text-center py-4 col-span-2">No partners added yet. Click "Add Partner" to get started.</p>
+                            )}
                         </div>
                     </section>
                 </div>

@@ -5,7 +5,8 @@ import { authenticatedFetch } from '@/lib/api';
 interface ImageUploadProps {
     label: string;
     onUploadComplete: (url: string) => void;
-    type: 'trek' | 'tour';
+    type: 'trek' | 'tour' | 'about';
+    subType?: 'team' | 'partners' | 'general'; // For type='about'
     currentImage?: string;
     multiple?: boolean;
     helpText?: string;
@@ -15,6 +16,7 @@ export default function ImageUpload({
     label,
     onUploadComplete,
     type,
+    subType,
     currentImage,
     multiple = false,
     helpText
@@ -47,6 +49,9 @@ export default function ImageUpload({
             const formData = new FormData();
             formData.append('image', file);
             formData.append('type', type);
+            if (subType) {
+                formData.append('subType', subType);
+            }
 
             const response = await authenticatedFetch('/api/admin/upload', {
                 method: 'POST',
