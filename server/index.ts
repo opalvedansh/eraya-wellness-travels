@@ -1,9 +1,6 @@
-// Only load .env file in development - Railway sets env vars directly in production
-// Loading dotenv in production would override Railway's environment variables with local .env values
-if (process.env.NODE_ENV !== "production") {
-  // Dynamic import isn't needed here since NODE_ENV is set before the process starts
-  require("dotenv/config");
-}
+// Load environment variables - dotenv/config loads .env automatically
+import "dotenv/config";
+
 import express from "express";
 import path from "path";
 import { handleDemo } from "./routes/demo";
