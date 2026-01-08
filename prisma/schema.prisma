@@ -288,3 +288,25 @@ model BlogPost {
   @@index([category])
   @@index([publishDate])
 }
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  name        String
+  location    String?  // e.g., "India", "Nepal"
+  experience  String?  // e.g., "Eraya Wellness Experience"
+  rating      Int      @default(5) // 1-5 stars
+  review      String   @db.Text
+  avatar      String?  // Avatar image URL or initials
+  
+  // Moderation
+  isApproved  Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isApproved])
+  @@index([isFeatured])
+  @@index([createdAt])
+}

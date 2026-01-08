@@ -33,6 +33,8 @@ import publicRoutes from "./routes/public.routes";
 import uploadRoutes from "./routes/upload.routes";
 import spiritualPostsRoutes from "./routes/spiritual-posts.routes";
 import blogPostsRoutes from "./routes/blog-posts.routes";
+import testimonialsRoutes from "./routes/testimonials.routes";
+import adminTestimonialsRoutes from "./routes/admin/testimonials.routes";
 import { corsConfig } from "./config/cors.config";
 import settingsRoutes from "./routes/settings.routes";
 import { requestLogger, errorLogger } from "./middleware/logging.middleware";
@@ -277,6 +279,12 @@ export function createServer() {
 
   // Public Content routes
   app.use("/api/content", contentRoutes);
+
+  // Testimonials routes (public)
+  app.use("/api/testimonials", testimonialsRoutes);
+
+  // Admin testimonials routes
+  app.use("/api/admin/testimonials", adminTestimonialsRoutes);
 
   // Spiritual Posts routes (public and admin)
   app.use("/api/spiritual-posts", spiritualPostsRoutes);
