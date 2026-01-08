@@ -60,8 +60,10 @@ router.post('/upload', authenticate, checkAdmin, upload.single('image'), (req: R
 
         const folder = req.body.type === 'trek' ? 'treks' : req.body.type === 'tour' ? 'tours' : 'general';
 
-        // Return the public URL
-        const imageUrl = `/uploads/${folder}/${req.file.filename}`;
+        // Return the full URL (backend URL + path)
+        // Images are stored on Railway, not Vercel, so we need the full backend URL
+        const backendUrl = process.env.BACKEND_URL || `http://localhost:8080`;
+        const imageUrl = `${backendUrl}/uploads/${folder}/${req.file.filename}`;
 
         res.json({
             success: true,
@@ -85,9 +87,10 @@ router.post('/upload-multiple', authenticate, checkAdmin, upload.array('images',
 
         const folder = req.body.type === 'trek' ? 'treks' : req.body.type === 'tour' ? 'tours' : 'general';
 
-        // Return array of public URLs
+        // Return array of full URLs (backend URL + path)
+        const backendUrl = process.env.BACKEND_URL || `http://localhost:8080`;
         const imageUrls = req.files.map(file => ({
-            url: `/uploads/${folder}/${file.filename}`,
+            url: `${backendUrl}/uploads/${folder}/${file.filename}`,
             filename: file.filename,
             size: file.size,
             mimetype: file.mimetype
