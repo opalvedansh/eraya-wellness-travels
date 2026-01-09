@@ -44,5 +44,5 @@ async function checkAdmin(email: string) {
 }
 
 // Check for the email from the earlier screenshot/context
-const email = "vedanshlovesmom88@gmail.com";
+const email = process.argv[2] || "erayawellnesstravel@gmail.com";
 checkAdmin(email);

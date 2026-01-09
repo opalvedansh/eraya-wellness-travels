@@ -270,31 +270,66 @@ export const handleTransformationSubmission: RequestHandler = async (req, res) =
       });
     }
 
-    const transformationData = {
-      id: Date.now().toString(),
-      name,
-      age,
-      storyTitle,
-      story,
-      location,
-      sharePublicly: sharePublicly || false,
-      createdAt: new Date().toISOString(),
-      approved: true, // Auto-approve for now
-    };
-
-    // Read existing data
-    const data = await readSubmissionsData();
-    data.transformations.push(transformationData);
-    await writeSubmissionsData(data);
-
-    logger.info("Transformation story submission received", {
-      id: transformationData.id,
-      name: transformationData.name,
+    // Create transformation story in database (pending approval)
+    const transformationStory = await prisma.transformationStory.create({
+      data: {
+        name,
+        age: String(age),
+        storyTitle,
+        story,
+        location,
+        avatar: "",
+        isApproved: false, // PENDING - requires admin approval
+        isFeatured: sharePublicly || false,
+      }
     });
+
+    logger.info("Transformation story submitted - pending approval", {
+      id: transformationStory.id,
+      name: transformationStory.name,
+    });
+
+    // Send notification email to admin
+    const adminEmailSent = await sendEmail({
+      to: ADMIN_EMAIL,
+      subject: `New Transformation Story - ${name}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #2d5016 0%, #3a6b1f 100%); color: white; padding: 20px; text-align: center;">
+            <h1 style="margin: 0;">New Transformation Story Awaiting Approval</h1>
+          </div>
+          <div style="padding: 20px; background: #f5f1e8;">
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="margin-top: 0; color: #2d5016;">Story Details</h3>
+              <p><strong>Name:</strong> ${name}</p>
+              <p><strong>Age:</strong> ${age}</p>
+              <p><strong>Location:</strong> ${location}</p>
+              <p><strong>Story Title:</strong> ${storyTitle}</p>
+              <p><strong>Story:</strong></p>
+              <p style="white-space: pre-wrap; border-left: 3px solid #2d5016; padding-left: 15px;">${story}</p>
+            </div>
+            <div style="text-align: center;">
+              <p>Go to admin panel to approve or reject this story</p>
+              <a href="${process.env.VITE_APP_URL || 'https://erayawellness.com'}/admin/transformations-management" 
+                 style="display: inline-block; background: #2d5016; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+                Review Stories
+              </a>
+            </div>
+          </div>
+        </div>
+      `,
+      text: `New transformation story from ${name} awaiting approval. Login to admin panel to review.`,
+    });
+
+    if (!adminEmailSent) {
+      logger.warn("Failed to send admin notification email for new story", {
+        storyId: transformationStory.id,
+      });
+    }
 
     res.status(200).json({
       success: true,
-      message: "Thank you for sharing your transformation story! It will appear on our website shortly.",
+      message: "Thank you for sharing your transformation story! It will appear on our website after approval by our team.",
     });
   } catch (error) {
     logger.error("Error handling transformation submission", {

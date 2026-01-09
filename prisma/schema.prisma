@@ -310,3 +310,25 @@ model Testimonial {
   @@index([isFeatured])
   @@index([createdAt])
 }
+
+model TransformationStory {
+  id          String   @id @default(cuid())
+  name        String
+  age         String
+  location    String
+  storyTitle  String
+  story       String   @db.Text
+  avatar      String?
+  
+  // Moderation
+  isApproved  Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isApproved])
+  @@index([isFeatured])
+  @@index([createdAt])
+}
