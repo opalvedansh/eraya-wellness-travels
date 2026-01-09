@@ -357,6 +357,7 @@ export default function AboutSettings() {
                                         video: { ...prev.video, url }
                                     }))}
                                     helpText="Upload MP4, WebM, or MOV (max 100MB)"
+                                    accept="video/*"
                                 />
 
                                 <p className="text-xs text-gray-500 mt-3 mb-1">Or paste video URL:</p>

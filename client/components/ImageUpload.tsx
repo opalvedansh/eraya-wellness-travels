@@ -10,6 +10,7 @@ interface ImageUploadProps {
     currentImage?: string;
     multiple?: boolean;
     helpText?: string;
+    accept?: string; // e.g., 'image/*' or 'video/*'
 }
 
 export default function ImageUpload({
@@ -19,7 +20,8 @@ export default function ImageUpload({
     subType,
     currentImage,
     multiple = false,
-    helpText
+    helpText,
+    accept = 'image/*'
 }: ImageUploadProps) {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -30,15 +32,25 @@ export default function ImageUpload({
 
         const file = files[0]; // For now, handle single file only
 
+        // Determine if we're uploading images or videos
+        const isVideoUpload = accept === 'video/*' || accept?.includes('video');
+        const isImageUpload = accept === 'image/*' || accept?.includes('image');
+
         // Validate file type
-        if (!file.type.startsWith('image/')) {
+        if (isVideoUpload && !file.type.startsWith('video/')) {
+            setError('Please upload a video file (MP4, WebM, MOV)');
+            return;
+        } else if (isImageUpload && !file.type.startsWith('image/')) {
             setError('Please upload an image file (JPG, PNG, WebP)');
             return;
         }
 
-        // Validate file size (5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            setError('File size must be less than 5MB');
+        // Validate file size (100MB for videos, 5MB for images)
+        const maxSize = isVideoUpload ? 100 * 1024 * 1024 : 5 * 1024 * 1024;
+        const maxSizeText = isVideoUpload ? '100MB' : '5MB';
+
+        if (file.size > maxSize) {
+            setError(`File size must be less than ${maxSizeText}`);
             return;
         }
 
@@ -108,7 +120,7 @@ export default function ImageUpload({
             >
                 <input
                     type="file"
-                    accept="image/*"
+                    accept={accept}
                     multiple={multiple}
                     onChange={(e) => handleFileUpload(e.target.files)}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -128,7 +140,9 @@ export default function ImageUpload({
                                 <span className="font-semibold text-green-primary">Click to upload</span> or drag and drop
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                                JPG, PNG or WebP (max 5MB)
+                                {accept === 'video/*' || accept?.includes('video')
+                                    ? 'MP4, WebM or MOV (max 100MB)'
+                                    : 'JPG, PNG or WebP (max 5MB)'}
                             </p>
                         </>
                     )}
