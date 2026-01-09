@@ -72,8 +72,9 @@ function CustomerStoriesCarousel() {
       })
       .then((data) => {
         console.log("Transformation stories fetched:", data);
-        // API returns array directly
-        setSubmittedTransformations(Array.isArray(data) ? data : []);
+        // Handle both response formats: {success: true, transformationStories: [...]} or direct array
+        const stories = data.transformationStories || (Array.isArray(data) ? data : []);
+        setSubmittedTransformations(stories);
       })
       .catch((error) => console.error("Error fetching transformations:", error));
   }, []);
