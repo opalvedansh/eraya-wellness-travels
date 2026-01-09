@@ -1,5 +1,6 @@
 import AboutPageHero from "@/components/AboutPageHero";
 import Footer from "@/components/Footer";
+import NavBar from "@/components/NavBar";
 import VideoPlayer from "@/components/VideoPlayer";
 import { Heart, Globe, Users, Compass, Award, Linkedin, Instagram, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, useInView } from "framer-motion";
@@ -323,7 +324,25 @@ export default function About() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Use API data if available, otherwise use defaults
+  // whyChooseUs is not customizable via admin (kept as static)
+  const whyChooseUs = defaultWhyChooseUs;
+
+  // Show minimal loading state while fetching
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-beige flex flex-col">
+        <NavBar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
+            <p className="text-text-dark/60">Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Use API data if available, otherwise use defaults (only after loading completes)
   const hero = aboutContent?.hero || defaultHero;
   const story = aboutContent?.story || defaultStory;
   const video = aboutContent?.video || defaultVideo;
@@ -331,9 +350,6 @@ export default function About() {
   const teamMembers = aboutContent?.team || defaultTeamMembers;
   const partners = aboutContent?.partners || defaultPartners;
   const stats = aboutContent?.stats || defaultStats;
-
-  // whyChooseUs is not customizable via admin (kept as static)
-  const whyChooseUs = defaultWhyChooseUs;
 
   return (
     <div className="min-h-screen bg-beige flex flex-col">
