@@ -1,46 +1,46 @@
 import { useState, useEffect } from 'react';
-import { Check, X, Star, Trash2, Edit2, Plus } from 'lucide-react';
+import { Check, X, Star, Trash2, Edit2 } from 'lucide-react';
 import AdminLayout from './AdminLayout';
 import { authenticatedFetch } from '@/lib/api';
 
-interface Story {
+interface TransformationStory {
     id: string;
     name: string;
-    location?: string;
-    experience?: string;
-    rating: number;
-    review: string;
+    age: string;
+    location: string;
+    storyTitle: string;
+    story: string;
     avatar?: string;
     isApproved: boolean;
     isFeatured: boolean;
     createdAt: string;
 }
 
-export default function StorysManagement() {
-    const [transformationStories, setStorys] = useState<Story[]>([]);
+export default function TransformationsManagement() {
+    const [stories, setStories] = useState<TransformationStory[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('all');
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: '',
+        age: '',
         location: '',
-        experience: '',
-        rating: 5,
-        review: '',
+        storyTitle: '',
+        story: '',
         avatar: ''
     });
 
     useEffect(() => {
-        fetchStorys();
+        fetchStories();
     }, []);
 
-    const fetchStorys = async () => {
+    const fetchStories = async () => {
         try {
-            const response = await authenticatedFetch('/api/admin/transformationStories');
+            const response = await authenticatedFetch('/api/admin/transformations');
             const data = await response.json();
-            setStorys(data);
+            setStories(data);
         } catch (error) {
-            console.error('Failed to fetch transformationStories:', error);
+            console.error('Failed to fetch transformation stories:', error);
         } finally {
             setLoading(false);
         }
@@ -48,11 +48,11 @@ export default function StorysManagement() {
 
     const toggleApprove = async (id: string) => {
         try {
-            const response = await authenticatedFetch(`/api/admin/transformationStories/${id}/approve`, {
+            const response = await authenticatedFetch(`/api/admin/transformations/${id}/approve`, {
                 method: 'PUT'
             });
             const updated = await response.json();
-            setStorys(prev => prev.map(t => t.id === id ? updated : t));
+            setStories(prev => prev.map(t => t.id === id ? updated : t));
         } catch (error) {
             console.error('Failed to toggle approval:', error);
         }
@@ -60,24 +60,24 @@ export default function StorysManagement() {
 
     const toggleFeature = async (id: string) => {
         try {
-            const response = await authenticatedFetch(`/api/admin/transformationStories/${id}/feature`, {
+            const response = await authenticatedFetch(`/api/admin/transformations/${id}/feature`, {
                 method: 'PUT'
             });
             const updated = await response.json();
-            setStorys(prev => prev.map(t => t.id === id ? updated : t));
+            setStories(prev => prev.map(t => t.id === id ? updated : t));
         } catch (error) {
             console.error('Failed to toggle featured:', error);
         }
     };
 
     const deleteStory = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this story?')) return;
+        if (!confirm('Are you sure you want to delete this transformation story?')) return;
 
         try {
-            await authenticatedFetch(`/api/admin/transformationStories/${id}`, {
+            await authenticatedFetch(`/api/admin/transformations/${id}`, {
                 method: 'DELETE'
             });
-            setStorys(prev => prev.filter(t => t.id !== id));
+            setStories(prev => prev.filter(t => t.id !== id));
         } catch (error) {
             console.error('Failed to delete story:', error);
         }
@@ -88,8 +88,8 @@ export default function StorysManagement() {
 
         try {
             const url = editingId
-                ? `/api/admin/transformationStories/${editingId}`
-                : '/api/admin/transformationStories';
+                ? `/api/admin/transformations/${editingId}`
+                : '/api/admin/transformations';
 
             const method = editingId ? 'PUT' : 'POST';
 
@@ -101,33 +101,33 @@ export default function StorysManagement() {
             const saved = await response.json();
 
             if (editingId) {
-                setStorys(prev => prev.map(t => t.id === editingId ? saved : t));
+                setStories(prev => prev.map(t => t.id === editingId ? saved : t));
             } else {
-                setStorys(prev => [saved, ...prev]);
+                setStories(prev => [saved, ...prev]);
             }
 
             // Reset form
-            setFormData({ name: '', location: '', experience: '', rating: 5, review: '', avatar: '' });
+            setFormData({ name: '', age: '', location: '', storyTitle: '', story: '', avatar: '' });
             setEditingId(null);
         } catch (error) {
-            console.error('Failed to save story:', error);
+            console.error('Failed to save transformation story:', error);
         }
     };
 
-    const startEdit = (story: Story) => {
+    const startEdit = (story: TransformationStory) => {
         setFormData({
             name: story.name,
-            location: story.location || '',
-            experience: story.experience || '',
-            rating: story.rating,
-            review: story.review,
+            age: story.age,
+            location: story.location,
+            storyTitle: story.storyTitle,
+            story: story.story,
             avatar: story.avatar || ''
         });
         setEditingId(story.id);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const filteredStorys = transformationStories.filter(t => {
+    const filteredStories = stories.filter(t => {
         if (filter === 'pending') return !t.isApproved;
         if (filter === 'approved') return t.isApproved;
         return true;
@@ -140,14 +140,14 @@ export default function StorysManagement() {
             <div className="p-6 max-w-6xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Transformations Management</h1>
-                        <p className="text-gray-600">Manage traveler reviews and transformationStories</p>
+                        <h1 className="text-3xl font-bold text-gray-900">Transformation Stories Management</h1>
+                        <p className="text-gray-600">Manage traveler transformation stories</p>
                     </div>
                 </div>
 
                 {/* Add/Edit Form */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
-                    <h2 className="text-xl font-bold mb-4">{editingId ? 'Edit' : 'Add New'} Story</h2>
+                    <h2 className="text-xl font-bold mb-4">{editingId ? 'Edit' : 'Add New'} Transformation Story</h2>
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input
                             type="text"
@@ -159,37 +159,36 @@ export default function StorysManagement() {
                         />
                         <input
                             type="text"
-                            placeholder="Location (e.g., India, Nepal)"
-                            value={formData.location}
-                            onChange={e => setFormData({ ...formData, location: e.target.value })}
+                            placeholder="Age *"
+                            value={formData.age}
+                            onChange={e => setFormData({ ...formData, age: e.target.value })}
                             className="border p-2 rounded"
+                            required
                         />
                         <input
                             type="text"
-                            placeholder="Experience (e.g., Eraya Wellness Experience)"
-                            value={formData.experience}
-                            onChange={e => setFormData({ ...formData, experience: e.target.value })}
+                            placeholder="Location (e.g., Mumbai, India) *"
+                            value={formData.location}
+                            onChange={e => setFormData({ ...formData, location: e.target.value })}
                             className="border p-2 rounded"
-                        />
-                        <div>
-                            <label className="block text-sm text-gray-700 mb-1">Rating</label>
-                            <select
-                                value={formData.rating}
-                                onChange={e => setFormData({ ...formData, rating: parseInt(e.target.value) })}
-                                className="border p-2 rounded w-full"
-                            >
-                                {[5, 4, 3, 2, 1].map(n => (
-                                    <option key={n} value={n}>{'⭐'.repeat(n)} - {n} stars</option>
-                                ))}
-                            </select>
-                        </div>
-                        <textarea
-                            placeholder="Review *"
-                            value={formData.review}
-                            onChange={e => setFormData({ ...formData, review: e.target.value })}
-                            className="border p-2 rounded md:col-span-2"
-                            rows={3}
                             required
+                        />
+                        <input
+                            type="text"
+                            placeholder="Story Title *"
+                            value={formData.storyTitle}
+                            onChange={e => setFormData({ ...formData, storyTitle: e.target.value })}
+                            className="border p-2 rounded"
+                            required
+                        />
+                        <textarea
+                            placeholder="Transformation Story * (minimum 50 characters)"
+                            value={formData.story}
+                            onChange={e => setFormData({ ...formData, story: e.target.value })}
+                            className="border p-2 rounded md:col-span-2"
+                            rows={4}
+                            required
+                            minLength={50}
                         />
                         <input
                             type="text"
@@ -210,7 +209,7 @@ export default function StorysManagement() {
                                     type="button"
                                     onClick={() => {
                                         setEditingId(null);
-                                        setFormData({ name: '', location: '', experience: '', rating: 5, review: '', avatar: '' });
+                                        setFormData({ name: '', age: '', location: '', storyTitle: '', story: '', avatar: '' });
                                     }}
                                     className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition"
                                 >
@@ -233,30 +232,26 @@ export default function StorysManagement() {
                                 }`}
                         >
                             {f.charAt(0).toUpperCase() + f.slice(1)}
-                            {f === 'pending' && ` (${transformationStories.filter(t => !t.isApproved).length})`}
+                            {f === 'pending' && ` (${stories.filter(t => !t.isApproved).length})`}
                         </button>
                     ))}
                 </div>
 
-                {/* Storys List */}
+                {/* Stories List */}
                 <div className="space-y-4">
-                    {filteredStorys.map(story => (
+                    {filteredStories.map(story => (
                         <div key={story.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-2">
                                         <h3 className="font-bold text-lg">{story.name}</h3>
+                                        <span className="text-sm text-gray-500">• Age {story.age}</span>
                                         {story.location && (
                                             <span className="text-sm text-gray-500">• {story.location}</span>
                                         )}
                                     </div>
-                                    {story.experience && (
-                                        <p className="text-sm text-gray-600 mb-2">{story.experience}</p>
-                                    )}
+                                    <p className="font-semibold text-green-primary mb-2">{story.storyTitle}</p>
                                     <div className="flex items-center gap-2 mb-3">
-                                        <div className="text-yellow-500">
-                                            {'⭐'.repeat(story.rating)}
-                                        </div>
                                         <div className="flex gap-2">
                                             {story.isApproved && (
                                                 <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Approved</span>
@@ -271,7 +266,7 @@ export default function StorysManagement() {
                                             )}
                                         </div>
                                     </div>
-                                    <p className="text-gray-700 italic">"{story.review}"</p>
+                                    <p className="text-gray-700 italic">"{story.story}"</p>
                                 </div>
                             </div>
 
@@ -316,13 +311,13 @@ export default function StorysManagement() {
                         </div>
                     ))}
 
-                    {filteredStorys.length === 0 && (
+                    {filteredStories.length === 0 && (
                         <div className="text-center py-12 text-gray-500">
-                            No transformationStories found for this filter.
+                            No transformation stories found for this filter.
                         </div>
                     )}
                 </div>
-            </div >
-        </AdminLayout >
+            </div>
+        </AdminLayout>
     );
 }
