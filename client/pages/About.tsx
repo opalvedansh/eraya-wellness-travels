@@ -60,9 +60,14 @@ function CustomerStoriesCarousel() {
 
   // Fetch submitted transformation stories from API
   useEffect(() => {
+    console.log("Fetching transformation stories from:", `${API_BASE_URL}/api/transformations`);
     fetch(`${API_BASE_URL}/api/transformations`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
+        console.log("Transformation stories fetched:", data);
         // API returns array directly
         setSubmittedTransformations(Array.isArray(data) ? data : []);
       })
@@ -93,6 +98,14 @@ function CustomerStoriesCarousel() {
     story: trans.story,
     transformation: trans.storyTitle,
   }));
+
+  if (stories.length === 0) {
+    return (
+      <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
+        <p className="text-text-dark/60">No transformation stories shared yet. Be the first to share your journey!</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative">
