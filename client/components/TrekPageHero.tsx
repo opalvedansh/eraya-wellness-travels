@@ -9,7 +9,7 @@ export default function TrekPageHero() {
             <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
-                    backgroundImage: `url("/images/WhatsApp Image 2026-01-09 at 23.02.55.jpeg")`,
+                    backgroundImage: `url("/WhatsApp Image 2026-01-09 at 23.02.55.jpeg")`,
                 }}
             />
 
