@@ -9,7 +9,7 @@ export default function TourPageHero() {
             <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
-                    backgroundImage: `url("https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80")`,
+                    backgroundImage: `url("/images/hero.jpeg")`,
                 }}
             />
 

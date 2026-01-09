@@ -99,7 +99,7 @@ export default function Contact() {
       <PageHero
         title="Get In Touch"
         subtitle="We're here to help you plan your perfect adventure. Reach out and let's start your journey together."
-        backgroundImage="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1920&q=80"
+        backgroundImage="/images/hero(2).jpeg"
       />
 
       <div className="flex-grow">
