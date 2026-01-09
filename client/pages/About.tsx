@@ -60,17 +60,12 @@ function CustomerStoriesCarousel() {
 
   // Fetch submitted transformation stories from API
   useEffect(() => {
-    // Add timestamp to bust cache
+    // Add timestamp to bust cache (no custom headers needed - server handles cache control)
     const cacheBuster = `?t=${Date.now()}`;
     const apiUrl = `${API_BASE_URL}/api/transformations${cacheBuster}`;
 
     console.log("Fetching transformation stories from:", apiUrl);
-    fetch(apiUrl, {
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-      }
-    })
+    fetch(apiUrl)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
         return res.json();
