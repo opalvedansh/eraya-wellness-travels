@@ -18,6 +18,11 @@ router.get('/', async (req: Request, res: Response) => {
             where.isFeatured = true;
         }
 
+        // DEBUG: Log counts to diagnosis issue
+        const totalCount = await prisma.transformationStory.count();
+        const approvedCount = await prisma.transformationStory.count({ where: { isApproved: true } });
+        logger.info(`Transformation Story Debug: Total=${totalCount}, Approved=${approvedCount}, Querying with featured=${featured}`);
+
         const stories = await prisma.transformationStory.findMany({
             where,
             orderBy: [
@@ -32,10 +37,12 @@ router.get('/', async (req: Request, res: Response) => {
                 storyTitle: true,
                 story: true,
                 avatar: true,
-                createdAt: true
+                createdAt: true,
+                isApproved: true // Select this just to verify in logs
             }
         });
 
+        logger.info(`Transformation stories found: ${stories.length}`);
         res.json(stories);
     } catch (error) {
         logger.error('Failed to fetch transformation stories:', error);
