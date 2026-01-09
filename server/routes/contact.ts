@@ -183,31 +183,67 @@ export const handleReviewSubmission: RequestHandler = async (req, res) => {
       });
     }
 
-    const reviewData = {
-      id: Date.now().toString(),
-      name,
-      email,
-      rating: Number(rating),
-      review,
-      location,
-      displayOnHomepage: displayOnHomepage || false,
-      createdAt: new Date().toISOString(),
-      approved: true, // Auto-approve for now
-    };
-
-    // Read existing data
-    const data = await readSubmissionsData();
-    data.reviews.push(reviewData);
-    await writeSubmissionsData(data);
-
-    logger.info("Review submission received", {
-      id: reviewData.id,
-      name: reviewData.name,
+    // Create testimonial in database with isApproved=false (pending review)
+    const testimonial = await prisma.testimonial.create({
+      data: {
+        name,
+        review,
+        rating: Number(rating),
+        location,
+        experience: "Eraya Wellness Experience", // Default experience
+        avatar: "", // No avatar from submission
+        isApproved: false, // PENDING - requires admin approval
+        isFeatured: displayOnHomepage || false, // Will only show if approved
+      }
     });
+
+    logger.info("Review submission received - pending approval", {
+      id: testimonial.id,
+      name: testimonial.name,
+      rating: testimonial.rating,
+    });
+
+    // Send notification email to admin about new review
+    const adminEmailSent = await sendEmail({
+      to: ADMIN_EMAIL,
+      subject: `New Review Submission - ${name} (${rating}⭐)`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #2d5016 0%, #3a6b1f 100%); color: white; padding: 20px; text-align: center;">
+            <h1 style="margin: 0;">New Review Awaiting Approval</h1>
+          </div>
+          <div style="padding: 20px; background: #f5f1e8;">
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="margin-top: 0; color: #2d5016;">Review Details</h3>
+              <p><strong>Name:</strong> ${name}</p>
+              <p><strong>Email:</strong> ${email}</p>
+              <p><strong>Location:</strong> ${location}</p>
+              <p><strong>Rating:</strong> ${'⭐'.repeat(Number(rating))}</p>
+              <p><strong>Review:</strong></p>
+              <p style="white-space: pre-wrap; border-left: 3px solid #2d5016; padding-left: 15px;">${review}</p>
+            </div>
+            <div style="text-align: center;">
+              <p>Go to admin panel to approve or reject this review</p>
+              <a href="${process.env.VITE_APP_URL || 'https://erayawellness.com'}/admin/testimonials-management" 
+                 style="display: inline-block; background: #2d5016; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+                Review Testimonials
+              </a>
+            </div>
+          </div>
+        </div>
+      `,
+      text: `New review from ${name} (${rating} stars) awaiting approval. Login to admin panel to review.`,
+    });
+
+    if (!adminEmailSent) {
+      logger.warn("Failed to send admin notification email for new review", {
+        testimonialId: testimonial.id,
+      });
+    }
 
     res.status(200).json({
       success: true,
-      message: "Thank you for your review! It will appear on our website shortly.",
+      message: "Thank you for your review! It will appear on our website after approval by our team.",
     });
   } catch (error) {
     logger.error("Error handling review submission", {
