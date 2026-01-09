@@ -1328,7 +1328,7 @@ export default function TrekDetail() {
                         <div className="flex flex-col gap-4">
                           {/* Day Badge - Circular with Gradient */}
                           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-accent to-blue-accent-dark text-white font-black text-sm shadow-lg group-hover:scale-110 transition-all duration-300">
-                            {item.day.replace('Day ', '')}
+                            {typeof item.day === 'string' ? item.day.replace('Day ', '') : String(item.day ?? index + 1)}
                           </div>
                           <div>
                             <h3 className="text-xl sm:text-2xl font-black text-text-dark mb-3 group-hover:text-green-primary transition-colors">{item.title}</h3>

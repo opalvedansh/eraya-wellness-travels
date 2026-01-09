@@ -147,11 +147,29 @@ router.get("/tours/:id", async (req: Request, res: Response) => {
 // Create tour
 router.post("/tours", async (req: Request, res: Response) => {
     try {
-        const tour = await prisma.tour.create({
-            data: req.body,
+        // Log incoming data
+        logger.info("Creating tour", {
+            bodyKeys: Object.keys(req.body),
+            isActive: req.body.isActive,
+            userId: req.user?.userId
         });
 
-        logger.info("Tour created", { tourId: tour.id, userId: req.user?.userId });
+        // Ensure isActive defaults to true if not provided
+        const dataToCreate = {
+            ...req.body,
+            isActive: req.body.isActive ?? true,
+        };
+
+        const tour = await prisma.tour.create({
+            data: dataToCreate,
+        });
+
+        logger.info("Tour created successfully", {
+            tourId: tour.id,
+            slug: tour.slug,
+            isActive: tour.isActive,
+            userId: req.user?.userId
+        });
         res.json(tour);
     } catch (error) {
         logger.error("Failed to create tour", { error });
@@ -226,11 +244,29 @@ router.get("/treks/:id", async (req: Request, res: Response) => {
 // Create trek
 router.post("/treks", async (req: Request, res: Response) => {
     try {
-        const trek = await prisma.trek.create({
-            data: req.body,
+        // Log incoming data
+        logger.info("Creating trek", {
+            bodyKeys: Object.keys(req.body),
+            isActive: req.body.isActive,
+            userId: req.user?.userId
         });
 
-        logger.info("Trek created", { trekId: trek.id, userId: req.user?.userId });
+        // Ensure isActive defaults to true if not provided
+        const dataToCreate = {
+            ...req.body,
+            isActive: req.body.isActive ?? true,
+        };
+
+        const trek = await prisma.trek.create({
+            data: dataToCreate,
+        });
+
+        logger.info("Trek created successfully", {
+            trekId: trek.id,
+            slug: trek.slug,
+            isActive: trek.isActive,
+            userId: req.user?.userId
+        });
         res.status(201).json(trek);
     } catch (error) {
         logger.error("Failed to create trek", { error });
