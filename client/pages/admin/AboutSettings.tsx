@@ -53,6 +53,11 @@ interface AboutPageContent {
         quoteAuthor: string;
         image: string;
     };
+    video: {
+        url: string;
+        title: string;
+        description: string;
+    };
     milestones: Milestone[];
     team: TeamMember[];
     partners: Partner[];
@@ -75,6 +80,11 @@ const defaultContent: AboutPageContent = {
         quote: "Travel isn't about ticking boxes on a bucket list. It's about becoming part of a global family that cares for each other and our planet.",
         quoteAuthor: "Reeju, Founder",
         image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=500&fit=crop"
+    },
+    video: {
+        url: "",
+        title: "Watch Our Story",
+        description: "See how we're changing travel"
     },
     milestones: [
         {
@@ -281,6 +291,99 @@ export default function AboutSettings() {
                                 />
                                 <p className="text-xs text-gray-500 mt-2">Or paste URL:</p>
                                 <input type="url" value={content.story.image} onChange={e => updateStory("image", e.target.value)} className="w-full px-4 py-2 border rounded-lg mt-1" placeholder="https://..." />
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Video Section */}
+                    <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">Video Section</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Video Title
+                                </label>
+                                <input
+                                    type="text"
+                                    value={content.video.title}
+                                    onChange={e => setContent(prev => ({
+                                        ...prev,
+                                        video: { ...prev.video, title: e.target.value }
+                                    }))}
+                                    className="w-full px-4 py-2 border rounded-lg"
+                                    placeholder="e.g., Watch Our Story"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Video Description
+                                </label>
+                                <input
+                                    type="text"
+                                    value={content.video.description}
+                                    onChange={e => setContent(prev => ({
+                                        ...prev,
+                                        video: { ...prev.video, description: e.target.value }
+                                    }))}
+                                    className="w-full px-4 py-2 border rounded-lg"
+                                    placeholder="e.g., See how we're changing travel"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Video URL
+                                </label>
+
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
+                                    <p className="text-sm text-blue-900 font-medium mb-2">
+                                        📹 Supported Formats:
+                                    </p>
+                                    <ul className="text-xs text-blue-800 space-y-1 ml-4">
+                                        <li>• YouTube: <code className="bg-blue-100 px-1 rounded">https://www.youtube.com/watch?v=VIDEO_ID</code></li>
+                                        <li>• Vimeo: <code className="bg-blue-100 px-1 rounded">https://vimeo.com/VIDEO_ID</code></li>
+                                        <li>• Direct MP4: <code className="bg-blue-100 px-1 rounded">https://example.com/video.mp4</code></li>
+                                    </ul>
+                                </div>
+
+                                <ImageUpload
+                                    label="Upload Video File"
+                                    type="about"
+                                    subType="general"
+                                    currentImage={content.video.url}
+                                    onUploadComplete={(url) => setContent(prev => ({
+                                        ...prev,
+                                        video: { ...prev.video, url }
+                                    }))}
+                                    helpText="Upload MP4, WebM, or MOV (max 100MB)"
+                                />
+
+                                <p className="text-xs text-gray-500 mt-3 mb-1">Or paste video URL:</p>
+                                <input
+                                    type="url"
+                                    value={content.video.url}
+                                    onChange={e => setContent(prev => ({
+                                        ...prev,
+                                        video: { ...prev.video, url: e.target.value }
+                                    }))}
+                                    className="w-full px-4 py-2 border rounded-lg"
+                                    placeholder="https://www.youtube.com/watch?v=... or https://example.com/video.mp4"
+                                />
+
+                                {/* Video Preview */}
+                                {content.video.url && (
+                                    <div className="mt-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Preview:
+                                        </label>
+                                        <div className="border rounded-lg overflow-hidden max-w-md">
+                                            <div className="text-sm text-gray-500 p-2 bg-gray-50">
+                                                Video: {content.video.url.substring(0, 50)}{content.video.url.length > 50 ? '...' : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </section>

@@ -1,5 +1,6 @@
 import AboutPageHero from "@/components/AboutPageHero";
 import Footer from "@/components/Footer";
+import VideoPlayer from "@/components/VideoPlayer";
 import { Heart, Globe, Users, Compass, Award, Linkedin, Instagram, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
@@ -299,6 +300,12 @@ export default function About() {
     image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=500&fit=crop"
   };
 
+  const defaultVideo = {
+    url: "",
+    title: "Watch Our Story",
+    description: "See how we're changing travel"
+  };
+
   // State for dynamic content from API
   const [aboutContent, setAboutContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -319,6 +326,7 @@ export default function About() {
   // Use API data if available, otherwise use defaults
   const hero = aboutContent?.hero || defaultHero;
   const story = aboutContent?.story || defaultStory;
+  const video = aboutContent?.video || defaultVideo;
   const milestones = aboutContent?.milestones || defaultMilestones;
   const teamMembers = aboutContent?.team || defaultTeamMembers;
   const partners = aboutContent?.partners || defaultPartners;
@@ -580,21 +588,13 @@ export default function About() {
         {/* Video/Media Section */}
         <section className="py-12 sm:py-16 lg:py-24 px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-            {/* Video Placeholder */}
+            {/* Video Player */}
             <div className="rounded-2xl overflow-hidden shadow-premium-lg">
-              <div className="relative aspect-video bg-gray-200">
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-green-primary to-green-primary/80">
-                  <div className="text-center text-white">
-                    <div className="w-16 sm:w-20 h-16 sm:h-20 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors cursor-pointer">
-                      <svg className="w-8 sm:w-10 h-8 sm:h-10" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                    <p className="text-lg sm:text-xl font-bold">Watch Our Story</p>
-                    <p className="text-sm text-white/80 mt-2">See how we're changing travel</p>
-                  </div>
-                </div>
-              </div>
+              <VideoPlayer
+                url={video.url}
+                title={video.title}
+                description={video.description}
+              />
             </div>
 
             {/* Content */}
