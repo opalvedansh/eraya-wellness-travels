@@ -4,7 +4,7 @@ import logger from '../services/logger';
 
 const router = Router();
 
-// Get approved transformationStorys for public website
+// Get approved transformation stories for public website
 router.get('/', async (req: Request, res: Response) => {
     try {
         const { featured } = req.query;
@@ -13,12 +13,12 @@ router.get('/', async (req: Request, res: Response) => {
             isApproved: true
         };
 
-        // If featured=true, only get featured transformationStorys
+        // If featured=true, only get featured stories
         if (featured === 'true') {
             where.isFeatured = true;
         }
 
-        const transformationStorys = await prisma.transformationStory.findMany({
+        const stories = await prisma.transformationStory.findMany({
             where,
             orderBy: [
                 { isFeatured: 'desc' }, // Featured first
@@ -27,19 +27,19 @@ router.get('/', async (req: Request, res: Response) => {
             select: {
                 id: true,
                 name: true,
+                age: true,
                 location: true,
-                experience: true,
-                rating: true,
-                review: true,
+                storyTitle: true,
+                story: true,
                 avatar: true,
                 createdAt: true
             }
         });
 
-        res.json(transformationStorys);
+        res.json(stories);
     } catch (error) {
-        logger.error('Failed to fetch transformationStorys:', error);
-        res.status(500).json({ error: 'Failed to fetch transformationStorys' });
+        logger.error('Failed to fetch transformation stories:', error);
+        res.status(500).json({ error: 'Failed to fetch transformation stories' });
     }
 });
 
