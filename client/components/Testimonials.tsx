@@ -7,16 +7,15 @@ import { API_BASE_URL } from "@/lib/config";
 export default function Testimonials() {
   const [submittedReviews, setSubmittedReviews] = useState<any[]>([]);
 
-  // Fetch submitted reviews from API
+  // Fetch approved testimonials from API
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/reviews`)
+    fetch(`${API_BASE_URL}/api/testimonials`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          setSubmittedReviews(data.reviews);
-        }
+        // API returns array of testimonials directly
+        setSubmittedReviews(Array.isArray(data) ? data : []);
       })
-      .catch((error) => console.error("Error fetching reviews:", error));
+      .catch((error) => console.error("Error fetching testimonials:", error));
   }, []);
 
   const hardcodedTestimonials = [
