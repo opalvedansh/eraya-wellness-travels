@@ -63,9 +63,8 @@ function CustomerStoriesCarousel() {
     fetch(`${API_BASE_URL}/api/transformations`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          setSubmittedTransformations(data.transformations);
-        }
+        // API returns array directly
+        setSubmittedTransformations(Array.isArray(data) ? data : []);
       })
       .catch((error) => console.error("Error fetching transformations:", error));
   }, []);
@@ -86,48 +85,14 @@ function CustomerStoriesCarousel() {
     emblaApi.on("reInit", onSelect);
   }, [emblaApi, onSelect]);
 
-  const hardcodedStories = [
-    {
-      name: "Sarah Johnson",
-      trip: "Himalayan Heritage Explorer - 2023",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
-      story: "This trip changed my life. I went seeking adventure and found a deeper connection to myself and the world around me. The local guides shared their wisdom, and I returned home with a new perspective.",
-      transformation: "From Corporate Burnout to Mindful Living",
-    },
-    {
-      name: "Michael Chen",
-      trip: "Mystic Valley Cultural Tour - 2024",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
-      story: "The meditation practices I learned in Bhutan have become part of my daily routine. I'm calmer, more present, and genuinely happier. This wasn't just a vacation—it was a transformation.",
-      transformation: "From Anxiety to Inner Peace",
-    },
-    {
-      name: "Elena Rodriguez",
-      trip: "Sacred Trails Experience - 2023",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
-      story: "Meeting local artisans and hearing their stories gave me a whole new perspective on what truly matters in life. I now mentor young women in my community, inspired by the strong women I met in India.",
-      transformation: "From Tourist to Cultural Ambassador",
-    },
-    {
-      name: "David Park",
-      trip: "Royal Cities Discovery Tour - 2024",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-      story: "Walking the pilgrimage routes with Tibetan monks taught me about dedication and faith. The experience was profoundly spiritual and has influenced every decision I make.",
-      transformation: "From Skeptic to Spiritual Seeker",
-    },
-  ];
-
-  // Merge submitted transformations with hardcoded stories
-  const stories = [
-    ...submittedTransformations.map((trans) => ({
-      name: trans.name,
-      trip: "Eraya Wellness Journey",
-      image: `https://ui-avatars.com/api/?name=${encodeURIComponent(trans.name)}&background=2d5016&color=fff&size=400`,
-      story: trans.story,
-      transformation: trans.storyTitle,
-    })),
-    ...hardcodedStories,
-  ];
+  // Map transformation stories to display format
+  const stories = submittedTransformations.map((trans) => ({
+    name: trans.name,
+    trip: `Age: ${trans.age} • ${trans.location}`,
+    image: trans.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(trans.name)}&background=2d5016&color=fff&size=400`,
+    story: trans.story,
+    transformation: trans.storyTitle,
+  }));
 
   return (
     <div className="relative">
