@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Eye, EyeOff, Save, X } from "lucide-react";
 import AdminLayout from "./AdminLayout";
 import { authenticatedFetch } from "@/lib/api";
+import ImageUpload from "@/components/ImageUpload";
 
 interface SpiritualPost {
     id: string;
@@ -223,7 +224,30 @@ export default function SpiritualPostsManagement() {
 
                         {/* Cover Image */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image URL</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
+
+                            {/* Image Preview */}
+                            {formData.coverImage && (
+                                <div className="mb-3">
+                                    <img
+                                        src={formData.coverImage}
+                                        alt="Cover preview"
+                                        className="w-full max-w-md h-48 object-cover rounded-lg border"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Upload Component */}
+                            <ImageUpload
+                                label=""
+                                type="about"
+                                subType="general"
+                                currentImage={formData.coverImage}
+                                onUploadComplete={(url) => setFormData({ ...formData, coverImage: url })}
+                                helpText="Upload cover image (JPG, PNG, or WebP)"
+                            />
+
+                            <p className="text-xs text-gray-500 mt-3 mb-1">Or paste image URL:</p>
                             <input
                                 type="url"
                                 value={formData.coverImage}
