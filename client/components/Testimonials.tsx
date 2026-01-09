@@ -18,82 +18,16 @@ export default function Testimonials() {
       .catch((error) => console.error("Error fetching testimonials:", error));
   }, []);
 
-  const hardcodedTestimonials = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      location: "New York, USA",
-      rating: 5,
-      text: "Eraya Wellness Travels transformed my perspective on adventure travel. The Annapurna Base Camp trek was challenging but incredibly rewarding. Our guide was knowledgeable, patient, and made us feel safe throughout the journey.",
-      image:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-      tour: "Annapurna Base Camp Trek",
-    },
-    {
-      id: 2,
-      name: "Michael Chen",
-      location: "Singapore",
-      rating: 5,
-      text: "The spiritual journey to Tibet exceeded all expectations. The monasteries, the culture, and the mindfulness practices were life-changing. Eraya's attention to detail and authentic experiences make them stand out.",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-      tour: "Royal Cities Discovery Tour",
-    },
-    {
-      id: 3,
-      name: "Emma Williams",
-      location: "London, UK",
-      rating: 5,
-      text: "As a solo female traveler, I felt completely safe and supported. The group was welcoming, the itinerary was well-planned, and I made friends for life. The Kerala backwater experience was magical!",
-      image:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-      tour: "Hidden Lakes & Highlands Journey",
-    },
-    {
-      id: 4,
-      name: "David Martinez",
-      location: "Barcelona, Spain",
-      rating: 5,
-      text: "Professional, organized, and passionate about what they do. The Patagonia adventure was epic - from glaciers to mountain peaks. Every day was a new adventure. Highly recommend!",
-      image:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-      tour: "Timeless Temples Tour",
-    },
-    {
-      id: 5,
-      name: "Priya Patel",
-      location: "Mumbai, India",
-      rating: 5,
-      text: "The Mystic Valley Cultural Tour was exactly what I needed. The combination of cultural immersion and wellness practices was perfect. Eraya truly understands how to create meaningful travel experiences.",
-      image:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
-      tour: "Mystic Valley Cultural Tour",
-    },
-    {
-      id: 6,
-      name: "James Anderson",
-      location: "Sydney, Australia",
-      rating: 5,
-      text: "Outstanding service from start to finish. The team was responsive, the guides were experts, and the experiences were authentic. I've already booked my next adventure with Eraya!",
-      image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-      tour: "Everest Base Camp Trek",
-    },
-  ];
-
-  // Merge submitted reviews with hardcoded testimonials
-  const testimonials = [
-    ...submittedReviews.map((review, index) => ({
-      id: `submitted-${review.id}`,
-      name: review.name,
-      location: review.location,
-      rating: review.rating,
-      text: review.review,
-      image: `https://ui-avatars.com/api/?name=${encodeURIComponent(review.name)}&background=2d5016&color=fff&size=150`,
-      tour: "Eraya Wellness Experience",
-    })),
-    ...hardcodedTestimonials,
-  ];
+  // Map testimonials to display format
+  const testimonials = submittedReviews.map((testimonial) => ({
+    id: testimonial.id,
+    name: testimonial.name,
+    location: testimonial.location || "Traveler",
+    rating: testimonial.rating,
+    text: testimonial.review,
+    image: testimonial.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=2d5016&color=fff&size=150`,
+    tour: testimonial.experience || "Eraya Wellness Experience",
+  }));
 
   return (
     <section className="py-16 sm:py-20 md:py-28 lg:py-32 px-3 sm:px-4 md:px-6 lg:px-12 bg-beige-light">
