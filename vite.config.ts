@@ -25,15 +25,53 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['framer-motion', 'lucide-react'],
-          'map-vendor': ['leaflet', 'react-leaflet'],
-          '3d-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
+        manualChunks: (id) => {
+          // Vendor chunks
+          if (id.includes('node_modules')) {
+            // React ecosystem
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            // UI and animation libraries
+            if (id.includes('framer-motion') || id.includes('lucide-react')) {
+              return 'ui-vendor-1';
+            }
+            // Radix UI components
+            if (id.includes('@radix-ui')) {
+              return 'ui-vendor-2';
+            }
+            // Maps
+            if (id.includes('leaflet')) {
+              return 'map-vendor';
+            }
+            // 3D libraries
+            if (id.includes('three') || id.includes('@react-three')) {
+              return '3d-vendor';
+            }
+            // Carousel
+            if (id.includes('embla-carousel')) {
+              return 'carousel-vendor';
+            }
+            // Forms and validation
+            if (id.includes('react-hook-form') || id.includes('zod')) {
+              return 'form-vendor';
+            }
+            // Other large libraries
+            if (id.includes('recharts')) {
+              return 'charts-vendor';
+            }
+            // Everything else from node_modules
+            return 'vendor';
+          }
+          // Admin pages
+          if (id.includes('/pages/admin/')) {
+            return 'admin';
+          }
         },
       },
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 600,
+    minify: 'esbuild',
   },
   plugins: [react()],
   resolve: {
@@ -43,4 +81,3 @@ export default defineConfig({
     },
   },
 });
-
