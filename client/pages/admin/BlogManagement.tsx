@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Eye, EyeOff, Save, X, Star } from "lucide-react";
 import AdminLayout from "./AdminLayout";
 import { authenticatedFetch } from "@/lib/api";
+import ImageUpload from "@/components/ImageUpload";
 
 interface BlogPost {
     id: string;
@@ -241,14 +242,38 @@ export default function BlogManagement() {
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Featured Image URL</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
+
+                                {/* Image Preview */}
+                                {formData.featuredImage && (
+                                    <div className="mb-3">
+                                        <img
+                                            src={formData.featuredImage}
+                                            alt="Featured image preview"
+                                            className="w-full max-w-md h-48 object-cover rounded-lg border"
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Upload Component */}
+                                <ImageUpload
+                                    label=""
+                                    type="about"
+                                    subType="general"
+                                    currentImage={formData.featuredImage}
+                                    onUploadComplete={(url) => setFormData({ ...formData, featuredImage: url })}
+                                    helpText="Upload featured image (JPG, PNG, or WebP)"
+                                />
+
+                                <p className="text-xs text-gray-500 mt-3 mb-1">Or paste image URL:</p>
                                 <input
                                     type="url"
                                     value={formData.featuredImage}
                                     onChange={(e) => setFormData({ ...formData, featuredImage: e.target.value })}
                                     className="w-full px-4 py-2 border rounded-lg"
+                                    placeholder="https://..."
                                 />
                             </div>
                             <div>
