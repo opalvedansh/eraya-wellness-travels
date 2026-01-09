@@ -60,8 +60,17 @@ function CustomerStoriesCarousel() {
 
   // Fetch submitted transformation stories from API
   useEffect(() => {
-    console.log("Fetching transformation stories from:", `${API_BASE_URL}/api/transformations`);
-    fetch(`${API_BASE_URL}/api/transformations`)
+    // Add timestamp to bust cache
+    const cacheBuster = `?t=${Date.now()}`;
+    const apiUrl = `${API_BASE_URL}/api/transformations${cacheBuster}`;
+
+    console.log("Fetching transformation stories from:", apiUrl);
+    fetch(apiUrl, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
         return res.json();

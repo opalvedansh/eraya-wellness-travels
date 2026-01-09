@@ -43,6 +43,12 @@ router.get('/', async (req: Request, res: Response) => {
         });
 
         logger.info(`Transformation stories found: ${stories.length}`);
+
+        // Prevent caching to ensure fresh data
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+
         res.json(stories);
     } catch (error) {
         logger.error('Failed to fetch transformation stories:', error);
