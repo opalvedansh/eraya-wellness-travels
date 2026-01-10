@@ -716,9 +716,18 @@ export default function About() {
                   transition={{ duration: 0.2 }}
                   className="bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-border flex flex-col items-center justify-center text-center group"
                 >
-                  <div className="text-3xl sm:text-4xl lg:text-5xl mb-3 group-hover:scale-110 transition-transform">
-                    {partner.logo}
-                  </div>
+                  {/* Check if logo is a URL (image) or emoji/icon */}
+                  {partner.logo && (partner.logo.startsWith('http://') || partner.logo.startsWith('https://')) ? (
+                    <img
+                      src={partner.logo}
+                      alt={partner.name}
+                      className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 object-contain mb-3 group-hover:scale-110 transition-transform"
+                    />
+                  ) : (
+                    <div className="text-3xl sm:text-4xl lg:text-5xl mb-3 group-hover:scale-110 transition-transform">
+                      {partner.logo || '🏢'}
+                    </div>
+                  )}
                   <p className="text-text-dark font-semibold text-xs sm:text-sm leading-tight">
                     {partner.name}
                   </p>
