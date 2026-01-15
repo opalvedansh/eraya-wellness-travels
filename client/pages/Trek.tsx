@@ -265,6 +265,7 @@ interface Trek {
   images?: string[];
   isActive: boolean;
   isFeatured: boolean;
+  tags?: string[];
   // Computed fields added in displayTreks
   image?: string;
   groupSize?: string;
@@ -355,7 +356,7 @@ export default function Trek() {
       groupSize: `${trek.maxGroupSize || 12} people`,
       vibe: trek.vibe || "Adventure Trek",
       reviewCount: Math.floor(Math.random() * 300) + 50,
-      badges: trek.isFeatured ? ["Featured"] : [],
+      badges: trek.tags && trek.tags.length > 0 ? trek.tags : (trek.isFeatured ? ["Featured"] : []),
       spotsLeft: Math.floor(Math.random() * 10) + 3,
       coordinates: (trek.latitude && trek.longitude ? [trek.latitude, trek.longitude] : [28.0, 84.0]) as [number, number],
     }));

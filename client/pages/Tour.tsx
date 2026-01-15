@@ -270,6 +270,7 @@ interface Tour {
   images?: string[];
   isActive: boolean;
   isFeatured: boolean;
+  tags?: string[];
   // Computed fields added in displayTours
   image?: string;
   groupSize?: string;
@@ -356,7 +357,7 @@ export default function Tour() {
       groupSize: `${tour.maxGroupSize || 12} people`,
       vibe: tour.vibe || "Cultural Tour",
       reviewCount: Math.floor(Math.random() * 300) + 50,
-      badges: tour.isFeatured ? ["Popular"] : [],
+      badges: tour.tags && tour.tags.length > 0 ? tour.tags : (tour.isFeatured ? ["Popular"] : []),
       spotsLeft: Math.floor(Math.random() * 10) + 3,
       coordinates: (tour.latitude && tour.longitude ? [tour.latitude, tour.longitude] : [27.7, 85.3]) as [number, number],
     }));
