@@ -178,6 +178,7 @@ model Tour {
   excludes        String[]
   itinerary       Json?
   faq             Json?
+  tags            String[]  @default([])
   latitude        Float?
   longitude       Float?
   metaTitle       String?
@@ -215,6 +216,7 @@ model Trek {
   itinerary       Json?
   faq             Json?
   bestSeason      String[]
+  tags            String[]  @default([])
   trekGrade       String?
   latitude        Float?
   longitude       Float?

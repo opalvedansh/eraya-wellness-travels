@@ -48,6 +48,7 @@ interface TrekFormData {
     metaDescription: string;
     isActive: boolean;
     isFeatured: boolean;
+    tags: string[];
 }
 
 const emptyForm: TrekFormData = {
@@ -79,6 +80,7 @@ const emptyForm: TrekFormData = {
     metaDescription: "",
     isActive: true,
     isFeatured: false,
+    tags: [],
 };
 
 export default function TrekForm() {
@@ -94,6 +96,7 @@ export default function TrekForm() {
     const [newExclude, setNewExclude] = useState("");
     const [newImage, setNewImage] = useState("");
     const [newSeason, setNewSeason] = useState("");
+    const [tagInput, setTagInput] = useState("");
 
     const isEditMode = !!id;
 
@@ -221,6 +224,23 @@ export default function TrekForm() {
         setFormData(prev => ({
             ...prev,
             faq: prev.faq.filter((_, i) => i !== index)
+        }));
+    };
+
+    // Tag Handlers
+    const handleAddTag = () => {
+        if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                tags: [...prev.tags, tagInput.trim()]
+            })); setTagInput("");
+        }
+    };
+
+    const handleRemoveTag = (tag: string) => {
+        setFormData(prev => ({
+            ...prev,
+            tags: prev.tags.filter(t => t !== tag)
         }));
     };
 
@@ -667,6 +687,54 @@ export default function TrekForm() {
                                 </ul>
                             )}
                         </div>
+                    </div>
+
+                    {/* Tags Section */}
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">Tags</h2>
+                        <p className="text-sm text-gray-600 mb-4">Add custom tags to highlight this trek (e.g., Best Seller, Popular, New, Limited Seats)</p>
+                        <div className="flex gap-2 mb-3">
+                            <input
+                                type="text"
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleAddTag();
+                                    }
+                                }}
+                                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent"
+                                placeholder="Add a tag..."
+                            />
+                            <button
+                                type="button"
+                                onClick={handleAddTag}
+                                className="px-4 py-2 bg-green-primary text-white rounded-lg hover:bg-green-secondary transition"
+                            >
+                                Add Tag
+                            </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {formData.tags.map((tag) => (
+                                <span
+                                    key={tag}
+                                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium"
+                                >
+                                    {tag}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveTag(tag)}
+                                        className="hover:text-red-600 ml-1"
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                        {formData.tags.length === 0 && (
+                            <p className="text-sm text-gray-500 italic mt-2">No tags added yet</p>
+                        )}
                     </div>
 
                     {/* Status */}
