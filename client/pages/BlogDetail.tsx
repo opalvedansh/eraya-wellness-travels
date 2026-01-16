@@ -364,12 +364,12 @@ export default function BlogDetail() {
                     </div>
 
                     {/* Tags */}
-                    <div className="px-12 pb-8">
-                        <div className="flex flex-wrap gap-3">
+                    <div className="px-6 sm:px-12 pb-6 sm:pb-8">
+                        <div className="flex flex-wrap gap-2 sm:gap-3">
                             {post.tags.map(tag => (
                                 <span
                                     key={tag}
-                                    className="px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-50 text-gray-700 font-semibold rounded-full text-sm hover:from-green-primary hover:to-green-600 hover:text-white transition-all cursor-pointer"
+                                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-gray-100 to-gray-50 text-gray-700 font-semibold rounded-full text-xs sm:text-sm hover:from-green-primary hover:to-green-600 hover:text-white transition-all cursor-pointer"
                                 >
                                     #{tag}
                                 </span>
@@ -378,17 +378,17 @@ export default function BlogDetail() {
                     </div>
 
                     {/* Author Card */}
-                    <div className="mx-12 mb-8 p-8 bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl border-2 border-green-100">
-                        <div className="flex items-start gap-6">
+                    <div className="mx-6 sm:mx-12 mb-6 sm:mb-8 p-6 sm:p-8 bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl border-2 border-green-100">
+                        <div className="flex items-start gap-4 sm:gap-6">
                             <img
                                 src={post.authorAvatar || "/default-avatar.png"}
                                 alt={post.authorName}
-                                className="w-20 h-20 rounded-full border-4 border-white shadow-lg"
+                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-white shadow-lg flex-shrink-0"
                             />
                             <div className="flex-1">
-                                <p className="text-sm text-green-primary font-bold mb-1">WRITTEN BY</p>
-                                <h4 className="text-2xl font-black text-gray-900 mb-2">{post.authorName}</h4>
-                                {post.authorBio && <p className="text-gray-600 leading-relaxed">{post.authorBio}</p>}
+                                <p className="text-xs sm:text-sm text-green-primary font-bold mb-1">WRITTEN BY</p>
+                                <h4 className="text-lg sm:text-2xl font-black text-gray-900 mb-2">{post.authorName}</h4>
+                                {post.authorBio && <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{post.authorBio}</p>}
                             </div>
                         </div>
                     </div>
@@ -398,23 +398,23 @@ export default function BlogDetail() {
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
                         viewport={{ once: true }}
-                        className="mx-12 mb-12 p-10 bg-gradient-to-br from-green-primary via-green-600 to-blue-600 rounded-2xl text-white shadow-2xl"
+                        className="mx-6 sm:mx-12 mb-8 sm:mb-12 p-6 sm:p-10 bg-gradient-to-br from-green-primary via-green-600 to-blue-600 rounded-2xl text-white shadow-2xl"
                     >
                         <div className="text-center">
-                            <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-90" />
-                            <h3 className="text-3xl font-black mb-3">Love this content?</h3>
-                            <p className="text-white/90 mb-6 text-lg">
+                            <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-90" />
+                            <h3 className="text-2xl sm:text-3xl font-black mb-2 sm:mb-3">Love this content?</h3>
+                            <p className="text-white/90 mb-4 sm:mb-6 text-base sm:text-lg">
                                 Subscribe to get the latest travel insights and wellness tips delivered weekly.
                             </p>
-                            <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                            <form className="flex flex-col sm:flex-row gap-2 sm:gap-3 max-w-md mx-auto">
                                 <input
                                     type="email"
                                     placeholder="Your email address"
-                                    className="flex-1 px-5 py-4 rounded-xl text-gray-900 focus:outline-none focus:ring-4 focus:ring-white/30"
+                                    className="flex-1 px-4 sm:px-5 py-3 sm:py-4 rounded-xl text-sm sm:text-base text-gray-900 focus:outline-none focus:ring-4 focus:ring-white/30"
                                 />
                                 <button
                                     type="submit"
-                                    className="px-8 py-4 bg-white text-green-primary font-bold rounded-xl hover:bg-gray-100 transition-all transform hover:scale-105 shadow-xl"
+                                    className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-green-primary font-bold rounded-xl hover:bg-gray-100 transition-all transform hover:scale-105 shadow-xl text-sm sm:text-base"
                                 >
                                     Subscribe
                                 </button>
