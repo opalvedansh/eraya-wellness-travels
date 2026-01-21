@@ -16,6 +16,9 @@ router.get("/tours", async (req: Request, res: Response) => {
                 { createdAt: "desc" }
             ],
         });
+
+        // Cache for 5 minutes (300 seconds)
+        res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
         res.json(tours);
     } catch (error) {
         logger.error("Failed to fetch tours", { error });
@@ -49,6 +52,8 @@ router.get("/tours/:slug", async (req: Request, res: Response) => {
             return res.status(404).json({ error: "Tour not found" });
         }
 
+        // Cache individual tour for 5 minutes
+        res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
         res.json(tour);
     } catch (error) {
         logger.error("Failed to fetch tour", { slug: req.params.slug, error });
@@ -68,6 +73,9 @@ router.get("/treks", async (req: Request, res: Response) => {
                 { createdAt: "desc" }
             ],
         });
+
+        // Cache for 5 minutes (300 seconds)
+        res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
         res.json(treks);
     } catch (error) {
         logger.error("Failed to fetch treks", { error });
@@ -101,6 +109,8 @@ router.get("/treks/:slug", async (req: Request, res: Response) => {
             return res.status(404).json({ error: "Trek not found" });
         }
 
+        // Cache individual trek for 5 minutes
+        res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
         res.json(trek);
     } catch (error) {
         logger.error("Failed to fetch trek", { slug: req.params.slug, error });

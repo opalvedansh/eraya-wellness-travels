@@ -58,6 +58,7 @@ import { authenticate } from "./middleware/auth.middleware";
 import { cleanupExpiredSessions } from "./services/jwt";
 import { cleanupExpiredTokens } from "./services/otp";
 import { initializePrisma, isPrismaReady } from "./services/prisma";
+import compression from "compression";
 
 /**
  * Validate required environment variables on startup
@@ -119,6 +120,9 @@ export function createServer() {
 
   // CORS Configuration
   app.use(corsConfig);
+
+  // Enable gzip/deflate compression for all responses
+  app.use(compression());
 
   // Conditional body parsing: raw body for webhook, JSON for everything else
   app.use((req, res, next) => {

@@ -156,7 +156,7 @@ function ComparisonModal({ treks, isOpen, onClose }: any) {
                   {treks.map((trek: any) => (
                     <th key={trek.id} className="p-3 text-center min-w-[200px]">
                       <img
-                        src={trek.image}
+                        loading="lazy" src={trek.image}
                         alt={trek.name}
                         className="w-full h-32 object-cover rounded-lg mb-2"
                       />
@@ -1175,7 +1175,7 @@ export default function Trek() {
                     {/* Image */}
                     <div className="relative h-48 sm:h-56 overflow-hidden">
                       <img
-                        src={trek.image}
+                        loading="lazy" src={trek.image}
                         alt={trek.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
@@ -1404,7 +1404,7 @@ export default function Trek() {
                           {/* Image */}
                           <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden">
                             <img
-                              src={trek.image}
+                              loading="lazy" src={trek.image}
                               alt={trek.name}
                               className="w-full h-full object-cover"
                             />
@@ -1498,7 +1498,7 @@ export default function Trek() {
                     >
                       <div className="relative aspect-square rounded-lg overflow-hidden mb-2">
                         <img
-                          src={trek.image}
+                          loading="lazy" src={trek.image}
                           alt={trek.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />

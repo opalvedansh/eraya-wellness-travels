@@ -163,7 +163,7 @@ function ComparisonModal({ tours, isOpen, onClose }: any) {
                   {tours.map((tour: any) => (
                     <th key={tour.id} className="p-3 text-center min-w-[200px]">
                       <img
-                        src={tour.image}
+                        loading="lazy" src={tour.image}
                         alt={tour.name}
                         className="w-full h-32 object-cover rounded-lg mb-2"
                       />
@@ -986,7 +986,7 @@ export default function Tour() {
                     {/* Image */}
                     <div className="relative h-48 sm:h-56 overflow-hidden">
                       <img
-                        src={tour.image}
+                        loading="lazy" src={tour.image}
                         alt={tour.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
@@ -1123,7 +1123,7 @@ export default function Tour() {
                     <Popup>
                       <div className="p-2">
                         <img
-                          src={tour.image}
+                          loading="lazy" src={tour.image}
                           alt={tour.name}
                           className="w-48 h-32 object-cover rounded-lg mb-2"
                         />
@@ -1183,7 +1183,7 @@ export default function Tour() {
                   >
                     <div className="relative aspect-square rounded-lg overflow-hidden mb-2">
                       <img
-                        src={tour.image}
+                        loading="lazy" src={tour.image}
                         alt={tour.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
