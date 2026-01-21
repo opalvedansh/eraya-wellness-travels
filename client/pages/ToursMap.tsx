@@ -20,16 +20,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Fix Leaflet default icon logic
-// Fix Leaflet default icon logic
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-// Custom Icons
+// Use CDN icons directly to avoid build issues
 const activeIcon = new L.Icon({
     iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
     shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
@@ -48,31 +39,42 @@ const defaultMarkerIcon = new L.Icon({
     shadowSize: [41, 41]
 });
 
-// Map Controller Component
+// Map Controller Component with Error Handling
 function MapController({ selectedTourId, tours }: { selectedTourId: number | null, tours: any[] }) {
     const map = useMap();
 
     // Auto-center on load
     useEffect(() => {
-        if (tours.length > 0 && !selectedTourId) {
-            const validPoints = tours
-                .filter(t => t.coordinates && t.coordinates[0] !== 0)
-                .map(t => L.latLng(t.coordinates[0], t.coordinates[1]));
+        try {
+            if (tours.length > 0 && !selectedTourId) {
+                const validPoints = tours
+                    .filter(t => t.coordinates && t.coordinates[0] !== 0)
+                    .map(t => L.latLng(t.coordinates[0], t.coordinates[1]));
 
-            if (validPoints.length > 0) {
-                const bounds = L.latLngBounds(validPoints);
-                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 10 });
+                if (validPoints.length > 0) {
+                    const bounds = L.latLngBounds(validPoints);
+                    // Add buffer to bounds
+                    if (bounds.isValid()) {
+                        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 10 });
+                    }
+                }
             }
+        } catch (e) {
+            console.warn("Map auto-center failed:", e);
         }
     }, [tours, map, selectedTourId]);
 
     // Pan to selected tour
     useEffect(() => {
-        if (selectedTourId) {
-            const tour = tours.find(t => t.id === selectedTourId);
-            if (tour && tour.coordinates && tour.coordinates[0] !== 0) {
-                map.flyTo(tour.coordinates, 10, { duration: 1.5 });
+        try {
+            if (selectedTourId) {
+                const tour = tours.find(t => t.id === selectedTourId);
+                if (tour && tour.coordinates && tour.coordinates[0] !== 0) {
+                    map.flyTo(tour.coordinates, 10, { duration: 1.5 });
+                }
             }
+        } catch (e) {
+            console.warn("Map pan failed:", e);
         }
     }, [selectedTourId, tours, map]);
 
@@ -104,7 +106,7 @@ export default function ToursMap() {
                 if (!response.ok) throw new Error("Failed to fetch tours");
                 const data = await response.json();
 
-                // Process coordinates (handle parsing from string/number issues)
+                // Process coordinates
                 const processed = data.map((tour: any) => {
                     let lat = Number(tour.latitude);
                     let lng = Number(tour.longitude);
@@ -160,11 +162,6 @@ export default function ToursMap() {
     const getDifficultyLabel = (level: number) => {
         const labels = ["Easy", "Moderate", "Challenging", "Difficult", "Extreme"];
         return labels[level - 1] || "Easy";
-    };
-
-    const getDifficultyColor = (level: number) => {
-        const colors = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#9333ea"];
-        return colors[level - 1] || "#10b981";
     };
 
     if (isLoading) {
@@ -360,7 +357,6 @@ export default function ToursMap() {
                 </div>
 
                 <MapBottomSheet isOpen={bottomSheetOpen} onOpenChange={setBottomSheetOpen}>
-                    {/* Mobile List Content (Simplified) */}
                     <div className="p-4">
                         <h3 className="font-bold mb-4">{filteredTours.length} Tours Found</h3>
                         <div className="space-y-3">

@@ -20,15 +20,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Fix Leaflet default icon logic
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-// Custom Icons
+// Use CDN icons directly
 const activeIcon = new L.Icon({
     iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
     shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
@@ -47,31 +39,41 @@ const defaultMarkerIcon = new L.Icon({
     shadowSize: [41, 41]
 });
 
-// Map Controller Component
+// Map Controller Component with Error Handling
 function MapController({ selectedTrekId, treks }: { selectedTrekId: number | null, treks: any[] }) {
     const map = useMap();
 
     // Auto-center on load
     useEffect(() => {
-        if (treks.length > 0 && !selectedTrekId) {
-            const validPoints = treks
-                .filter(t => t.coordinates && t.coordinates[0] !== 0)
-                .map(t => L.latLng(t.coordinates[0], t.coordinates[1]));
+        try {
+            if (treks.length > 0 && !selectedTrekId) {
+                const validPoints = treks
+                    .filter(t => t.coordinates && t.coordinates[0] !== 0)
+                    .map(t => L.latLng(t.coordinates[0], t.coordinates[1]));
 
-            if (validPoints.length > 0) {
-                const bounds = L.latLngBounds(validPoints);
-                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 10 });
+                if (validPoints.length > 0) {
+                    const bounds = L.latLngBounds(validPoints);
+                    if (bounds.isValid()) {
+                        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 10 });
+                    }
+                }
             }
+        } catch (e) {
+            console.warn("Map auto-center failed:", e);
         }
     }, [treks, map, selectedTrekId]);
 
     // Pan to selected trek
     useEffect(() => {
-        if (selectedTrekId) {
-            const trek = treks.find(t => t.id === selectedTrekId);
-            if (trek && trek.coordinates && trek.coordinates[0] !== 0) {
-                map.flyTo(trek.coordinates, 10, { duration: 1.5 });
+        try {
+            if (selectedTrekId) {
+                const trek = treks.find(t => t.id === selectedTrekId);
+                if (trek && trek.coordinates && trek.coordinates[0] !== 0) {
+                    map.flyTo(trek.coordinates, 10, { duration: 1.5 });
+                }
             }
+        } catch (e) {
+            console.warn("Map pan failed:", e);
         }
     }, [selectedTrekId, treks, map]);
 
@@ -354,7 +356,6 @@ export default function TreksMap() {
                 </div>
 
                 <MapBottomSheet isOpen={bottomSheetOpen} onOpenChange={setBottomSheetOpen}>
-                    {/* Mobile List Content (Simplified) */}
                     <div className="p-4">
                         <h3 className="font-bold mb-4">{filteredTreks.length} Treks Found</h3>
                         <div className="space-y-3">
