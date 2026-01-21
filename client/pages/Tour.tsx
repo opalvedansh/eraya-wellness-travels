@@ -22,8 +22,8 @@ import {
   GitCompare,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { Icon } from "leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L, { Icon } from "leaflet";
 import { API_BASE_URL } from "@/lib/config";
 
 // Fix Leaflet default icon issue
@@ -34,6 +34,31 @@ const defaultIcon = new Icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
+
+// Component to auto-center map on markers
+function MapBounds({ tours }: { tours: any[] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (tours.length > 0) {
+      // Filter out invalid coordinates before creating bounds
+      const validPoints = tours
+        .filter(t => t.coordinates && t.coordinates[0] !== 27.7) // exclude defaults if possible, or just include all
+        .map(t => t.coordinates);
+
+      if (validPoints.length > 0) {
+        const bounds = L.latLngBounds(validPoints);
+        map.fitBounds(bounds, { padding: [50, 50] });
+      } else if (tours.length > 0) {
+        // Fallback for default coordinates
+        const bounds = L.latLngBounds(tours.map(t => t.coordinates));
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    }
+  }, [tours, map]);
+
+  return null;
+}
 
 // Quick View Modal Component
 function QuickViewModal({ tour, isOpen, onClose }: any) {
@@ -1114,6 +1139,7 @@ export default function Tour() {
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+                <MapBounds tours={processedTours} />
                 {processedTours.map((tour) => (
                   <Marker
                     key={tour.id}
