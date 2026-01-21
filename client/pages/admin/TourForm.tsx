@@ -244,14 +244,42 @@ export default function TourForm() {
 
         setSaving(true);
         try {
-            // Exclude database-managed fields that shouldn't be sent in updates
-            const { id: formId, createdAt, updatedAt, ...dataToSend } = formData as any;
+            // Explicitly construct payload with only known fields (Whitelist approach)
+            // This prevents sending id, createdAt, updatedAt or any other unknown fields
+            const payload: TourFormData = {
+                name: formData.name,
+                slug: formData.slug,
+                description: formData.description,
+                longDescription: formData.longDescription,
+                location: formData.location,
+                duration: formData.duration,
+                price: formData.price,
+                currency: formData.currency,
+                difficulty: formData.difficulty,
+                rating: formData.rating,
+                maxGroupSize: formData.maxGroupSize,
+                minAge: formData.minAge,
+                coverImage: formData.coverImage,
+                images: formData.images,
+                highlights: formData.highlights,
+                includes: formData.includes,
+                excludes: formData.excludes,
+                itinerary: formData.itinerary,
+                faq: formData.faq,
+                latitude: formData.latitude,
+                longitude: formData.longitude,
+                metaTitle: formData.metaTitle,
+                metaDescription: formData.metaDescription,
+                isActive: formData.isActive,
+                isFeatured: formData.isFeatured,
+                tags: formData.tags,
+            };
 
             const url = isEditMode ? `/api/admin/tours/${id}` : "/api/admin/tours";
             const method = isEditMode ? "PUT" : "POST";
             const response = await authenticatedFetch(url, {
                 method,
-                body: JSON.stringify(dataToSend),
+                body: JSON.stringify(payload),
             });
 
             if (response.ok) {

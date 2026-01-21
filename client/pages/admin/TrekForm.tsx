@@ -255,14 +255,44 @@ export default function TrekForm() {
 
         setSaving(true);
         try {
-            // Exclude database-managed fields that shouldn't be sent in updates
-            const { id: formId, createdAt, updatedAt, ...dataToSend } = formData as any;
+            // Explicitly construct payload with only known fields (Whitelist approach)
+            const payload: TrekFormData = {
+                name: formData.name,
+                slug: formData.slug,
+                description: formData.description,
+                longDescription: formData.longDescription,
+                location: formData.location,
+                duration: formData.duration,
+                price: formData.price,
+                currency: formData.currency,
+                difficulty: formData.difficulty,
+                rating: formData.rating,
+                altitude: formData.altitude,
+                maxGroupSize: formData.maxGroupSize,
+                minAge: formData.minAge,
+                coverImage: formData.coverImage,
+                images: formData.images,
+                highlights: formData.highlights,
+                includes: formData.includes,
+                excludes: formData.excludes,
+                bestSeason: formData.bestSeason,
+                trekGrade: formData.trekGrade,
+                itinerary: formData.itinerary,
+                faq: formData.faq,
+                latitude: formData.latitude,
+                longitude: formData.longitude,
+                metaTitle: formData.metaTitle,
+                metaDescription: formData.metaDescription,
+                isActive: formData.isActive,
+                isFeatured: formData.isFeatured,
+                tags: formData.tags,
+            };
 
             const url = isEditMode ? `/api/admin/treks/${id}` : "/api/admin/treks";
             const method = isEditMode ? "PUT" : "POST";
             const response = await authenticatedFetch(url, {
                 method,
-                body: JSON.stringify(dataToSend),
+                body: JSON.stringify(payload),
             });
 
             if (response.ok) {

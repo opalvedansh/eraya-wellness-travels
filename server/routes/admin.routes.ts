@@ -183,6 +183,12 @@ router.put("/tours/:id", async (req: Request, res: Response) => {
         // Filter out database-managed fields that shouldn't be updated
         const { id: _id, createdAt, updatedAt, ...updateData } = req.body;
 
+        logger.info("Updating tour", {
+            tourId: req.params.id,
+            receivedKeys: Object.keys(req.body),
+            sanitizedKeys: Object.keys(updateData)
+        });
+
         const tour = await prisma.tour.update({
             where: { id: req.params.id },
             data: updateData,
