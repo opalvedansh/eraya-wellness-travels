@@ -3,22 +3,13 @@ import logger from "../services/logger";
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-// In production, ALLOWED_ORIGINS should be set, but we also default to known production domains
+// In production, ALLOWED_ORIGINS must be explicitly set (no defaults)
+// In development, allow localhost origins
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(",").map((origin) =>
     origin.trim()
 ) || (isProduction
-    ? ["https://www.erayawellness.com", "https://erayawellness.com", "https://eraya-wellness-travels-production.up.railway.app"]
+    ? []
     : ["http://localhost:5173", "http://localhost:8080", "http://localhost:8081"]);
-
-// Add known domains to ALLOWED_ORIGINS if they aren't already there (merging env var with defaults)
-if (isProduction) {
-    const defaultDomains = ["https://www.erayawellness.com", "https://erayawellness.com"];
-    defaultDomains.forEach(domain => {
-        if (!ALLOWED_ORIGINS.includes(domain)) {
-            ALLOWED_ORIGINS.push(domain);
-        }
-    });
-}
 
 if (isProduction && ALLOWED_ORIGINS.length === 0) {
     logger.error('ALLOWED_ORIGINS environment variable is required in production');

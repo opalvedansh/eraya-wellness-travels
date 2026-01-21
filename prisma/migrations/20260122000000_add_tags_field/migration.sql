@@ -1,5 +1,0 @@
--- AlterTable
-ALTER TABLE "Tour" ADD COLUMN "tags" TEXT[] DEFAULT ARRAY[]::TEXT[];
-
--- AlterTable
-ALTER TABLE "Trek" ADD COLUMN "tags" TEXT[] DEFAULT ARRAY[]::TEXT[];
