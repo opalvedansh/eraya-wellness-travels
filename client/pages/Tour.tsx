@@ -372,7 +372,9 @@ export default function Tour() {
       reviewCount: Math.floor(Math.random() * 300) + 50,
       badges: tour.tags && tour.tags.length > 0 ? tour.tags : (tour.isFeatured ? ["Popular"] : []),
       spotsLeft: Math.floor(Math.random() * 10) + 3,
-      coordinates: (tour.latitude && tour.longitude ? [tour.latitude, tour.longitude] : [27.7, 85.3]) as [number, number],
+      coordinates: (tour.latitude !== null && tour.longitude !== null && !isNaN(Number(tour.latitude)) && !isNaN(Number(tour.longitude))
+        ? [Number(tour.latitude), Number(tour.longitude)]
+        : [27.7, 85.3]) as [number, number],
     }));
   }, [tours]);
 
