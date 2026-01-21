@@ -10,11 +10,12 @@ L.Icon.Default.mergeOptions({
 });
 
 interface RouteMapProps {
-    route: Array<{ lat: number; lng: number; name?: string }>;
+    route?: Array<{ lat: number; lng: number; name?: string }>;
+    center?: [number, number];
 }
 
-export function RouteMap({ route }: RouteMapProps) {
-    if (!route || route.length === 0) {
+export function RouteMap({ route, center }: RouteMapProps) {
+    if ((!route || route.length === 0) && !center) {
         return (
             <div className="bg-card rounded-xl p-8 text-center border border-border">
                 <p className="text-text-dark/60">Route map not available for this tour.</p>
@@ -22,20 +23,33 @@ export function RouteMap({ route }: RouteMapProps) {
         );
     }
 
-    // Calculate center point
-    const centerLat = route.reduce((sum, point) => sum + point.lat, 0) / route.length;
-    const centerLng = route.reduce((sum, point) => sum + point.lng, 0) / route.length;
+    // Determine what to render
+    const hasRoute = route && route.length > 0;
 
-    // Calculate zoom level based on route spread
-    const latSpread = Math.max(...route.map(p => p.lat)) - Math.min(...route.map(p => p.lat));
-    const lngSpread = Math.max(...route.map(p => p.lng)) - Math.min(...route.map(p => p.lng));
-    const maxSpread = Math.max(latSpread, lngSpread);
-    const zoom = maxSpread > 5 ? 6 : maxSpread > 2 ? 7 : maxSpread > 1 ? 8 : 9;
+    // Calculate center point
+    let mapCenter: [number, number] = [0, 0];
+    let zoom = 6;
+
+    if (hasRoute) {
+        mapCenter = [
+            route!.reduce((sum, point) => sum + point.lat, 0) / route!.length,
+            route!.reduce((sum, point) => sum + point.lng, 0) / route!.length
+        ];
+
+        // Calculate zoom level based on route spread
+        const latSpread = Math.max(...route!.map(p => p.lat)) - Math.min(...route!.map(p => p.lat));
+        const lngSpread = Math.max(...route!.map(p => p.lng)) - Math.min(...route!.map(p => p.lng));
+        const maxSpread = Math.max(latSpread, lngSpread);
+        zoom = maxSpread > 5 ? 6 : maxSpread > 2 ? 7 : maxSpread > 1 ? 8 : 9;
+    } else if (center) {
+        mapCenter = center;
+        zoom = 8;
+    }
 
     return (
         <div className="bg-card rounded-xl overflow-hidden shadow-premium-sm border border-border">
             <MapContainer
-                center={[centerLat, centerLng]}
+                center={mapCenter}
                 zoom={zoom}
                 scrollWheelZoom={false}
                 style={{ height: '500px', width: '100%' }}
@@ -45,15 +59,25 @@ export function RouteMap({ route }: RouteMapProps) {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                <Polyline
-                    positions={route.map(point => [point.lat, point.lng])}
-                    pathOptions={{ color: '#22c55e', weight: 3, opacity: 0.8 }}
-                />
-                {route.map((point, index) => (
+
+                {hasRoute && (
+                    <Polyline
+                        positions={route!.map(point => [point.lat, point.lng])}
+                        pathOptions={{ color: '#22c55e', weight: 3, opacity: 0.8 }}
+                    />
+                )}
+
+                {hasRoute && route!.map((point, index) => (
                     <Marker key={index} position={[point.lat, point.lng]}>
                         {point.name && <Popup>{point.name}</Popup>}
                     </Marker>
                 ))}
+
+                {!hasRoute && center && (
+                    <Marker position={center}>
+                        <Popup>Tour Location</Popup>
+                    </Marker>
+                )}
             </MapContainer>
         </div>
     );

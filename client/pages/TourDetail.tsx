@@ -847,18 +847,21 @@ export default function TourDetail() {
             </div>
 
             {/* Route Map Section - TEMPORARILY DISABLED FOR DEBUGGING */}
-            {/* {tour.route && (
+            {(tour.route || (tour.latitude && tour.longitude)) && (
               <div>
                 <h2 className="text-3xl sm:text-4xl font-black text-green-primary mb-8 tracking-tight">
                   <Navigation className="h-8 w-8 inline mr-3" />
                   Tour Route
                 </h2>
-                <RouteMap route={tour.route} />
+                <RouteMap
+                  route={tour.route}
+                  center={tour.latitude && tour.longitude ? [tour.latitude, tour.longitude] : undefined}
+                />
                 <p className="text-sm text-text-dark/60 mt-4">
                   Interactive map showing the tour route with key destinations and waypoints.
                 </p>
               </div>
-            )} */}
+            )}
 
             {/* Itinerary Section */}
             <div>

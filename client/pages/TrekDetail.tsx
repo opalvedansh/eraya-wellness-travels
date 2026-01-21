@@ -1289,7 +1289,10 @@ export default function TrekDetail() {
                   <Navigation className="h-8 w-8 inline mr-3" />
                   Trek Route
                 </h2>
-                <RouteMap route={trek.route} />
+                <RouteMap 
+                  route={trek.route} 
+                  center={trek.latitude && trek.longitude ? [trek.latitude, trek.longitude] : undefined}
+                />
                 <p className="text-sm text-text-dark/60 mt-4">
                   Interactive map showing the trek route with key destinations and waypoints.
                 </p>

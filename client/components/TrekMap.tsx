@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import { Icon, Map as LeafletMap } from "leaflet";
+import L, { Icon, Map as LeafletMap } from "leaflet";
 
 // Fix Leaflet default icon issue
 const defaultIcon = new Icon({
@@ -59,6 +59,10 @@ function MapController({
                     easeLinearity: 0.25
                 });
             }
+        } else if (treks.length > 0) {
+            // Auto-fit to show all treks when none selected
+            const bounds = L.latLngBounds(treks.map(t => t.coordinates));
+            map.fitBounds(bounds, { padding: [50, 50] });
         }
     }, [selectedTrekId, treks, map]);
 

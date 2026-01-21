@@ -371,7 +371,9 @@ export default function Trek() {
       reviewCount: Math.floor(Math.random() * 300) + 50,
       badges: trek.tags && trek.tags.length > 0 ? trek.tags : (trek.isFeatured ? ["Featured"] : []),
       spotsLeft: Math.floor(Math.random() * 10) + 3,
-      coordinates: (trek.latitude && trek.longitude ? [trek.latitude, trek.longitude] : [28.0, 84.0]) as [number, number],
+      coordinates: (trek.latitude !== null && trek.longitude !== null && !isNaN(Number(trek.latitude)) && !isNaN(Number(trek.longitude))
+        ? [Number(trek.latitude), Number(trek.longitude)]
+        : [28.0, 84.0]) as [number, number],
     }));
   }, [treks]);
 
