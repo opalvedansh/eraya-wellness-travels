@@ -187,9 +187,26 @@ router.put("/tours/:id", async (req: Request, res: Response) => {
 
         logger.info("Tour updated", { tourId: tour.id, userId: req.user?.userId });
         res.json(tour);
-    } catch (error) {
-        logger.error("Failed to update tour", { error });
-        res.status(500).json({ error: "Failed to update tour" });
+    } catch (error: any) {
+        logger.error("Failed to update tour", {
+            error: error.message,
+            code: error.code,
+            meta: error.meta,
+            tourId: req.params.id,
+            bodyKeys: Object.keys(req.body)
+        });
+
+        // Return more specific error message
+        const errorMessage = error.code === 'P2002'
+            ? 'A tour with this slug already exists'
+            : error.code === 'P2025'
+                ? 'Tour not found'
+                : error.message || 'Failed to update tour';
+
+        res.status(500).json({
+            error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 });
 
