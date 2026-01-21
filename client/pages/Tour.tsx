@@ -345,7 +345,8 @@ export default function Tour() {
     const fetchTours = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/tours`);
+        // Cache busting to ensure fresh data
+        const response = await fetch(`${API_BASE_URL}/api/tours?_t=${Date.now()}`);
         if (!response.ok) {
           throw new Error("Failed to fetch tours");
         }

@@ -319,7 +319,8 @@ export default function Trek() {
     const fetchTreks = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/treks`);
+        // Cache busting to ensure fresh data
+        const response = await fetch(`${API_BASE_URL}/api/treks?_t=${Date.now()}`);
         if (!response.ok) {
           throw new Error("Failed to fetch treks");
         }
