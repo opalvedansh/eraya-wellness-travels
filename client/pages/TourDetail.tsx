@@ -778,9 +778,12 @@ export default function TourDetail() {
               <p className="text-sm text-text-dark/60 mt-1">per person</p>
             </div>
           </div>
-          <p className="text-base sm:text-lg text-text-dark/75 leading-relaxed max-w-4xl">
-            {tour.longDescription || tour.description}
-          </p>
+          <p
+            className="text-base sm:text-lg text-text-dark/75 leading-relaxed max-w-4xl"
+            dangerouslySetInnerHTML={{
+              __html: (tour.longDescription || tour.description || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            }}
+          />
         </div>
       </section>
 

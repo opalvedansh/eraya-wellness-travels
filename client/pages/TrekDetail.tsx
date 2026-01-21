@@ -1182,9 +1182,12 @@ export default function TrekDetail() {
               <p className="text-sm text-text-dark/60 mt-1">per person</p>
             </div>
           </div>
-          <p className="text-base sm:text-lg text-text-dark/75 leading-relaxed max-w-4xl">
-            {trek.longDescription || trek.description}
-          </p>
+          <p
+            className="text-base sm:text-lg text-text-dark/75 leading-relaxed max-w-4xl"
+            dangerouslySetInnerHTML={{
+              __html: (trek.longDescription || trek.description || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            }}
+          />
         </div>
       </section>
 

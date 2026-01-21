@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-re
 import AdminLayout from "./AdminLayout";
 import { authenticatedFetch } from "@/lib/api";
 import ImageUpload from "@/components/ImageUpload";
+import RichTextArea from "@/components/RichTextArea";
 
 interface ItineraryItem {
     day: number;
@@ -328,7 +329,13 @@ export default function TrekForm() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Full Description</label>
-                                <textarea name="longDescription" value={formData.longDescription} onChange={handleChange} rows={6} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent" />
+                                <RichTextArea
+                                    name="longDescription"
+                                    value={formData.longDescription}
+                                    onChange={handleChange}
+                                    rows={6}
+                                    placeholder="Enter full description. Select text and click Bold to make it bold."
+                                />
                             </div>
                         </div>
                     </div>
