@@ -84,7 +84,7 @@ function QuickViewModal({ trek, isOpen, onClose }: any) {
             </div>
 
             <p className="text-text-dark/70 leading-relaxed mb-6">
-              {trek.fullDescription || trek.description}
+              {trek.description}
             </p>
 
             <div className="mb-6">

@@ -91,7 +91,7 @@ function QuickViewModal({ tour, isOpen, onClose }: any) {
             </div>
 
             <p className="text-text-dark/70 leading-relaxed mb-6">
-              {tour.fullDescription || tour.description}
+              {tour.description}
             </p>
 
             <div className="mb-6">

@@ -1183,7 +1183,7 @@ export default function TrekDetail() {
             </div>
           </div>
           <p className="text-base sm:text-lg text-text-dark/75 leading-relaxed max-w-4xl">
-            {trek.description}
+            {trek.longDescription || trek.description}
           </p>
         </div>
       </section>

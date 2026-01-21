@@ -779,7 +779,7 @@ export default function TourDetail() {
             </div>
           </div>
           <p className="text-base sm:text-lg text-text-dark/75 leading-relaxed max-w-4xl">
-            {tour.description}
+            {tour.longDescription || tour.description}
           </p>
         </div>
       </section>
