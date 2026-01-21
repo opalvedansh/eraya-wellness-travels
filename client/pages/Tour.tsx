@@ -302,6 +302,7 @@ export default function Tour() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<number[]>([]);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [tagSearch, setTagSearch] = useState<string>("");
 
   // Compute available tags from all tours
   const availableTags = useMemo(() => {
@@ -878,31 +879,43 @@ export default function Tour() {
                     </div>
 
                     {/* Tags Filter */}
-                    {availableTags.length > 0 && (
-                      <div>
-                        <label className="block text-sm font-bold mb-3">Tags</label>
+                    <div>
+                      <label className="block text-sm font-bold mb-3">Search by Tags</label>
+                      <input
+                        type="text"
+                        value={tagSearch}
+                        onChange={(e) => setTagSearch(e.target.value)}
+                        placeholder="Type to search tags..."
+                        className="w-full px-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-primary mb-3"
+                      />
+                      {availableTags.length > 0 && (
                         <div className="flex flex-wrap gap-2">
-                          {availableTags.map((tag) => (
-                            <button
-                              key={tag}
-                              onClick={() => {
-                                if (selectedTags.includes(tag)) {
-                                  setSelectedTags(selectedTags.filter((t) => t !== tag));
-                                } else {
-                                  setSelectedTags([...selectedTags, tag]);
-                                }
-                              }}
-                              className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${selectedTags.includes(tag)
-                                ? "bg-blue-accent text-white"
-                                : "bg-beige text-text-dark hover:bg-blue-accent/10"
-                                }`}
-                            >
-                              {tag}
-                            </button>
-                          ))}
+                          {availableTags
+                            .filter(tag => tag.toLowerCase().includes(tagSearch.toLowerCase()))
+                            .map((tag) => (
+                              <button
+                                key={tag}
+                                onClick={() => {
+                                  if (selectedTags.includes(tag)) {
+                                    setSelectedTags(selectedTags.filter((t) => t !== tag));
+                                  } else {
+                                    setSelectedTags([...selectedTags, tag]);
+                                  }
+                                }}
+                                className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${selectedTags.includes(tag)
+                                  ? "bg-blue-accent text-white"
+                                  : "bg-beige text-text-dark hover:bg-blue-accent/10"
+                                  }`}
+                              >
+                                {tag}
+                              </button>
+                            ))}
                         </div>
-                      </div>
-                    )}
+                      )}
+                      {tagSearch && availableTags.filter(tag => tag.toLowerCase().includes(tagSearch.toLowerCase())).length === 0 && (
+                        <p className="text-sm text-text-dark/50 italic">No matching tags found</p>
+                      )}
+                    </div>
 
                     {/* Reset Filters */}
                     <button
@@ -911,6 +924,7 @@ export default function Tour() {
                         setSelectedDifficulty([]);
                         setSelectedDays([]);
                         setSelectedTags([]);
+                        setTagSearch("");
                       }}
                       className="text-sm text-blue-accent hover:text-blue-accent-dark font-semibold"
                     >
