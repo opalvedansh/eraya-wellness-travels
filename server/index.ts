@@ -58,7 +58,7 @@ import { authenticate } from "./middleware/auth.middleware";
 import { cleanupExpiredSessions } from "./services/jwt";
 import { cleanupExpiredTokens } from "./services/otp";
 import { initializePrisma, isPrismaReady } from "./services/prisma";
-import compression from "compression";
+// import compression from "compression"; // Disabled - causing issues on Railway
 
 /**
  * Validate required environment variables on startup
@@ -121,8 +121,8 @@ export function createServer() {
   // CORS Configuration
   app.use(corsConfig);
 
-  // Enable gzip/deflate compression for all responses
-  app.use(compression());
+  // Note: Compression middleware was removed as it caused issues on Railway
+  // Railway's proxy already handles compression at the edge
 
   // Conditional body parsing: raw body for webhook, JSON for everything else
   app.use((req, res, next) => {
