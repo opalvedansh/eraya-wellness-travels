@@ -300,6 +300,18 @@ export default function Trek() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000]);
   const [selectedDifficulty, setSelectedDifficulty] = useState<number[]>([]);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  // Compute available tags from all treks
+  const availableTags = useMemo(() => {
+    const tagsSet = new Set<string>();
+    treks.forEach(trek => {
+      if (trek.tags && Array.isArray(trek.tags)) {
+        trek.tags.forEach(tag => tagsSet.add(tag));
+      }
+    });
+    return Array.from(tagsSet).sort();
+  }, [treks]);
 
   // Fetch treks from API
   useEffect(() => {
@@ -779,6 +791,14 @@ export default function Trek() {
       });
     }
 
+    // Tags filter
+    if (selectedTags.length > 0) {
+      results = results.filter((trek) => {
+        if (!trek.tags || !Array.isArray(trek.tags)) return false;
+        return selectedTags.some(tag => trek.tags?.includes(tag));
+      });
+    }
+
     // Sorting
     switch (sortBy) {
       case "price-low":
@@ -803,7 +823,7 @@ export default function Trek() {
     }
 
     return results;
-  }, [hasFiltered, filteredTreks, displayTreks, priceRange, selectedDifficulty, selectedDays, sortBy]);
+  }, [hasFiltered, filteredTreks, displayTreks, priceRange, selectedDifficulty, selectedDays, selectedTags, sortBy]);
 
   const toggleFavorite = (trekId: string) => {
     const newFavorites = favorites.includes(trekId)
@@ -1046,12 +1066,40 @@ export default function Trek() {
                       </div>
                     </div>
 
+                    {/* Tags Filter */}
+                    {availableTags.length > 0 && (
+                      <div>
+                        <label className="block text-sm font-bold mb-3">Tags</label>
+                        <div className="flex flex-wrap gap-2">
+                          {availableTags.map((tag) => (
+                            <button
+                              key={tag}
+                              onClick={() => {
+                                if (selectedTags.includes(tag)) {
+                                  setSelectedTags(selectedTags.filter((t) => t !== tag));
+                                } else {
+                                  setSelectedTags([...selectedTags, tag]);
+                                }
+                              }}
+                              className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${selectedTags.includes(tag)
+                                ? "bg-blue-accent text-white"
+                                : "bg-beige text-text-dark hover:bg-blue-accent/10"
+                                }`}
+                            >
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Reset Filters */}
                     <button
                       onClick={() => {
                         setPriceRange([0, 3000]);
                         setSelectedDifficulty([]);
                         setSelectedDays([]);
+                        setSelectedTags([]);
                       }}
                       className="text-sm text-blue-accent hover:text-blue-accent-dark font-semibold"
                     >
