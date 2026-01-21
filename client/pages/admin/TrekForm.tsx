@@ -255,11 +255,14 @@ export default function TrekForm() {
 
         setSaving(true);
         try {
+            // Exclude database-managed fields that shouldn't be sent in updates
+            const { id: formId, createdAt, updatedAt, ...dataToSend } = formData as any;
+
             const url = isEditMode ? `/api/admin/treks/${id}` : "/api/admin/treks";
             const method = isEditMode ? "PUT" : "POST";
             const response = await authenticatedFetch(url, {
                 method,
-                body: JSON.stringify(formData),
+                body: JSON.stringify(dataToSend),
             });
 
             if (response.ok) {
