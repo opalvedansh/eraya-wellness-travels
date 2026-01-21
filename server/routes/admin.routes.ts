@@ -180,9 +180,12 @@ router.post("/tours", async (req: Request, res: Response) => {
 // Update tour
 router.put("/tours/:id", async (req: Request, res: Response) => {
     try {
+        // Filter out database-managed fields that shouldn't be updated
+        const { id: _id, createdAt, updatedAt, ...updateData } = req.body;
+
         const tour = await prisma.tour.update({
             where: { id: req.params.id },
-            data: req.body,
+            data: updateData,
         });
 
         logger.info("Tour updated", { tourId: tour.id, userId: req.user?.userId });
@@ -299,9 +302,12 @@ router.post("/treks", async (req: Request, res: Response) => {
 // Update trek
 router.put("/treks/:id", async (req: Request, res: Response) => {
     try {
+        // Filter out database-managed fields that shouldn't be updated
+        const { id: _id, createdAt, updatedAt, ...updateData } = req.body;
+
         const trek = await prisma.trek.update({
             where: { id: req.params.id },
-            data: req.body,
+            data: updateData,
         });
 
         logger.info("Trek updated", { trekId: trek.id, userId: req.user?.userId });
