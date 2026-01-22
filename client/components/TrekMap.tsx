@@ -1,23 +1,35 @@
 import { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import L, { Icon, Map as LeafletMap } from "leaflet";
+import L, { Map as LeafletMap } from "leaflet";
 
-// Fix Leaflet default icon issue
-const defaultIcon = new Icon({
+// Fix Leaflet default icon issue - must be done before creating icons
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconUrl: "/assets/leaflet/marker-icon.png",
+    iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
+    shadowUrl: "/assets/leaflet/marker-shadow.png",
+});
+
+// Custom default icon
+const defaultIcon = L.icon({
     iconUrl: "/assets/leaflet/marker-icon.png",
     iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
     shadowUrl: "/assets/leaflet/marker-shadow.png",
     iconSize: [25, 41],
     iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
 });
 
 // Highlighted marker icon
-const highlightedIcon = new Icon({
+const highlightedIcon = L.icon({
     iconUrl: "/assets/leaflet/marker-icon.png",
     iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
     shadowUrl: "/assets/leaflet/marker-shadow.png",
     iconSize: [35, 57],
     iconAnchor: [17, 57],
+    popupAnchor: [1, -50],
+    shadowSize: [57, 57],
     className: "marker-highlighted",
 });
 
