@@ -1,6 +1,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { useRef } from "react";
+import { Link } from "react-router-dom";
 
 export default function ExploreDestinationsSection() {
   const sectionRef = useRef(null);
@@ -96,43 +97,45 @@ export default function ExploreDestinationsSection() {
 
             {/* Spectacular CTA Button */}
             <div className="flex justify-center md:justify-start">
-              <motion.button
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                whileHover={{ scale: 1.08, y: -6 }}
-                whileTap={{ scale: 0.95 }}
-                animate={{
-                  boxShadow: [
-                    "0 10px 30px rgba(45, 80, 22, 0.3)",
-                    "0 15px 45px rgba(45, 80, 22, 0.5)",
-                    "0 10px 30px rgba(45, 80, 22, 0.3)"
-                  ]
-                }}
-                transition={{
-                  duration: 0.6,
-                  delay: 0.3,
-                  boxShadow: { duration: 2.5, repeat: Infinity, ease: "easeInOut" }
-                }}
-                className="relative bg-green-primary hover:bg-green-primary/90 text-white font-bold py-4 sm:py-4 md:py-4 lg:py-4 px-8 sm:px-8 md:px-10 lg:px-10 rounded-full shadow-premium-lg transition-all duration-300 text-sm sm:text-base md:text-lg lg:text-lg touch-target-min overflow-hidden group"
-              >
-                {/* Shimmer effect */}
-                <motion.div
+              <Link to="/trek">
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ scale: 1.08, y: -6 }}
+                  whileTap={{ scale: 0.95 }}
                   animate={{
-                    x: ["-100%", "200%"]
+                    boxShadow: [
+                      "0 10px 30px rgba(45, 80, 22, 0.3)",
+                      "0 15px 45px rgba(45, 80, 22, 0.5)",
+                      "0 10px 30px rgba(45, 80, 22, 0.3)"
+                    ]
                   }}
                   transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "linear",
-                    repeatDelay: 3
+                    duration: 0.6,
+                    delay: 0.3,
+                    boxShadow: { duration: 2.5, repeat: Infinity, ease: "easeInOut" }
                   }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                />
-                {/* Sparkle icon */}
-                <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 opacity-80 group-hover:opacity-100 transition-opacity" />
-                <span className="relative z-10">Start Your Adventure Today</span>
-              </motion.button>
+                  className="relative bg-green-primary hover:bg-green-primary/90 text-white font-bold py-4 sm:py-4 md:py-4 lg:py-4 px-8 sm:px-8 md:px-10 lg:px-10 rounded-full shadow-premium-lg transition-all duration-300 text-sm sm:text-base md:text-lg lg:text-lg touch-target-min overflow-hidden group"
+                >
+                  {/* Shimmer effect */}
+                  <motion.div
+                    animate={{
+                      x: ["-100%", "200%"]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "linear",
+                      repeatDelay: 3
+                    }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                  />
+                  {/* Sparkle icon */}
+                  <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <span className="relative z-10">Start Your Adventure Today</span>
+                </motion.button>
+              </Link>
             </div>
           </motion.div>
 

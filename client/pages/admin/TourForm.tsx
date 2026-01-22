@@ -718,6 +718,46 @@ export default function TourForm() {
                         )}
                     </div>
 
+                    {/* SEO Settings */}
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">SEO Settings</h2>
+                        <p className="text-sm text-gray-600 mb-4">Optimize how this tour appears in search engines</p>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Meta Title
+                                    <span className="text-xs text-gray-500 ml-1">(recommended: 50-60 characters)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="metaTitle"
+                                    value={formData.metaTitle}
+                                    onChange={handleChange}
+                                    maxLength={70}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent"
+                                    placeholder="e.g., Kathmandu Valley Tour | Eraya Wellness Travels"
+                                />
+                                <p className="text-xs text-gray-400 mt-1">{formData.metaTitle.length}/70 characters</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Meta Description
+                                    <span className="text-xs text-gray-500 ml-1">(recommended: 150-160 characters)</span>
+                                </label>
+                                <textarea
+                                    name="metaDescription"
+                                    value={formData.metaDescription}
+                                    onChange={handleChange}
+                                    maxLength={200}
+                                    rows={3}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-primary focus:border-transparent"
+                                    placeholder="Brief description for search engines. This appears in Google search results."
+                                />
+                                <p className="text-xs text-gray-400 mt-1">{formData.metaDescription.length}/200 characters</p>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Status */}
                     <div className="bg-white rounded-xl shadow-sm p-6">
                         <h2 className="text-xl font-bold text-gray-900 mb-4">Status</h2>

@@ -37,7 +37,7 @@ export default function Footer() {
             <div className="flex gap-2 sm:gap-3 md:gap-3 lg:gap-3">
               {[
                 { Icon: Facebook, href: "#facebook", label: "Facebook" },
-                { Icon: Instagram, href: "#instagram", label: "Instagram" },
+                { Icon: Instagram, href: "https://www.instagram.com/eraya_wellness_/", label: "Instagram" },
                 { Icon: Twitter, href: "#twitter", label: "Twitter" },
                 { Icon: Linkedin, href: "#linkedin", label: "LinkedIn" }
               ].map((social, index) => (

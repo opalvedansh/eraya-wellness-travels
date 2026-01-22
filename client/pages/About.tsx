@@ -241,12 +241,12 @@ export default function About() {
   ];
 
   const defaultPartners = [
-    { name: "Himalayan Tourism Board", logo: "🏔️" },
-    { name: "Adventure Safety Alliance", logo: "🛡️" },
-    { name: "Sustainable Travel Initiative", logo: "🌱" },
-    { name: "Global Wellness Network", logo: "💚" },
-    { name: "Heritage Conservation Fund", logo: "🏛️" },
-    { name: "Community Development Programs", logo: "🤝" },
+    { name: "Himalayan Tourism Board", logo: "🏔️", website: "" },
+    { name: "Adventure Safety Alliance", logo: "🛡️", website: "" },
+    { name: "Sustainable Travel Initiative", logo: "🌱", website: "" },
+    { name: "Global Wellness Network", logo: "💚", website: "" },
+    { name: "Heritage Conservation Fund", logo: "🏛️", website: "" },
+    { name: "Community Development Programs", logo: "🤝", website: "" },
   ];
 
   const defaultMilestones = [
@@ -429,7 +429,7 @@ export default function About() {
             "serviceType": ["Adventure Travel", "Trekking", "Spiritual Tourism", "Wellness Retreats"],
             "priceRange": "$$",
             "sameAs": [
-              "https://instagram.com/eraya_wellness_travels"
+              "https://www.instagram.com/eraya_wellness_/"
             ]
           })}
         </script>
@@ -709,30 +709,50 @@ export default function About() {
               Trusted By Leading Organizations
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 lg:gap-8">
-              {partners.map((partner, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ y: -4, scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
-                  className="bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-border flex flex-col items-center justify-center text-center group"
-                >
-                  {/* Check if logo is a URL (image) or emoji/icon */}
-                  {partner.logo && (partner.logo.startsWith('http://') || partner.logo.startsWith('https://')) ? (
-                    <img
-                      src={partner.logo}
-                      alt={partner.name}
-                      className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 object-contain mb-3 group-hover:scale-110 transition-transform"
-                    />
-                  ) : (
-                    <div className="text-3xl sm:text-4xl lg:text-5xl mb-3 group-hover:scale-110 transition-transform">
-                      {partner.logo || '🏢'}
-                    </div>
-                  )}
-                  <p className="text-text-dark font-semibold text-xs sm:text-sm leading-tight">
-                    {partner.name}
-                  </p>
-                </motion.div>
-              ))}
+              {partners.map((partner, index) => {
+                const CardContent = (
+                  <>
+                    {/* Check if logo is a URL (image) or emoji/icon */}
+                    {partner.logo && (partner.logo.startsWith('http://') || partner.logo.startsWith('https://')) ? (
+                      <img
+                        src={partner.logo}
+                        alt={partner.name}
+                        className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 object-contain mb-3 group-hover:scale-110 transition-transform"
+                      />
+                    ) : (
+                      <div className="text-3xl sm:text-4xl lg:text-5xl mb-3 group-hover:scale-110 transition-transform">
+                        {partner.logo || '🏢'}
+                      </div>
+                    )}
+                    <p className="text-text-dark font-semibold text-xs sm:text-sm leading-tight">
+                      {partner.name}
+                    </p>
+                  </>
+                );
+
+                return partner.website ? (
+                  <motion.a
+                    key={index}
+                    href={partner.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ y: -4, scale: 1.05 }}
+                    transition={{ duration: 0.2 }}
+                    className="bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-border flex flex-col items-center justify-center text-center group cursor-pointer"
+                  >
+                    {CardContent}
+                  </motion.a>
+                ) : (
+                  <motion.div
+                    key={index}
+                    whileHover={{ y: -4, scale: 1.05 }}
+                    transition={{ duration: 0.2 }}
+                    className="bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-border flex flex-col items-center justify-center text-center group"
+                  >
+                    {CardContent}
+                  </motion.div>
+                );
+              })}
             </div>
             <p className="text-center text-text-dark/60 text-xs sm:text-sm mt-6 sm:mt-8">
               Certified and recognized by industry-leading organizations worldwide
@@ -748,13 +768,13 @@ export default function About() {
                 Follow Our Adventures
               </h2>
               <a
-                href="https://instagram.com/eraya_wellness_travels"
+                href="https://www.instagram.com/eraya_wellness_/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-pink-500 font-bold text-lg hover:text-pink-600 transition-colors inline-flex items-center gap-2"
               >
                 <Instagram className="h-5 w-5" />
-                @eraya_wellness_travels
+                @eraya_wellness_
               </a>
             </div>
 
@@ -769,7 +789,7 @@ export default function About() {
               ].map((img, index) => (
                 <a
                   key={index}
-                  href="https://instagram.com/eraya_wellness_travels"
+                  href="https://www.instagram.com/eraya_wellness_/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="aspect-square overflow-hidden rounded-lg group relative"

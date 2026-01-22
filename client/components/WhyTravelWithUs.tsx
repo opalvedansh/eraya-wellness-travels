@@ -13,7 +13,7 @@ export default function WhyTravelWithUs() {
     },
     {
       icon: Award,
-      title: "9+ Years Experience",
+      title: "+2 Years",
       description:
         "Since 2023, trusted by 2,000+ travelers. Award-winning service.",
       color: "text-blue-accent",

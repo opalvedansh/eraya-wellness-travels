@@ -10,7 +10,7 @@ export const siteConfig = {
   },
   social: {
     facebook: "#facebook",
-    instagram: "#instagram",
+    instagram: "https://www.instagram.com/eraya_wellness_/",
     twitter: "#twitter",
     linkedin: "#linkedin",
   },

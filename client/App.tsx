@@ -28,7 +28,9 @@ import Index from "./pages/Index";
 // Lazy load all other pages
 const About = lazy(() => import("./pages/About"));
 const Tour = lazy(() => import("./pages/Tour"));
+const TourMapPage = lazy(() => import("./pages/TourMapPage"));
 const Trek = lazy(() => import("./pages/Trek"));
+const TrekMapPage = lazy(() => import("./pages/TrekMapPage"));
 
 const TourDetail = lazy(() => import("./pages/TourDetail"));
 const TrekDetail = lazy(() => import("./pages/TrekDetail"));
@@ -79,9 +81,10 @@ export default function App() {
                   <Route path="/" element={<Index />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/tour" element={<Tour />} />
+                  <Route path="/tour/map" element={<TourMapPage />} />
                   <Route path="/tour/:slug" element={<TourDetail />} />
                   <Route path="/trek" element={<Trek />} />
-
+                  <Route path="/trek/map" element={<TrekMapPage />} />
                   <Route path="/trek/:slug" element={<TrekDetail />} />
                   <Route path="/treks/:slug" element={<TrekDetail />} />
                   <Route path="/booking/:type/:slug" element={<Booking />} />

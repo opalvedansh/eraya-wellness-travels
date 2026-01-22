@@ -88,8 +88,8 @@ export default function Contact() {
     {
       icon: Instagram,
       title: "Follow Us",
-      content: "@eraya_wellness_travels",
-      link: "https://www.instagram.com/eraya_wellness_travels/",
+      content: "@eraya_wellness_",
+      link: "https://www.instagram.com/eraya_wellness_/",
       target: "_blank",
     },
   ];

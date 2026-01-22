@@ -82,7 +82,7 @@ export default function HeroSection() {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="text-sm sm:text-base md:text-lg lg:text-xl mb-8 sm:mb-10 md:mb-12 lg:mb-14 max-w-3xl font-light leading-relaxed px-2 sm:px-0 text-white/95"
         >
-          Embark on unforgettable journeys through breathtaking landscapes. From spiritual retreats to thrilling treks, create memories that last a lifetime.
+          Journey through breathtaking landscapes where wellness, spirituality, and adventure come together - leaving you lighter, clearer, and deeply renewed.
         </motion.p>
 
         {/* CTA Buttons with Enhanced Effects */}
