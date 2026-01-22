@@ -61,7 +61,7 @@ export default function SpiritualInsights() {
             <PageHero
                 title="Spiritual Insights"
                 subtitle="Journey inward through wisdom, reflection, and transformative experiences"
-                backgroundImage="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80"
+                backgroundImage="/spiritual-insights-hero.jpeg"
             />
 
             {/* Main Content */}
@@ -137,8 +137,8 @@ export default function SpiritualInsights() {
                             <button
                                 onClick={() => setSelectedTag(null)}
                                 className={`px-3 py-1 rounded-full text-sm transition ${selectedTag === null
-                                        ? "bg-green-primary text-white"
-                                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                    ? "bg-green-primary text-white"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                                     }`}
                             >
                                 All
@@ -148,8 +148,8 @@ export default function SpiritualInsights() {
                                     key={tag}
                                     onClick={() => setSelectedTag(tag)}
                                     className={`px-3 py-1 rounded-full text-sm transition ${selectedTag === tag
-                                            ? "bg-green-primary text-white"
-                                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                        ? "bg-green-primary text-white"
+                                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                                         }`}
                                 >
                                     {tag}
