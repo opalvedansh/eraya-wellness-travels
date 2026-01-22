@@ -744,11 +744,8 @@ export default function Tour() {
                     <span className="hidden sm:inline">Grid</span>
                   </button>
                   <button
-                    onClick={() => setViewMode("map")}
-                    className={`px-4 py-2 rounded-r-lg flex items-center gap-2 transition-colors ${viewMode === "map"
-                      ? "bg-green-primary text-white"
-                      : "text-text-dark hover:bg-beige"
-                      }`}
+                    onClick={() => navigate("/tour/map")}
+                    className="px-4 py-2 rounded-r-lg flex items-center gap-2 transition-colors text-text-dark hover:bg-beige"
                   >
                     <MapIcon className="h-4 w-4" />
                     <span className="hidden sm:inline">Map</span>
