@@ -87,50 +87,37 @@ export default function TourMap({
     selectedTourId = null,
     className = "h-[600px] rounded-xl overflow-hidden shadow-premium border border-border"
 }: TourMapProps) {
-    const [icons, setIcons] = useState<{ defaultIcon: Icon; highlightedIcon: Icon } | null>(null);
-
-    // Initialize icons safely on client-side only
-    useEffect(() => {
-        let isMounted = true;
-
-        import("leaflet").then((L) => {
-            if (!isMounted) return;
-
-            const defaultIcon = L.icon({
-                iconUrl: "/assets/leaflet/marker-icon.png",
-                iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
-                shadowUrl: "/assets/leaflet/marker-shadow.png",
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41],
-            });
-
-            const highlightedIcon = L.icon({
-                iconUrl: "/assets/leaflet/marker-icon.png",
-                iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
-                shadowUrl: "/assets/leaflet/marker-shadow.png",
-                iconSize: [35, 57],
-                iconAnchor: [17, 57],
-                popupAnchor: [1, -50],
-                shadowSize: [57, 57],
-                className: "marker-highlighted",
-            });
-
-            setIcons({ defaultIcon, highlightedIcon });
+    // Initialize icons safely on client-side only (Custom DivIcons)
+    const createCustomIcon = (price: number, isActive: boolean) => {
+        // We can't import L directly here safely due to SSR, but we can assume L is available or we wouldn't be rendering
+        // However, standard L.divIcon doesn't need the 'leaflet' package at initialization time if passed as object to Marker? 
+        // Actually, we need L.divIcon instance.
+        // Let's use the L instance we get from useMap or from window if available, OR we wait for effect.
+        // Since we are inside MapContainer, better to use the effect approach for the first render?
+        // Actually standard approach: we can just use the import from useEffect.
+        return new (window as any).L.DivIcon({
+            className: `custom-marker-pill ${isActive ? 'active' : ''}`,
+            html: `<span>$${price}</span>`,
+            iconSize: [0, 0], // CSS handles size
+            iconAnchor: [0, 0] // CSS handles anchor
         });
+    };
 
-        return () => {
-            isMounted = false;
-        };
+    const [LeafletMap, setLeafletMap] = useState<any>(null);
+
+    useEffect(() => {
+        import("leaflet").then((L) => {
+            setLeafletMap(L);
+            (window as any).L = L; // Quick hack to access L in render if needed, or just store in state
+        });
     }, []);
 
-    if (!icons) {
+    if (!LeafletMap) {
         return (
             <div className={`${className} flex items-center justify-center bg-beige-light`}>
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
-                    <p className="text-text-dark/70">Loading map configuration...</p>
+                    <p className="text-text-dark/70">Loading map...</p>
                 </div>
             </div>
         );
@@ -144,7 +131,6 @@ export default function TourMap({
                 style={{ height: "100%", width: "100%" }}
                 scrollWheelZoom={true}
             >
-                <MapIconSetup />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                     url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
@@ -154,7 +140,12 @@ export default function TourMap({
                     <Marker
                         key={tour.id}
                         position={tour.coordinates}
-                        icon={selectedTourId === tour.id ? icons.highlightedIcon : icons.defaultIcon}
+                        icon={new LeafletMap.DivIcon({
+                            className: `custom-marker-pill ${selectedTourId === tour.id ? 'active' : ''}`,
+                            html: `<span>$${tour.price}</span>`,
+                            iconSize: null, // Let CSS handle it
+                            iconAnchor: [0, 0] // Centered via transform
+                        })}
                         eventHandlers={{
                             click: () => {
                                 if (onMarkerClick) {

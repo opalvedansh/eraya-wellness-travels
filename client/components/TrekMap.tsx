@@ -86,50 +86,22 @@ export default function TrekMap({
     selectedTrekId = null,
     className = "h-[600px] rounded-xl overflow-hidden shadow-premium border border-border"
 }: TrekMapProps) {
-    const [icons, setIcons] = useState<{ defaultIcon: Icon; highlightedIcon: Icon } | null>(null);
+    // Initialize icons safely on client-side only (Custom DivIcons)
+    const [LeafletMap, setLeafletMap] = useState<any>(null);
 
-    // Initialize icons safely
     useEffect(() => {
-        let isMounted = true;
-
         import("leaflet").then((L) => {
-            if (!isMounted) return;
-
-            const defaultIcon = L.icon({
-                iconUrl: "/assets/leaflet/marker-icon.png",
-                iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
-                shadowUrl: "/assets/leaflet/marker-shadow.png",
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41],
-            });
-
-            const highlightedIcon = L.icon({
-                iconUrl: "/assets/leaflet/marker-icon.png",
-                iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
-                shadowUrl: "/assets/leaflet/marker-shadow.png",
-                iconSize: [35, 57],
-                iconAnchor: [17, 57],
-                popupAnchor: [1, -50],
-                shadowSize: [57, 57],
-                className: "marker-highlighted",
-            });
-
-            setIcons({ defaultIcon, highlightedIcon });
+            setLeafletMap(L);
+            (window as any).L = L; // Quick hack to access L in render if needed
         });
-
-        return () => {
-            isMounted = false;
-        };
     }, []);
 
-    if (!icons) {
+    if (!LeafletMap) {
         return (
             <div className={`${className} flex items-center justify-center bg-beige-light`}>
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
-                    <p className="text-text-dark/70">Loading map configuration...</p>
+                    <p className="text-text-dark/70">Loading map...</p>
                 </div>
             </div>
         );
@@ -143,7 +115,6 @@ export default function TrekMap({
                 style={{ height: "100%", width: "100%" }}
                 scrollWheelZoom={true}
             >
-                <MapIconSetup />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                     url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
@@ -153,7 +124,12 @@ export default function TrekMap({
                     <Marker
                         key={trek.id}
                         position={trek.coordinates}
-                        icon={selectedTrekId === trek.id ? icons.highlightedIcon : icons.defaultIcon}
+                        icon={new LeafletMap.DivIcon({
+                            className: `custom-marker-pill ${selectedTrekId === trek.id ? 'active' : ''}`,
+                            html: `<span>$${trek.price}</span>`,
+                            iconSize: null, // Let CSS handle it
+                            iconAnchor: [0, 0] // Centered via transform
+                        })}
                         eventHandlers={{
                             click: () => {
                                 if (onMarkerClick) {
