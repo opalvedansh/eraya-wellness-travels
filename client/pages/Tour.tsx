@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import TourPageHero from "@/components/TourPageHero";
 import Footer from "@/components/Footer";
@@ -22,43 +22,10 @@ import {
   GitCompare,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import L, { Icon } from "leaflet";
 import { API_BASE_URL } from "@/lib/config";
 
-// Fix Leaflet default icon issue
-const defaultIcon = new Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-// Component to auto-center map on markers
-function MapBounds({ tours }: { tours: any[] }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (tours.length > 0) {
-      // Filter out invalid coordinates before creating bounds
-      const validPoints = tours
-        .filter(t => t.coordinates && t.coordinates[0] !== 27.7) // exclude defaults if possible, or just include all
-        .map(t => t.coordinates);
-
-      if (validPoints.length > 0) {
-        const bounds = L.latLngBounds(validPoints);
-        map.fitBounds(bounds, { padding: [50, 50] });
-      } else if (tours.length > 0) {
-        // Fallback for default coordinates
-        const bounds = L.latLngBounds(tours.map(t => t.coordinates));
-        map.fitBounds(bounds, { padding: [50, 50] });
-      }
-    }
-  }, [tours, map]);
-
-  return null;
-}
+// Dynamically import TourMap to avoid SSR issues with Leaflet
+const TourMap = lazy(() => import("@/components/TourMap"));
 
 // Quick View Modal Component
 function QuickViewModal({ tour, isOpen, onClose }: any) {
@@ -1131,51 +1098,30 @@ export default function Tour() {
             )
           ) : (
             // Map View
-            <div className="h-[600px] rounded-xl overflow-hidden shadow-premium border border-border">
-              <MapContainer
-                // @ts-ignore
-                center={[20, 0]}
-                zoom={2}
-                style={{ height: "100%", width: "100%" }}
-              >
-                <TileLayer
-                  // @ts-ignore
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <MapBounds tours={processedTours} />
-                {processedTours.map((tour) => (
-                  <Marker
-                    key={tour.id}
-                    // @ts-ignore
-                    position={tour.coordinates as [number, number]}
-                    // @ts-ignore
-                    icon={defaultIcon}
-                  >
-                    <Popup>
-                      <div className="p-2">
-                        <img
-                          loading="lazy" src={tour.image}
-                          alt={tour.name}
-                          className="w-48 h-32 object-cover rounded-lg mb-2"
-                        />
-                        <h3 className="font-bold text-sm mb-1">{tour.name}</h3>
-                        <p className="text-xs text-gray-600 mb-2">{tour.location}</p>
-                        <div className="flex items-center justify-between">
-                          <span className="font-black text-green-primary">${tour.price}</span>
-                          <button
-                            onClick={() => navigate(`/tour/${tour.slug}`)}
-                            className="px-3 py-1 bg-green-primary text-white rounded text-xs font-semibold"
-                          >
-                            View Tour
-                          </button>
-                        </div>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
-            </div>
+            <Suspense
+              fallback={
+                <div className="h-[600px] rounded-xl overflow-hidden shadow-premium border border-border flex items-center justify-center bg-beige-light">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
+                    <p className="text-text-dark/70">Loading map...</p>
+                  </div>
+                </div>
+              }
+            >
+              <TourMap
+                tours={processedTours.map((tour) => ({
+                  id: tour.id,
+                  name: tour.name,
+                  slug: tour.slug,
+                  location: tour.location,
+                  image: tour.image,
+                  price: tour.price,
+                  coordinates: tour.coordinates as [number, number],
+                  description: tour.description,
+                }))}
+                onTourClick={(slug) => navigate(`/tour/${slug}`)}
+              />
+            </Suspense>
           )}
         </section>
 
