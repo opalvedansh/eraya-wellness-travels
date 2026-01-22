@@ -28,6 +28,10 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks
           if (id.includes('node_modules')) {
+            // Maps - PRIORITIZE THIS to keep leaflet and react-leaflet together
+            if (id.includes('leaflet')) {
+              return 'map-vendor';
+            }
             // React ecosystem
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
               return 'react-vendor';
@@ -39,10 +43,6 @@ export default defineConfig({
             // Radix UI components
             if (id.includes('@radix-ui')) {
               return 'ui-vendor-2';
-            }
-            // Maps
-            if (id.includes('leaflet')) {
-              return 'map-vendor';
             }
             // 3D libraries
             if (id.includes('three') || id.includes('@react-three')) {

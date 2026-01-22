@@ -1,13 +1,21 @@
+import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
 
-// Fix for default marker icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+// Component to handle global Leaflet configuration side-effects
+function MapConfig() {
+    useEffect(() => {
+        import('leaflet').then((L) => {
+            // Fix for default marker icons
+            delete (L.Icon.Default.prototype as any)._getIconUrl;
+            L.Icon.Default.mergeOptions({
+                iconRetinaUrl: '/assets/leaflet/marker-icon-2x.png',
+                iconUrl: '/assets/leaflet/marker-icon.png',
+                shadowUrl: '/assets/leaflet/marker-shadow.png',
+            });
+        });
+    }, []);
+    return null;
+}
 
 interface RouteMapProps {
     route?: Array<{ lat: number; lng: number; name?: string }>;
@@ -15,10 +23,24 @@ interface RouteMapProps {
 }
 
 export function RouteMap({ route, center }: RouteMapProps) {
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     if ((!route || route.length === 0) && !center) {
         return (
             <div className="bg-card rounded-xl p-8 text-center border border-border">
                 <p className="text-text-dark/60">Route map not available for this tour.</p>
+            </div>
+        );
+    }
+
+    if (!isMounted) {
+        return (
+            <div className="bg-card rounded-xl p-8 text-center border border-border h-[500px] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-primary"></div>
             </div>
         );
     }
@@ -55,6 +77,7 @@ export function RouteMap({ route, center }: RouteMapProps) {
                 style={{ height: '500px', width: '100%' }}
                 className="z-0"
             >
+                <MapConfig />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
