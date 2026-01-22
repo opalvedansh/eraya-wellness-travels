@@ -28,10 +28,7 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks
           if (id.includes('node_modules')) {
-            // Maps - PRIORITIZE THIS to keep leaflet and react-leaflet together
-            if (id.includes('leaflet')) {
-              return 'map-vendor';
-            }
+
             // React ecosystem
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
               return 'react-vendor';
