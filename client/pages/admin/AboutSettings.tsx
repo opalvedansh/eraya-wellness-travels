@@ -32,6 +32,7 @@ interface TeamMember {
 interface Partner {
     name: string;
     logo: string;
+    website: string;
 }
 
 interface Stat {
@@ -476,7 +477,7 @@ export default function AboutSettings() {
                     <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold text-gray-900">Partner Organizations</h2>
-                            <button onClick={() => addListItem("partners", { name: "", logo: "" })} className="text-sm bg-green-50 text-green-600 px-3 py-1 rounded-lg font-medium">+ Add Partner</button>
+                            <button onClick={() => addListItem("partners", { name: "", logo: "", website: "" })} className="text-sm bg-green-50 text-green-600 px-3 py-1 rounded-lg font-medium">+ Add Partner</button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {content.partners.map((partner, i) => (
@@ -517,6 +518,19 @@ export default function AboutSettings() {
                                                 className="w-16 border p-1 rounded text-center ml-2"
                                                 maxLength={4}
                                             />
+                                        </div>
+
+                                        {/* Website URL */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
+                                            <input
+                                                type="url"
+                                                placeholder="https://partner-website.com"
+                                                value={(partner as any).website || ''}
+                                                onChange={e => updateListItem("partners", i, "website", e.target.value)}
+                                                className="w-full border p-2 rounded"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">When visitors click this partner, they will be redirected to this URL</p>
                                         </div>
                                     </div>
                                 </div>
