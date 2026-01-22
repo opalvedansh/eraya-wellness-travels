@@ -1,37 +1,65 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import L from "leaflet";
+import type { Icon, Map as LeafletMapType } from "leaflet";
 
-// Fix Leaflet default icon issue - must be done before creating icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconUrl: "/assets/leaflet/marker-icon.png",
-    iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
-    shadowUrl: "/assets/leaflet/marker-shadow.png",
-});
+// Separate component for Map logic to ensure context exists
+function MapController({
+    selectedTourId,
+    tours
+}: {
+    selectedTourId: string | null;
+    tours: any[];
+}) {
+    const map = useMap();
 
-// Custom default icon
-const defaultIcon = L.icon({
-    iconUrl: "/assets/leaflet/marker-icon.png",
-    iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
-    shadowUrl: "/assets/leaflet/marker-shadow.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
-});
+    useEffect(() => {
+        // Needs dynamic import to access L inside effect
+        import("leaflet").then((L) => {
+            if (selectedTourId !== null) {
+                const tour = tours.find(t => t.id === selectedTourId);
+                if (tour && tour.coordinates) {
+                    map.flyTo(tour.coordinates, 10, {
+                        duration: 1.5,
+                        easeLinearity: 0.25
+                    });
+                }
+            } else if (tours.length > 0) {
+                const validTours = tours.filter(t =>
+                    t.coordinates &&
+                    t.coordinates[0] !== 27.7 &&
+                    !isNaN(t.coordinates[0]) &&
+                    !isNaN(t.coordinates[1])
+                );
 
-// Highlighted marker icon
-const highlightedIcon = L.icon({
-    iconUrl: "/assets/leaflet/marker-icon.png",
-    iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
-    shadowUrl: "/assets/leaflet/marker-shadow.png",
-    iconSize: [35, 57],
-    iconAnchor: [17, 57],
-    popupAnchor: [1, -50],
-    shadowSize: [57, 57],
-    className: "marker-highlighted",
-});
+                if (validTours.length > 0) {
+                    const bounds = L.latLngBounds(validTours.map(t => t.coordinates));
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                } else if (tours.length > 0) {
+                    const bounds = L.latLngBounds(tours.map(t => t.coordinates));
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+            }
+        });
+    }, [selectedTourId, tours, map]);
+
+    return null;
+}
+
+// Icon setup component
+function MapIconSetup() {
+    useEffect(() => {
+        // Fix Leaflet icons
+        import("leaflet").then((L) => {
+            delete (L.Icon.Default.prototype as any)._getIconUrl;
+            L.Icon.Default.mergeOptions({
+                iconUrl: "/assets/leaflet/marker-icon.png",
+                iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
+                shadowUrl: "/assets/leaflet/marker-shadow.png",
+            });
+        });
+    }, []);
+    return null;
+}
 
 interface Tour {
     id: string;
@@ -52,48 +80,6 @@ interface TourMapProps {
     className?: string;
 }
 
-// Component to handle map instance and programmatic control
-function MapController({
-    selectedTourId,
-    tours
-}: {
-    selectedTourId: string | null;
-    tours: Tour[];
-}) {
-    const map = useMap();
-
-    useEffect(() => {
-        if (selectedTourId !== null) {
-            const tour = tours.find(t => t.id === selectedTourId);
-            if (tour) {
-                map.flyTo(tour.coordinates, 10, {
-                    duration: 1.5,
-                    easeLinearity: 0.25
-                });
-            }
-        } else if (tours.length > 0) {
-            // Auto-fit to show all tours when none selected
-            const validTours = tours.filter(t =>
-                t.coordinates &&
-                t.coordinates[0] !== 27.7 && // Filter out default coordinates
-                !isNaN(t.coordinates[0]) &&
-                !isNaN(t.coordinates[1])
-            );
-
-            if (validTours.length > 0) {
-                const bounds = L.latLngBounds(validTours.map(t => t.coordinates));
-                map.fitBounds(bounds, { padding: [50, 50] });
-            } else if (tours.length > 0) {
-                // Fallback to all tours including defaults
-                const bounds = L.latLngBounds(tours.map(t => t.coordinates));
-                map.fitBounds(bounds, { padding: [50, 50] });
-            }
-        }
-    }, [selectedTourId, tours, map]);
-
-    return null;
-}
-
 export default function TourMap({
     tours,
     onTourClick,
@@ -101,18 +87,50 @@ export default function TourMap({
     selectedTourId = null,
     className = "h-[600px] rounded-xl overflow-hidden shadow-premium border border-border"
 }: TourMapProps) {
-    const [isMounted, setIsMounted] = useState(false);
+    const [icons, setIcons] = useState<{ defaultIcon: Icon; highlightedIcon: Icon } | null>(null);
 
+    // Initialize icons safely on client-side only
     useEffect(() => {
-        setIsMounted(true);
+        let isMounted = true;
+
+        import("leaflet").then((L) => {
+            if (!isMounted) return;
+
+            const defaultIcon = L.icon({
+                iconUrl: "/assets/leaflet/marker-icon.png",
+                iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
+                shadowUrl: "/assets/leaflet/marker-shadow.png",
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41],
+            });
+
+            const highlightedIcon = L.icon({
+                iconUrl: "/assets/leaflet/marker-icon.png",
+                iconRetinaUrl: "/assets/leaflet/marker-icon-2x.png",
+                shadowUrl: "/assets/leaflet/marker-shadow.png",
+                iconSize: [35, 57],
+                iconAnchor: [17, 57],
+                popupAnchor: [1, -50],
+                shadowSize: [57, 57],
+                className: "marker-highlighted",
+            });
+
+            setIcons({ defaultIcon, highlightedIcon });
+        });
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
-    if (!isMounted) {
+    if (!icons) {
         return (
             <div className={`${className} flex items-center justify-center bg-beige-light`}>
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
-                    <p className="text-text-dark/70">Loading map...</p>
+                    <p className="text-text-dark/70">Loading map configuration...</p>
                 </div>
             </div>
         );
@@ -126,6 +144,7 @@ export default function TourMap({
                 style={{ height: "100%", width: "100%" }}
                 scrollWheelZoom={true}
             >
+                <MapIconSetup />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -135,7 +154,7 @@ export default function TourMap({
                     <Marker
                         key={tour.id}
                         position={tour.coordinates}
-                        icon={selectedTourId === tour.id ? highlightedIcon : defaultIcon}
+                        icon={selectedTourId === tour.id ? icons.highlightedIcon : icons.defaultIcon}
                         eventHandlers={{
                             click: () => {
                                 if (onMarkerClick) {
