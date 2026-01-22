@@ -941,8 +941,11 @@ export default function Trek() {
                     <span className="hidden sm:inline">Grid</span>
                   </button>
                   <button
-                    onClick={() => navigate("/trek/map")}
-                    className="px-4 py-2 rounded-r-lg flex items-center gap-2 transition-colors text-text-dark hover:bg-beige bg-card border-l border-border"
+                    onClick={() => setViewMode("map")}
+                    className={`px-4 py-2 rounded-r-lg flex items-center gap-2 transition-colors ${viewMode === "map"
+                      ? "bg-green-primary text-white"
+                      : "text-text-dark hover:bg-beige bg-card border-l border-border"
+                      }`}
                   >
                     <MapIcon className="h-4 w-4" />
                     <span className="hidden sm:inline">Map</span>
