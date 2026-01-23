@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "@/components/Footer";
-import { ArrowLeft, Grid, Map as MapIcon, ChevronRight } from "lucide-react";
+import { ArrowLeft, Grid, Map as MapIcon, ChevronRight, Search, SlidersHorizontal, Star, Clock, MapPin, Mountain } from "lucide-react";
 import { API_BASE_URL } from "@/lib/config";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -20,6 +20,9 @@ interface Trek {
     longitude?: number;
     images?: string[];
     isActive: boolean;
+    duration?: string;
+    difficulty?: 'easy' | 'moderate' | 'difficult';
+    rating?: number;
 }
 
 export default function TrekMapPage() {
@@ -28,6 +31,8 @@ export default function TrekMapPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedTrekId, setSelectedTrekId] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState<'price' | 'name' | 'rating'>('name');
 
     // Refs for scrolling to items
     const desktopListRef = useRef<HTMLDivElement>(null);
@@ -66,9 +71,25 @@ export default function TrekMapPage() {
         }
     }, [selectedTrekId]);
 
+    // Filter and sort treks
+    const filteredAndSortedTreks = useMemo(() => {
+        let filtered = treks.filter(trek =>
+            trek.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            trek.location.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+        filtered.sort((a, b) => {
+            if (sortBy === 'price') return a.price - b.price;
+            if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0);
+            return a.name.localeCompare(b.name);
+        });
+
+        return filtered;
+    }, [treks, searchQuery, sortBy]);
+
     // Transform data for map display
     const mapTreks = useMemo(() => {
-        return treks.map(trek => ({
+        return filteredAndSortedTreks.map(trek => ({
             id: trek.id,
             name: trek.name,
             slug: trek.slug,
@@ -80,108 +101,200 @@ export default function TrekMapPage() {
                 : [28.0, 84.0]) as [number, number],
             description: trek.description,
         }));
-    }, [treks]);
+    }, [filteredAndSortedTreks]);
+
+    const getDifficultyBadge = (difficulty?: string) => {
+        if (!difficulty) return null;
+        const badges = {
+            easy: <span className="badge-easy">Easy</span>,
+            moderate: <span className="badge-moderate">Moderate</span>,
+            difficult: <span className="badge-difficult">Difficult</span>
+        };
+        return badges[difficulty as keyof typeof badges];
+    };
+
+    const renderStars = (rating?: number) => {
+        if (!rating) return null;
+        return (
+            <div className="star-rating">
+                {[1, 2, 3, 4, 5].map(star => (
+                    <Star
+                        key={star}
+                        className={`h-3 w-3 ${star <= rating ? 'star-filled fill-current' : 'star-empty'}`}
+                    />
+                ))}
+            </div>
+        );
+    };
 
     if (loading) {
         return (
-            <div className="h-screen w-full bg-beige flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary mx-auto mb-4"></div>
-                    <p className="text-xl text-text-dark/60">Loading map...</p>
-                </div>
+            <div className="h-screen w-full bg-gradient-to-br from-beige-light to-beige flex items-center justify-center">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center"
+                >
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-primary border-t-transparent mx-auto mb-4"></div>
+                    <p className="text-xl font-semibold text-text-dark/70">Loading spectacular map...</p>
+                </motion.div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="h-screen w-full bg-beige flex items-center justify-center">
-                <div className="text-center">
+            <div className="h-screen w-full bg-gradient-to-br from-beige-light to-beige flex items-center justify-center">
+                <div className="text-center glass-card p-8 rounded-2xl">
                     <p className="text-xl text-text-dark/60 mb-4">{error}</p>
-                    <button onClick={() => window.location.reload()} className="px-6 py-3 bg-green-primary text-white rounded-lg">Try Again</button>
+                    <button onClick={() => window.location.reload()} className="btn-premium">Try Again</button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="h-screen w-full flex flex-col bg-beige overflow-hidden">
-            {/* Header */}
-            <div className="h-16 bg-white border-b border-border px-4 flex items-center justify-between shrink-0 z-30 shadow-sm">
+        <div className="h-screen w-full flex flex-col bg-gradient-to-br from-beige-light via-beige to-beige-dark overflow-hidden">
+            {/* Premium Header */}
+            <div className="h-20 glass-card border-b border-white/20 px-6 flex items-center justify-between shrink-0 z-30 shadow-premium">
                 <div className="flex items-center gap-4">
-                    <button
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => navigate("/trek")}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        className="p-3 hover:bg-white/50 rounded-full transition-all"
                     >
-                        <ArrowLeft className="h-5 w-5 text-gray-600" />
-                    </button>
-                    <h1 className="text-xl font-bold text-green-primary flex items-center gap-2">
-                        <MapIcon className="h-5 w-5" />
-                        Explore Treks
-                    </h1>
+                        <ArrowLeft className="h-5 w-5 text-green-primary" />
+                    </motion.button>
+                    <div>
+                        <h1 className="text-2xl font-black text-green-primary flex items-center gap-3">
+                            <Mountain className="h-6 w-6" />
+                            Explore Treks
+                        </h1>
+                        <p className="text-sm text-text-dark/60">Discover breathtaking adventures</p>
+                    </div>
                 </div>
-                <button
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => navigate("/trek")}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 glass-card hover:glass-card-dark hover:text-white rounded-xl text-sm font-semibold transition-all shadow-premium-sm"
                 >
                     <Grid className="h-4 w-4" />
                     <span className="hidden sm:inline">Grid View</span>
-                </button>
+                </motion.button>
             </div>
 
             <div className="flex-1 flex overflow-hidden relative">
-                {/* Desktop Sidebar */}
-                <div
+                {/* Premium Desktop Sidebar */}
+                <motion.div
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.4 }}
                     ref={desktopListRef}
-                    className="hidden lg:flex w-96 flex-col bg-white border-r border-border h-full shrink-0 overflow-y-auto z-20 shadow-xl"
+                    className="hidden lg:flex w-[420px] flex-col glass-card border-r border-white/20 h-full shrink-0 overflow-hidden z-20 shadow-premium-lg"
                 >
-                    <div className="p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
-                        <p className="text-sm text-gray-500 font-medium">{treks.length} treks found</p>
-                    </div>
-                    <div className="divide-y divide-gray-100">
-                        {treks.map(trek => (
-                            <div
-                                key={trek.id}
-                                ref={el => itemRefs.current[trek.id] = el}
-                                onClick={() => setSelectedTrekId(trek.id)}
-                                className={`p-4 cursor-pointer transition-colors hover:bg-gray-50 ${selectedTrekId === trek.id ? 'bg-green-primary/5 border-l-4 border-left border-green-primary' : 'border-l-4 border-transparent'}`}
+                    {/* Search and Filter Bar */}
+                    <div className="p-6 border-b border-white/10 bg-gradient-to-b from-white/50 to-transparent sticky top-0 z-10 backdrop-blur-xl">
+                        <div className="relative search-glow mb-4">
+                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search treks or locations..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3 bg-white/80 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-primary/20 transition-all"
+                            />
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <SlidersHorizontal className="h-4 w-4 text-gray-500" />
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value as any)}
+                                className="flex-1 px-3 py-2 bg-white/80 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-primary/20"
                             >
-                                <div className="flex gap-4">
-                                    <img
-                                        src={trek.coverImage || trek.images?.[0] || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop"}
-                                        alt={trek.name}
-                                        className="w-24 h-24 object-cover rounded-lg shrink-0 bg-gray-100"
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-bold text-text-dark line-clamp-2 mb-1">{trek.name}</h3>
-                                        <p className="text-xs text-gray-500 mb-2 truncate">{trek.location}</p>
-                                        <div className="flex items-center justify-between mt-auto">
-                                            <span className="font-bold text-green-primary text-sm">${trek.price}</span>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    navigate(`/trek/${trek.slug}`);
-                                                }}
-                                                className="text-xs font-semibold text-gray-600 hover:text-green-primary flex items-center gap-1"
-                                            >
-                                                Details <ChevronRight className="h-3 w-3" />
-                                            </button>
+                                <option value="name">Sort by Name</option>
+                                <option value="price">Sort by Price</option>
+                                <option value="rating">Sort by Rating</option>
+                            </select>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-3 font-medium">{filteredAndSortedTreks.length} treks found</p>
+                    </div>
+
+                    {/* Trek List */}
+                    <div className="flex-1 overflow-y-auto premium-scrollbar">
+                        <AnimatePresence>
+                            {filteredAndSortedTreks.map((trek, index) => (
+                                <motion.div
+                                    key={trek.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    ref={el => itemRefs.current[trek.id] = el}
+                                    onClick={() => setSelectedTrekId(trek.id)}
+                                    className={`p-5 cursor-pointer transition-all card-hover-lift border-b border-white/10 ${selectedTrekId === trek.id
+                                            ? 'bg-gradient-to-r from-green-primary/10 to-transparent border-l-4 border-l-green-primary'
+                                            : 'hover:bg-white/30'
+                                        }`}
+                                >
+                                    <div className="flex gap-4">
+                                        <div className="relative shrink-0">
+                                            <img
+                                                src={trek.coverImage || trek.images?.[0] || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop"}
+                                                alt={trek.name}
+                                                className="w-28 h-28 object-cover rounded-xl shadow-premium-sm"
+                                            />
+                                            {trek.difficulty && (
+                                                <div className="absolute top-2 right-2">
+                                                    {getDifficultyBadge(trek.difficulty)}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-bold text-text-dark line-clamp-2 mb-2 text-base">{trek.name}</h3>
+                                            <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+                                                <MapPin className="h-3 w-3" />
+                                                <span className="truncate">{trek.location}</span>
+                                            </div>
+                                            {trek.duration && (
+                                                <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+                                                    <Clock className="h-3 w-3" />
+                                                    <span>{trek.duration}</span>
+                                                </div>
+                                            )}
+                                            {trek.rating && (
+                                                <div className="mb-2">
+                                                    {renderStars(trek.rating)}
+                                                </div>
+                                            )}
+                                            <div className="flex items-center justify-between mt-auto">
+                                                <span className="font-black text-green-primary text-lg">${trek.price}</span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/trek/${trek.slug}`);
+                                                    }}
+                                                    className="text-xs font-semibold text-green-primary hover:text-green-secondary flex items-center gap-1 transition-colors"
+                                                >
+                                                    Details <ChevronRight className="h-3 w-3" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        ))}
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
                     </div>
-                    <div className="mt-auto p-4 border-t border-border bg-gray-50">
-                        <Footer minimal={true} />
-                    </div>
-                </div>
+                </motion.div>
 
                 {/* Map Area */}
-                <div className="flex-1 relative h-full bg-gray-100">
+                <div className="flex-1 relative h-full">
                     <Suspense fallback={
-                        <div className="absolute inset-0 flex items-center justify-center bg-beige-light">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-primary"></div>
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-beige-light to-beige">
+                            <div className="text-center">
+                                <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-primary border-t-transparent mx-auto mb-4"></div>
+                                <p className="text-text-dark/70 font-semibold">Loading map...</p>
+                            </div>
                         </div>
                     }>
                         <TrekMap
@@ -189,50 +302,61 @@ export default function TrekMapPage() {
                             onTrekClick={(slug) => navigate(`/trek/${slug}`)}
                             onMarkerClick={(id) => setSelectedTrekId(id)}
                             selectedTrekId={selectedTrekId}
-                            className="h-full w-full outline-none"
+                            className="h-full w-full"
                         />
                     </Suspense>
                 </div>
 
-                {/* Mobile Bottom Sheet/List */}
+                {/* Premium Mobile Bottom Sheet */}
                 <div className="lg:hidden absolute bottom-0 left-0 right-0 z-30 pointer-events-none">
-                    <div className="p-4 bg-gradient-to-t from-black/20 to-transparent pb-8">
+                    <div className="p-4 bg-gradient-to-t from-black/40 via-black/20 to-transparent pb-8">
                         <div
                             ref={mobileListRef}
                             className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-4 pb-4 pointer-events-auto no-scrollbar"
-                            style={{ paddingRight: '2rem' }}
                         >
-                            {treks.map(trek => (
-                                <div
+                            {filteredAndSortedTreks.map((trek) => (
+                                <motion.div
                                     key={trek.id}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    whileHover={{ scale: 1.02 }}
                                     ref={el => { if (window.innerWidth < 1024) itemRefs.current[trek.id] = el }}
                                     onClick={() => setSelectedTrekId(trek.id)}
-                                    className={`snap-center shrink-0 w-[85vw] sm:w-[350px] bg-white rounded-xl shadow-2xl overflow-hidden border transition-all ${selectedTrekId === trek.id ? 'border-green-primary ring-2 ring-green-primary/20' : 'border-white'}`}
+                                    className={`snap-center shrink-0 w-[85vw] sm:w-[380px] glass-card rounded-2xl overflow-hidden shadow-premium-lg transition-all ${selectedTrekId === trek.id ? 'ring-4 ring-green-primary/50' : ''
+                                        }`}
                                 >
-                                    <div className="flex h-32">
+                                    <div className="flex h-36">
                                         <img
                                             src={trek.coverImage || trek.images?.[0] || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop"}
                                             alt={trek.name}
-                                            className="w-32 h-full object-cover shrink-0"
+                                            className="w-36 h-full object-cover shrink-0"
                                         />
-                                        <div className="p-3 flex flex-col flex-1 min-w-0">
-                                            <h3 className="font-bold text-text-dark text-sm line-clamp-2 mb-1">{trek.name}</h3>
-                                            <p className="text-xs text-gray-500 mb-2 truncate">{trek.location}</p>
+                                        <div className="p-4 flex flex-col flex-1 min-w-0 bg-white/90 backdrop-blur-sm">
+                                            <h3 className="font-bold text-text-dark text-sm line-clamp-2 mb-2">{trek.name}</h3>
+                                            <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+                                                <MapPin className="h-3 w-3" />
+                                                <span className="truncate">{trek.location}</span>
+                                            </div>
+                                            {trek.rating && (
+                                                <div className="mb-2">
+                                                    {renderStars(trek.rating)}
+                                                </div>
+                                            )}
                                             <div className="mt-auto flex items-center justify-between">
-                                                <span className="font-bold text-green-primary">${trek.price}</span>
+                                                <span className="font-black text-green-primary text-lg">${trek.price}</span>
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         navigate(`/trek/${trek.slug}`);
                                                     }}
-                                                    className="px-3 py-1 bg-gray-100 hover:bg-green-primary hover:text-white text-xs rounded-md transition-colors font-medium"
+                                                    className="px-3 py-1.5 bg-green-primary hover:bg-green-secondary text-white text-xs rounded-lg transition-all font-semibold shadow-premium-sm"
                                                 >
-                                                    View Details
+                                                    View
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
                     </div>
