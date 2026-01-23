@@ -39,6 +39,11 @@ export default function TourMapPage() {
     const mobileListRef = useRef<HTMLDivElement>(null);
     const itemRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
+    // Mobile bottom sheet state
+    const [sheetHeight, setSheetHeight] = useState(180); // Initial collapsed height
+    const [isDragging, setIsDragging] = useState(false);
+    const [startY, setStartY] = useState(0);
+
     // Fetch tours from API
     useEffect(() => {
         const fetchTours = async () => {
@@ -233,8 +238,8 @@ export default function TourMapPage() {
                                     ref={el => itemRefs.current[tour.id] = el}
                                     onClick={() => setSelectedTourId(tour.id)}
                                     className={`p-5 cursor-pointer transition-all card-hover-lift border-b border-white/10 ${selectedTourId === tour.id
-                                            ? 'bg-gradient-to-r from-green-primary/10 to-transparent border-l-4 border-l-green-primary'
-                                            : 'hover:bg-white/30'
+                                        ? 'bg-gradient-to-r from-green-primary/10 to-transparent border-l-4 border-l-green-primary'
+                                        : 'hover:bg-white/30'
                                         }`}
                                 >
                                     <div className="flex gap-4">
@@ -307,49 +312,142 @@ export default function TourMapPage() {
                     </Suspense>
                 </div>
 
-                {/* Premium Mobile Bottom Sheet */}
-                <div className="lg:hidden absolute bottom-0 left-0 right-0 z-30 pointer-events-none">
-                    <div className="p-4 bg-gradient-to-t from-black/40 via-black/20 to-transparent pb-8">
-                        <div
-                            ref={mobileListRef}
-                            className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-4 pb-4 pointer-events-auto no-scrollbar"
+                {/* Swipeable Mobile Bottom Sheet */}
+                <motion.div
+                    className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl shadow-2xl"
+                    style={{
+                        height: `${sheetHeight}px`,
+                        maxHeight: 'calc(100vh - 80px)',
+                    }}
+                    drag="y"
+                    dragConstraints={{ top: 0, bottom: 0 }}
+                    dragElastic={0.1}
+                    onDragStart={(e, info) => {
+                        setIsDragging(true);
+                        setStartY(info.point.y);
+                    }}
+                    onDrag={(e, info) => {
+                        const deltaY = startY - info.point.y;
+                        const newHeight = Math.max(180, Math.min(window.innerHeight - 80, sheetHeight + deltaY));
+                        setSheetHeight(newHeight);
+                        setStartY(info.point.y);
+                    }}
+                    onDragEnd={(e, info) => {
+                        setIsDragging(false);
+                        const velocity = info.velocity.y;
+                        const windowHeight = window.innerHeight;
+
+                        // Snap points: collapsed (180px), half (50%), full (90%)
+                        if (velocity < -500 || sheetHeight > windowHeight * 0.7) {
+                            setSheetHeight(windowHeight * 0.9 - 80);
+                        } else if (velocity > 500 || sheetHeight < windowHeight * 0.3) {
+                            setSheetHeight(180);
+                        } else {
+                            setSheetHeight(windowHeight * 0.5);
+                        }
+                    }}
+                    initial={{ y: 0 }}
+                    animate={{ y: 0 }}
+                    transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                >
+                    {/* Drag Handle */}
+                    <div className="w-full flex justify-center py-3 cursor-grab active:cursor-grabbing">
+                        <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                    </div>
+
+                    {/* Header */}
+                    <div className="px-6 pb-3 border-b border-gray-100">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-lg font-bold text-text-dark">
+                                {filteredAndSortedTours.length} Tours Found
+                            </h3>
+                            <button
+                                onClick={() => setSheetHeight(sheetHeight === 180 ? window.innerHeight * 0.9 - 80 : 180)}
+                                className="text-sm text-green-primary font-semibold"
+                            >
+                                {sheetHeight === 180 ? 'Expand' : 'Collapse'}
+                            </button>
+                        </div>
+
+                        {/* Search Bar */}
+                        <div className="relative search-glow mb-3">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search tours..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-primary/20"
+                            />
+                        </div>
+
+                        {/* Sort */}
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as any)}
+                            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-primary/20"
                         >
-                            {filteredAndSortedTours.map((tour) => (
+                            <option value="name">Sort by Name</option>
+                            <option value="price">Sort by Price</option>
+                            <option value="rating">Sort by Rating</option>
+                        </select>
+                    </div>
+
+                    {/* Scrollable List */}
+                    <div
+                        ref={mobileListRef}
+                        className="overflow-y-auto premium-scrollbar"
+                        style={{ height: `calc(${sheetHeight}px - 180px)` }}
+                    >
+                        <div className="divide-y divide-gray-100">
+                            {filteredAndSortedTours.map((tour, index) => (
                                 <motion.div
                                     key={tour.id}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    whileHover={{ scale: 1.02 }}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.05 }}
                                     ref={el => { if (window.innerWidth < 1024) itemRefs.current[tour.id] = el }}
                                     onClick={() => setSelectedTourId(tour.id)}
-                                    className={`snap-center shrink-0 w-[85vw] sm:w-[380px] glass-card rounded-2xl overflow-hidden shadow-premium-lg transition-all ${selectedTourId === tour.id ? 'ring-4 ring-green-primary/50' : ''
+                                    className={`p-4 cursor-pointer transition-all ${selectedTourId === tour.id
+                                            ? 'bg-green-primary/5 border-l-4 border-l-green-primary'
+                                            : 'hover:bg-gray-50 border-l-4 border-transparent'
                                         }`}
                                 >
-                                    <div className="flex h-36">
+                                    <div className="flex gap-3">
                                         <img
                                             src={tour.coverImage || tour.images?.[0] || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop"}
                                             alt={tour.name}
-                                            className="w-36 h-full object-cover shrink-0"
+                                            className="w-20 h-20 object-cover rounded-lg shrink-0"
                                         />
-                                        <div className="p-4 flex flex-col flex-1 min-w-0 bg-white/90 backdrop-blur-sm">
-                                            <h3 className="font-bold text-text-dark text-sm line-clamp-2 mb-2">{tour.name}</h3>
-                                            <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-bold text-sm text-text-dark line-clamp-2 mb-1">
+                                                {tour.name}
+                                            </h4>
+                                            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
                                                 <MapPin className="h-3 w-3" />
                                                 <span className="truncate">{tour.location}</span>
                                             </div>
+                                            {tour.duration && (
+                                                <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                                                    <Clock className="h-3 w-3" />
+                                                    <span>{tour.duration}</span>
+                                                </div>
+                                            )}
                                             {tour.rating && (
-                                                <div className="mb-2">
+                                                <div className="mb-1">
                                                     {renderStars(tour.rating)}
                                                 </div>
                                             )}
-                                            <div className="mt-auto flex items-center justify-between">
-                                                <span className="font-black text-green-primary text-lg">${tour.price}</span>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <span className="font-black text-green-primary text-base">
+                                                    ${tour.price}
+                                                </span>
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         navigate(`/tour/${tour.slug}`);
                                                     }}
-                                                    className="px-3 py-1.5 bg-green-primary hover:bg-green-secondary text-white text-xs rounded-lg transition-all font-semibold shadow-premium-sm"
+                                                    className="px-3 py-1 bg-green-primary hover:bg-green-secondary text-white text-xs rounded-lg transition-all font-semibold"
                                                 >
                                                     View
                                                 </button>
@@ -360,7 +458,7 @@ export default function TourMapPage() {
                             ))}
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
         </div>
     );
