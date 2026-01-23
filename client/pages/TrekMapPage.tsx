@@ -351,8 +351,8 @@ export default function TrekMapPage() {
                     transition={{ type: "spring", damping: 30, stiffness: 300 }}
                 >
                     {/* Drag Handle */}
-                    <div className="w-full flex justify-center py-3 cursor-grab active:cursor-grabbing">
-                        <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                    <div className="w-full flex justify-center py-4 cursor-grab active:cursor-grabbing bg-gradient-to-b from-gray-50 to-transparent">
+                        <div className="w-16 h-1.5 bg-gray-400 rounded-full shadow-sm"></div>
                     </div>
 
                     {/* Header */}
