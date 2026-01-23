@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -346,21 +348,11 @@ export default function BlogDetail() {
                     {/* Content */}
                     <div className="p-8 sm:p-12 lg:p-16">
                         {/* Drop Cap Paragraph */}
-                        <div
-                            className="prose prose-lg max-w-none mb-8
-                                first-letter:text-7xl first-letter:font-black first-letter:text-green-primary 
-                                first-letter:float-left first-letter:mr-3 first-letter:leading-none first-letter:mt-1
-                                text-gray-700 leading-relaxed"
-                            dangerouslySetInnerHTML={{
-                                __html: post.content
-                                    .replace(/\n/g, '<br/>')
-                                    .replace(/^# (.+)$/gm, '<h2 class="text-4xl font-black text-gray-900 mt-12 mb-6 leading-tight">$1</h2>')
-                                    .replace(/^## (.+)$/gm, '<h3 class="text-3xl font-black text-gray-900 mt-10 mb-5 leading-tight">$1</h3>')
-                                    .replace(/^### (.+)$/gm, '<h4 class="text-2xl font-bold text-gray-900 mt-8 mb-4">$1</h4>')
-                                    .replace(/^\*\*(.+)\*\*$/gm, '<p class="font-bold text-gray-900 text-xl mt-6 mb-4">$1</p>')
-                                    .replace(/^- (.+)$/gm, '<li class="ml-6 mb-2 text-gray-700">• $1</li>')
-                            }}
-                        />
+                        <div className="prose prose-lg max-w-none mb-8 text-gray-700 leading-relaxed">
+                            <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                                {post.content}
+                            </ReactMarkdown>
+                        </div>
                     </div>
 
                     {/* Tags */}

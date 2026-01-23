@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Eye, EyeOff, Save, X } from "lucide-react";
 import AdminLayout from "./AdminLayout";
 import { authenticatedFetch } from "@/lib/api";
 import ImageUpload from "@/components/ImageUpload";
+import RichTextArea from "@/components/RichTextArea";
 
 interface SpiritualPost {
     id: string;
@@ -213,11 +214,11 @@ export default function SpiritualPostsManagement() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Content (Markdown supported)
                             </label>
-                            <textarea
+                            <RichTextArea
+                                name="content"
                                 rows={15}
                                 value={formData.content}
                                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                className="w-full px-4 py-2 border rounded-lg font-mono text-sm"
                                 placeholder="Write your post content in Markdown..."
                             />
                         </div>

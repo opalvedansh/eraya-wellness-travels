@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Bold, Italic, Heading1, Heading2, Heading3, Link as LinkIcon, Image, AlignLeft, AlignCenter, AlignRight, AlignJustify } from "lucide-react";
+import { Bold, Italic, Heading1, Heading2, Heading3, Link as LinkIcon, Image, AlignLeft, AlignCenter, AlignRight, AlignJustify, List, ListOrdered, Quote } from "lucide-react";
 
 interface RichTextAreaProps {
     name: string;
@@ -67,11 +67,36 @@ export default function RichTextArea({
         triggerChange(newValue, start + text.length);
     };
 
+    const insertList = (prefix: string) => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = value.substring(start, end);
+
+        // If multiple lines selected, prefix each line
+        if (selectedText.includes('\n')) {
+            const newText = selectedText.split('\n').map(line => `${prefix} ${line}`).join('\n');
+            const newValue = value.substring(0, start) + newText + value.substring(end);
+            triggerChange(newValue, start + newText.length);
+        } else {
+            // Single line or empty selection
+            const newValue = value.substring(0, start) + `\n${prefix} ` + selectedText + value.substring(end);
+            triggerChange(newValue, start + prefix.length + 2 + selectedText.length);
+        }
+    };
+
+
     const handleBold = () => wrapSelection("**", "**", "bold text");
     const handleItalic = () => wrapSelection("*", "*", "italic text");
     const handleH1 = () => insertAtCursor("\n# Heading 1\n");
     const handleH2 = () => insertAtCursor("\n## Heading 2\n");
     const handleH3 = () => insertAtCursor("\n### Heading 3\n");
+    const handleUnorderedList = () => insertList("-");
+    const handleOrderedList = () => insertList("1.");
+    const handleBlockquote = () => insertList(">");
+
 
     const handleLink = () => {
         const textarea = textareaRef.current;
@@ -99,7 +124,7 @@ export default function RichTextArea({
     const handleImage = () => setShowImageModal(true);
 
     const insertImage = () => {
-        insertAtCursor(`![${imageAlt || "image"}](${imageUrl})`);
+        insertAtCursor(`\n![${imageAlt || "image"}](${imageUrl})\n`);
         setShowImageModal(false);
         setImageUrl("");
         setImageAlt("");
@@ -113,6 +138,9 @@ export default function RichTextArea({
         const selectedText = value.substring(start, end);
         if (selectedText) {
             const newValue = value.substring(0, start) + `<div style="text-align: ${align}">${selectedText}</div>` + value.substring(end);
+            triggerChange(newValue);
+        } else {
+            const newValue = value.substring(0, start) + `<div style="text-align: ${align}">\ncontent\n</div>` + value.substring(start);
             triggerChange(newValue);
         }
     };
@@ -144,6 +172,10 @@ export default function RichTextArea({
                 <div className="w-px h-5 bg-gray-300 mx-1" />
                 <ToolbarButton onClick={handleLink} icon={LinkIcon} title="Insert Link" />
                 <ToolbarButton onClick={handleImage} icon={Image} title="Insert Image" />
+                <div className="w-px h-5 bg-gray-300 mx-1" />
+                <ToolbarButton onClick={handleUnorderedList} icon={List} title="Bullet List (-)" />
+                <ToolbarButton onClick={handleOrderedList} icon={ListOrdered} title="Numbered List (1.)" />
+                <ToolbarButton onClick={handleBlockquote} icon={Quote} title="Blockquote (>)" />
                 <div className="w-px h-5 bg-gray-300 mx-1" />
                 <ToolbarButton onClick={() => handleAlign("left")} icon={AlignLeft} title="Align Left" />
                 <ToolbarButton onClick={() => handleAlign("center")} icon={AlignCenter} title="Align Center" />
@@ -206,12 +238,12 @@ export default function RichTextArea({
                 onChange={onChange}
                 rows={rows}
                 placeholder={placeholder}
-                className={`w-full px-4 py-2 border border-gray-300 rounded-b-lg rounded-t-none focus:ring-2 focus:ring-green-primary focus:border-transparent ${className}`}
+                className={`w-full px-4 py-2 border border-gray-300 rounded-b-lg rounded-t-none focus:ring-2 focus:ring-green-primary focus:border-transparent font-mono text-sm ${className}`}
             />
 
             {/* Help text */}
             <p className="text-xs text-gray-500">
-                Markdown supported: **bold**, *italic*, # headings, [link](url), ![image](url)
+                Markdown supported: **bold**, *italic*, # headings, - lists, &gt; quotes, [link](url), ![image](url)
             </p>
         </div>
     );

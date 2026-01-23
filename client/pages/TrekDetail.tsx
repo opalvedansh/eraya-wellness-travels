@@ -22,6 +22,8 @@ import {
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { additionalAnnapurnaReviews, additionalEverestReviews, trekRouteCoordinates } from "@/data/trekReviews";
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 
 // Sticky Booking Widget Component
@@ -1182,12 +1184,14 @@ export default function TrekDetail() {
               <p className="text-sm text-text-dark/60 mt-1">per person</p>
             </div>
           </div>
-          <p
-            className="text-base sm:text-lg text-text-dark/75 leading-relaxed max-w-4xl"
-            dangerouslySetInnerHTML={{
-              __html: (trek.longDescription || trek.description || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            }}
-          />
+          <div
+            className="text-base sm:text-lg text-text-dark/75 leading-relaxed max-w-4xl prose prose-green prose-lg"
+          >
+            <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+              {trek.longDescription || trek.description || ''}
+            </ReactMarkdown>
+          </div>
+
         </div>
       </section>
 
