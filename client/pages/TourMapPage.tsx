@@ -293,7 +293,7 @@ export default function TourMapPage() {
                 </motion.div>
 
                 {/* Map Area */}
-                <div className="flex-1 relative h-full">
+                <div className="flex-1 relative h-full pb-0 lg:pb-0" style={{ paddingBottom: window.innerWidth < 1024 ? '200px' : '0' }}>
                     <Suspense fallback={
                         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-beige-light to-beige">
                             <div className="text-center">
@@ -409,8 +409,8 @@ export default function TourMapPage() {
                                     ref={el => { if (window.innerWidth < 1024) itemRefs.current[tour.id] = el }}
                                     onClick={() => setSelectedTourId(tour.id)}
                                     className={`p-4 cursor-pointer transition-all ${selectedTourId === tour.id
-                                            ? 'bg-green-primary/5 border-l-4 border-l-green-primary'
-                                            : 'hover:bg-gray-50 border-l-4 border-transparent'
+                                        ? 'bg-green-primary/5 border-l-4 border-l-green-primary'
+                                        : 'hover:bg-gray-50 border-l-4 border-transparent'
                                         }`}
                                 >
                                     <div className="flex gap-3">
