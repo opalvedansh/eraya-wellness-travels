@@ -131,81 +131,59 @@ export default function TourMap({
                     border: none !important;
                 }
                 
-                .marker-wrapper {
+                .simple-marker {
                     position: relative;
+                    width: 32px;
+                    height: 32px;
                     display: flex;
-                    flex-direction: column;
                     align-items: center;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    justify-content: center;
                 }
                 
-                .marker-pin-svg {
-                    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
-                    transition: all 0.3s ease;
-                }
-                
-                .marker-wrapper:hover .marker-pin-svg {
-                    transform: translateY(-4px) scale(1.1);
-                    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
-                }
-                
-                .marker-wrapper.active .marker-pin-svg {
-                    transform: translateY(-4px) scale(1.15);
-                    filter: drop-shadow(0 8px 20px rgba(232, 184, 109, 0.6));
-                }
-                
-                .marker-pulse-ring {
-                    position: absolute;
-                    top: 10px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    width: 30px;
-                    height: 30px;
+                .marker-circle {
+                    width: 32px;
+                    height: 32px;
                     border-radius: 50%;
-                    background: rgba(232, 184, 109, 0.4);
-                    animation: pulse-marker 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-                    pointer-events: none;
+                    background: #173B36;
+                    border: 3px solid white;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    cursor: pointer;
                 }
                 
-                @keyframes pulse-marker {
+                .marker-circle:hover {
+                    transform: scale(1.15);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+                }
+                
+                .marker-circle.active {
+                    background: #E8B86D;
+                    border-color: #173B36;
+                    transform: scale(1.25);
+                    box-shadow: 0 4px 16px rgba(232, 184, 109, 0.6);
+                }
+                
+                .marker-pulse {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    background: rgba(232, 184, 109, 0.3);
+                    animation: simple-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                }
+                
+                @keyframes simple-pulse {
                     0% {
-                        transform: translateX(-50%) scale(0.8);
+                        transform: translate(-50%, -50%) scale(1);
                         opacity: 1;
                     }
                     100% {
-                        transform: translateX(-50%) scale(2.5);
+                        transform: translate(-50%, -50%) scale(2.5);
                         opacity: 0;
                     }
-                }
-                
-                .marker-price-tag {
-                    position: absolute;
-                    bottom: -20px;
-                    background: linear-gradient(135deg, #173B36 0%, #2D5F5D 100%);
-                    color: white;
-                    padding: 5px 14px;
-                    border-radius: 20px;
-                    font-size: 13px;
-                    font-weight: 800;
-                    white-space: nowrap;
-                    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
-                    transition: all 0.3s ease;
-                    border: 2.5px solid white;
-                    font-family: 'Inter', sans-serif;
-                    letter-spacing: -0.3px;
-                }
-                
-                .marker-wrapper.active .marker-price-tag {
-                    background: linear-gradient(135deg, #E8B86D 0%, #D4A05E 100%);
-                    color: #173B36;
-                    box-shadow: 0 5px 15px rgba(232, 184, 109, 0.5);
-                    transform: translateY(-3px) scale(1.05);
-                    border-color: #FFF8E7;
-                }
-                
-                .marker-wrapper:hover .marker-price-tag {
-                    transform: translateY(-3px);
-                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
                 }
             `}</style>
             <MapContainer
@@ -228,41 +206,14 @@ export default function TourMap({
                             icon={new LeafletMap.DivIcon({
                                 className: 'custom-marker-pill',
                                 html: `
-                                    <div class="marker-wrapper ${isActive ? 'active' : ''}">
-                                        ${isActive ? '<div class="marker-pulse-ring"></div>' : ''}
-                                        <svg class="marker-pin-svg" width="44" height="56" viewBox="0 0 44 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <defs>
-                                                <linearGradient id="pin-gradient-${tour.id}" x1="22" y1="0" x2="22" y2="56" gradientUnits="userSpaceOnUse">
-                                                    <stop offset="0%" stop-color="${isActive ? '#E8B86D' : '#173B36'}"/>
-                                                    <stop offset="100%" stop-color="${isActive ? '#D4A05E' : '#2D5F5D'}"/>
-                                                </linearGradient>
-                                                <filter id="pin-shadow-${tour.id}">
-                                                    <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-                                                    <feOffset dx="0" dy="2"/>
-                                                    <feComponentTransfer>
-                                                        <feFuncA type="linear" slope="0.4"/>
-                                                    </feComponentTransfer>
-                                                    <feMerge>
-                                                        <feMergeNode/>
-                                                        <feMergeNode in="SourceGraphic"/>
-                                                    </feMerge>
-                                                </filter>
-                                            </defs>
-                                            <path d="M22 0C9.85 0 0 9.85 0 22C0 38.5 22 56 22 56C22 56 44 38.5 44 22C44 9.85 34.15 0 22 0Z" 
-                                                  fill="url(#pin-gradient-${tour.id})" 
-                                                  filter="url(#pin-shadow-${tour.id})"/>
-                                            <circle cx="22" cy="22" r="13" fill="white" opacity="0.95"/>
-                                            <path d="M22 11L24.5 18.5H32L26 23L28.5 30.5L22 26L15.5 30.5L18 23L12 18.5H19.5L22 11Z" 
-                                                  fill="${isActive ? '#E8B86D' : '#173B36'}"/>
-                                        </svg>
-                                        <div class="marker-price-tag">
-                                            $${tour.price}
-                                        </div>
+                                    <div class="simple-marker">
+                                        ${isActive ? '<div class="marker-pulse"></div>' : ''}
+                                        <div class="marker-circle ${isActive ? 'active' : ''}"></div>
                                     </div>
                                 `,
-                                iconSize: [44, 76],
-                                iconAnchor: [22, 56],
-                                popupAnchor: [0, -56]
+                                iconSize: [32, 32],
+                                iconAnchor: [16, 16],
+                                popupAnchor: [0, -16]
                             })}
                             eventHandlers={{
                                 click: () => {
