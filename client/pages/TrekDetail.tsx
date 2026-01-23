@@ -1286,22 +1286,23 @@ export default function TrekDetail() {
               </div>
             </div>
 
-            {/* Route Map Section - TEMPORARILY DISABLED FOR DEBUGGING */}
-            {/* {trek.route && (
+            {/* Route Map Section */}
+            {trek.route && (
               <div>
                 <h2 className="text-3xl sm:text-4xl font-black text-green-primary mb-8 tracking-tight">
                   <Navigation className="h-8 w-8 inline mr-3" />
                   Trek Route
                 </h2>
-                <RouteMap 
-                  route={trek.route} 
+                <RouteMap
+                  route={trek.route}
                   center={trek.latitude && trek.longitude ? [trek.latitude, trek.longitude] : undefined}
                 />
                 <p className="text-sm text-text-dark/60 mt-4">
                   Interactive map showing the trek route with key destinations and waypoints.
                 </p>
               </div>
-            )} */}
+            )}
+
 
             {/* Itinerary Section - Enhanced Vertical Timeline */}
             <div>
@@ -1402,10 +1403,10 @@ export default function TrekDetail() {
             <StickyBookingWidget trek={trek} onBookClick={handleBookNow} />
           </div>
         </div>
-      </div>
+      </div >
 
       {/* Reviews Section */}
-      <section className="px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto w-full mb-14 sm:mb-18">
+      < section className="px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto w-full mb-14 sm:mb-18" >
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -1417,20 +1418,20 @@ export default function TrekDetail() {
           <div className="absolute -bottom-3 left-0 w-24 h-1 bg-gradient-to-r from-green-primary to-blue-accent rounded-full" />
         </motion.h2>
         <ReviewsSection reviews={trek.reviews || []} />
-      </section>
+      </section >
 
       {/* Similar Treks Carousel */}
-      <section className="px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto w-full mb-14 sm:mb-18 bg-beige-light py-12 -mx-3 sm:-mx-6 lg:-mx-12">
+      < section className="px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto w-full mb-14 sm:mb-18 bg-beige-light py-12 -mx-3 sm:-mx-6 lg:-mx-12" >
         <div className="px-3 sm:px-6 lg:px-12">
           <h2 className="text-3xl sm:text-4xl font-black text-green-primary mb-8 tracking-tight">
             You Might Also Like
           </h2>
           <SimilarTreksCarousel treks={trekDatabase} currentTrekId={trek.id} />
         </div>
-      </section>
+      </section >
 
       {/* Booking CTA */}
-      <section className="px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto w-full mb-14 sm:mb-18">
+      < section className="px-3 sm:px-6 lg:px-12 max-w-7xl mx-auto w-full mb-14 sm:mb-18" >
         <div className="bg-gradient-to-r from-green-primary to-green-primary/85 rounded-2xl p-8 sm:p-12 text-white">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
@@ -1445,7 +1446,7 @@ export default function TrekDetail() {
             </button>
           </div>
         </div>
-      </section>
+      </section >
 
       <Footer />
 
