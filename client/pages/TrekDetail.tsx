@@ -1076,6 +1076,19 @@ export default function TrekDetail() {
 
         const data = await response.json();
 
+        // Map slug to route coordinates
+        const routeMapping: Record<string, keyof typeof trekRouteCoordinates> = {
+          "annapurna-base-camp": "annapurna",
+          "everest-base-camp": "everest",
+          "langtang-valley": "langtang",
+          "manaslu-circuit": "manaslu",
+          "island-peak": "islandPeak",
+          "gokyo-lakes": "gokyo",
+          "helambu-trek": "helambu",
+          "helambu": "helambu",
+          "tarkeghyang-trek": "helambu" // Covering potential variations based on screenshot waypoints
+        };
+
         // Transform data to match UI expectations
         const transformedTrek = {
           ...data,
@@ -1087,6 +1100,7 @@ export default function TrekDetail() {
           faqs: data.faq || [],
           itinerary: data.itinerary || [],
           reviews: [], // Will be populated from separate reviews API
+          route: routeMapping[data.slug] ? trekRouteCoordinates[routeMapping[data.slug]] : (data.route || []),
         };
 
         setTrek(transformedTrek);

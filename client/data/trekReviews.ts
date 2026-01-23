@@ -209,4 +209,13 @@ export const trekRouteCoordinates = {
         { lat: 27.9580, lng: 86.6880, name: "Gokyo Village", day: 7 },
         { lat: 27.9600, lng: 86.6900, name: "Gokyo Ri Summit", day: 8 },
     ],
+    helambu: [
+        { lat: 27.7650, lng: 85.4240, name: "Sundarijal", day: 1 },
+        { lat: 27.8380, lng: 85.4500, name: "Chisapani", day: 2 },
+        { lat: 27.9150, lng: 85.4800, name: "Kutumsang", day: 3 },
+        { lat: 27.9800, lng: 85.5000, name: "Tharepati", day: 4 },
+        { lat: 27.9900, lng: 85.5500, name: "Tarkeghyang", day: 5 },
+        { lat: 27.9500, lng: 85.5800, name: "Sermathang", day: 6 },
+        { lat: 27.8500, lng: 85.5600, name: "Melamchi Pul", day: 7 },
+    ],
 };
