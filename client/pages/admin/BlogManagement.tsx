@@ -240,6 +240,7 @@ export default function BlogManagement() {
                                 rows={15}
                                 value={formData.content}
                                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                uploadType="about"
                             />
                         </div>
 

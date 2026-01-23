@@ -220,6 +220,7 @@ export default function SpiritualPostsManagement() {
                                 value={formData.content}
                                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                                 placeholder="Write your post content in Markdown..."
+                                uploadType="about"
                             />
                         </div>
 
