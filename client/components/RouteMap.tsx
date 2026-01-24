@@ -1,24 +1,28 @@
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
 
-// Component to handle global Leaflet configuration side-effects
-function MapConfig() {
-    useEffect(() => {
-        import('leaflet').then((L) => {
-            // Fix for default marker icons
-            delete (L.Icon.Default.prototype as any)._getIconUrl;
-            L.Icon.Default.mergeOptions({
-                iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-            });
-        });
-    }, []);
-    return null;
-}
+// Configure default marker icons immediately (synchronous)
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+// Create a custom icon for explicit use
+const customIcon = new L.Icon({
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
 
 interface RouteMapProps {
-    route?: Array<{ lat: number; lng: number; name?: string }>;
+    route?: Array<{ lat: number; lng: number; name?: string; day?: number }>;
     center?: [number, number];
 }
 
@@ -77,7 +81,6 @@ export function RouteMap({ route, center }: RouteMapProps) {
                 style={{ height: '500px', width: '100%' }}
                 className="z-0"
             >
-                <MapConfig />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                     url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
@@ -91,13 +94,16 @@ export function RouteMap({ route, center }: RouteMapProps) {
                 )}
 
                 {hasRoute && route!.map((point, index) => (
-                    <Marker key={index} position={[point.lat, point.lng]}>
-                        {point.name && <Popup>{point.name}</Popup>}
+                    <Marker key={index} position={[point.lat, point.lng]} icon={customIcon}>
+                        <Popup>
+                            {point.day && <span className="font-bold">Day {point.day}: </span>}
+                            {point.name || `Stop ${index + 1}`}
+                        </Popup>
                     </Marker>
                 ))}
 
                 {!hasRoute && center && (
-                    <Marker position={center}>
+                    <Marker position={center} icon={customIcon}>
                         <Popup>Tour Location</Popup>
                     </Marker>
                 )}
