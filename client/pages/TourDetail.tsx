@@ -901,6 +901,13 @@ export default function TourDetail() {
                         <p className="text-sm sm:text-base text-text-dark/75 leading-relaxed">
                           {item.description}
                         </p>
+                        {item.image && (
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="mt-4 w-full max-w-md h-48 object-cover rounded-xl shadow-md"
+                          />
+                        )}
                       </div>
                     </div>
                   </motion.div>

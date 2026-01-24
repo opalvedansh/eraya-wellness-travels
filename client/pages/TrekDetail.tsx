@@ -1367,11 +1367,18 @@ export default function TrekDetail() {
                           <div className="shrink-0 inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-blue-accent to-blue-accent-dark text-white font-black text-lg shadow-lg group-hover:scale-110 transition-all duration-300">
                             {typeof item.day === 'string' ? item.day.replace('Day ', '') : String(item.day ?? index + 1)}
                           </div>
-                          <div className="pt-1">
+                          <div className="pt-1 flex-1">
                             <h3 className="text-xl sm:text-2xl font-black text-text-dark mb-2 group-hover:text-green-primary transition-colors">{item.title}</h3>
                             <p className="text-base text-text-dark/75 leading-relaxed">
                               {item.description}
                             </p>
+                            {item.image && (
+                              <img
+                                src={item.image}
+                                alt={item.title}
+                                className="mt-4 w-full max-w-md h-48 object-cover rounded-xl shadow-md"
+                              />
+                            )}
                           </div>
                         </div>
                       </div>

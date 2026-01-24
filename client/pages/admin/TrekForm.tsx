@@ -15,6 +15,7 @@ interface ItineraryItem {
     accommodation: string;
     latitude?: number;
     longitude?: number;
+    image?: string;
 }
 
 interface FAQItem {
@@ -185,10 +186,11 @@ export default function TrekForm() {
                     title: "",
                     description: "",
                     altitude: "",
-                    meals: "", // simplified to string
+                    meals: "",
                     accommodation: "",
                     latitude: undefined,
-                    longitude: undefined
+                    longitude: undefined,
+                    image: ""
                 }
             ]
         }));
@@ -530,6 +532,18 @@ export default function TrekForm() {
                                                 placeholder="Longitude (e.g. 86.9250)"
                                                 className="px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-primary text-sm"
                                             />
+                                        </div>
+                                        <div className="mt-2">
+                                            <input
+                                                type="text"
+                                                value={day.image || ''}
+                                                onChange={(e) => updateItineraryItem(index, 'image', e.target.value)}
+                                                placeholder="Day Image URL (optional)"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-primary text-sm"
+                                            />
+                                            {day.image && (
+                                                <img src={day.image} alt={`Day ${day.day}`} className="mt-2 h-20 w-32 object-cover rounded-md" />
+                                            )}
                                         </div>
                                     </div>
                                 </div>
