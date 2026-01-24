@@ -199,6 +199,29 @@ export default function TourForm() {
         }));
     };
 
+    const handleItineraryImageUpload = async (index: number, file: File) => {
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', file);
+        formDataUpload.append('type', 'tour');
+
+        try {
+            const response = await authenticatedFetch('/api/admin/upload', {
+                method: 'POST',
+                body: formDataUpload,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                updateItineraryItem(index, 'image', data.url);
+            } else {
+                alert('Failed to upload image');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Failed to upload image');
+        }
+    };
+
     // FAQ Handlers
     const addFAQ = () => {
         setFormData(prev => ({
@@ -506,13 +529,27 @@ export default function TourForm() {
                                             />
                                         </div>
                                         <div className="mt-2">
-                                            <input
-                                                type="text"
-                                                value={day.image || ''}
-                                                onChange={(e) => updateItineraryItem(index, 'image', e.target.value)}
-                                                placeholder="Day Image URL (optional)"
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-primary text-sm"
-                                            />
+                                            <div className="flex gap-2 items-center">
+                                                <input
+                                                    type="text"
+                                                    value={day.image || ''}
+                                                    onChange={(e) => updateItineraryItem(index, 'image', e.target.value)}
+                                                    placeholder="Day Image URL (optional)"
+                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-primary text-sm"
+                                                />
+                                                <label className="cursor-pointer px-3 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 text-sm font-medium whitespace-nowrap">
+                                                    Upload
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (file) handleItineraryImageUpload(index, file);
+                                                        }}
+                                                    />
+                                                </label>
+                                            </div>
                                             {day.image && (
                                                 <img src={day.image} alt={`Day ${day.day}`} className="mt-2 h-20 w-32 object-cover rounded-md" />
                                             )}
