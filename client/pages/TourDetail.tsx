@@ -672,17 +672,28 @@ export default function TourDetail() {
 
         const data = await response.json();
 
+        // Derive route from itinerary coordinates if present
+        const itineraryRoute = (data.itinerary || [])
+          .filter((item: any) => item.latitude != null && item.longitude != null)
+          .map((item: any) => ({
+            lat: item.latitude,
+            lng: item.longitude,
+            name: item.title,
+            day: item.day
+          }));
+
         // Transform data to match UI expectations
         const transformedTour = {
           ...data,
           image: data.coverImage || data.images?.[0] || "/default-tour.jpg",
           gallery: data.images && data.images.length > 0 ? data.images : [data.coverImage || "/default-tour.jpg"],
           groupSize: `${data.maxGroupSize || 12} people`,
-          reviewCount: 0, // Will be populated from separate reviews API
-          included: [], // Will need to parse from includes/excludes if stored as JSON
+          reviewCount: 0,
+          included: [],
           faqs: data.faq || [],
           itinerary: data.itinerary || [],
-          reviews: [], // Will be populated from separate reviews API
+          reviews: [],
+          route: itineraryRoute.length > 0 ? itineraryRoute : (data.route || []),
         };
 
         setTour(transformedTour);

@@ -13,6 +13,8 @@ interface ItineraryItem {
     altitude?: string;
     meals: string; // "Breakfast, Lunch, Dinner"
     accommodation: string;
+    latitude?: number;
+    longitude?: number;
 }
 
 interface FAQItem {
@@ -184,7 +186,9 @@ export default function TrekForm() {
                     description: "",
                     altitude: "",
                     meals: "", // simplified to string
-                    accommodation: ""
+                    accommodation: "",
+                    latitude: undefined,
+                    longitude: undefined
                 }
             ]
         }));
@@ -506,6 +510,24 @@ export default function TrekForm() {
                                                 value={day.meals || ''}
                                                 onChange={(e) => updateItineraryItem(index, 'meals', e.target.value)}
                                                 placeholder="Meals (e.g. B, L, D)"
+                                                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-primary text-sm"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3 mt-2">
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                value={day.latitude ?? ''}
+                                                onChange={(e) => updateItineraryItem(index, 'latitude', e.target.value ? parseFloat(e.target.value) : undefined)}
+                                                placeholder="Latitude (e.g. 27.9880)"
+                                                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-primary text-sm"
+                                            />
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                value={day.longitude ?? ''}
+                                                onChange={(e) => updateItineraryItem(index, 'longitude', e.target.value ? parseFloat(e.target.value) : undefined)}
+                                                placeholder="Longitude (e.g. 86.9250)"
                                                 className="px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-primary text-sm"
                                             />
                                         </div>

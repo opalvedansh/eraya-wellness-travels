@@ -1076,7 +1076,7 @@ export default function TrekDetail() {
 
         const data = await response.json();
 
-        // Map slug to route coordinates
+        // Map slug to route coordinates (fallback for legacy/hardcoded treks)
         const routeMapping: Record<string, keyof typeof trekRouteCoordinates> = {
           "annapurna-base-camp": "annapurna",
           "everest-base-camp": "everest",
@@ -1086,8 +1086,18 @@ export default function TrekDetail() {
           "gokyo-lakes": "gokyo",
           "helambu-trek": "helambu",
           "helambu": "helambu",
-          "tarkeghyang-trek": "helambu" // Covering potential variations based on screenshot waypoints
+          "tarkeghyang-trek": "helambu"
         };
+
+        // Derive route from itinerary coordinates if present
+        const itineraryRoute = (data.itinerary || [])
+          .filter((item: any) => item.latitude != null && item.longitude != null)
+          .map((item: any) => ({
+            lat: item.latitude,
+            lng: item.longitude,
+            name: item.title,
+            day: item.day
+          }));
 
         // Transform data to match UI expectations
         const transformedTrek = {
@@ -1095,12 +1105,14 @@ export default function TrekDetail() {
           image: data.coverImage || data.images?.[0] || "/default-trek.jpg",
           gallery: data.images && data.images.length > 0 ? data.images : [data.coverImage || "/default-trek.jpg"],
           groupSize: `${data.maxGroupSize || 12} people`,
-          reviewCount: 0, // Will be populated from separate reviews API
-          included: [], // Will need to parse from includes/excludes if stored as JSON
+          reviewCount: 0,
+          included: [],
           faqs: data.faq || [],
           itinerary: data.itinerary || [],
-          reviews: [], // Will be populated from separate reviews API
-          route: routeMapping[data.slug] ? trekRouteCoordinates[routeMapping[data.slug]] : (data.route || []),
+          reviews: [],
+          route: itineraryRoute.length > 0
+            ? itineraryRoute
+            : (routeMapping[data.slug] ? trekRouteCoordinates[routeMapping[data.slug]] : (data.route || [])),
         };
 
         setTrek(transformedTrek);
