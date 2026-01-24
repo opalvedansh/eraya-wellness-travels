@@ -1350,13 +1350,13 @@ export default function TrekDetail() {
 
                       {/* Card */}
                       <div className="sm:ml-20 bg-white/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-premium hover:shadow-premium-lg border-l-4 border-transparent hover:border-green-primary transition-all duration-300 group-hover:translate-x-2">
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-row items-start gap-6">
                           {/* Day Badge - Circular with Gradient */}
-                          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-accent to-blue-accent-dark text-white font-black text-sm shadow-lg group-hover:scale-110 transition-all duration-300">
+                          <div className="shrink-0 inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-blue-accent to-blue-accent-dark text-white font-black text-lg shadow-lg group-hover:scale-110 transition-all duration-300">
                             {typeof item.day === 'string' ? item.day.replace('Day ', '') : String(item.day ?? index + 1)}
                           </div>
-                          <div>
-                            <h3 className="text-xl sm:text-2xl font-black text-text-dark mb-3 group-hover:text-green-primary transition-colors">{item.title}</h3>
+                          <div className="pt-1">
+                            <h3 className="text-xl sm:text-2xl font-black text-text-dark mb-2 group-hover:text-green-primary transition-colors">{item.title}</h3>
                             <p className="text-base text-text-dark/75 leading-relaxed">
                               {item.description}
                             </p>
