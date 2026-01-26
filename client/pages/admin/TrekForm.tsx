@@ -213,7 +213,7 @@ export default function TrekForm() {
 
     const handleItineraryImageUpload = async (index: number, file: File) => {
         const formDataUpload = new FormData();
-        formDataUpload.append('file', file);
+        formDataUpload.append('image', file);
         formDataUpload.append('type', 'trek');
 
         try {
