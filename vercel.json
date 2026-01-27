@@ -7,7 +7,7 @@
     "outputDirectory": "dist/spa",
     "rewrites": [
         {
-            "source": "/(.*)",
+            "source": "/((?!api/|uploads/).*)",
             "destination": "/index.html"
         }
     ],

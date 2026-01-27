@@ -68,8 +68,21 @@ function CustomerStoriesCarousel() {
 
     console.log("Fetching transformation stories from:", apiUrl);
     fetch(apiUrl)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+      .then(async (res) => {
+        const contentType = res.headers.get("content-type");
+        if (!res.ok) {
+          const text = await res.text();
+          console.error(`API Error (${res.status}):`, text.substring(0, 200));
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        if (!contentType || !contentType.includes("application/json")) {
+          // If we get HTML instead of JSON, it's likely a Vercel rewrite issue
+          const text = await res.text();
+          if (text.includes("<!doctype html>") || text.includes("<html")) {
+            console.error("Received HTML instead of JSON. Check VITE_API_URL configuration.");
+          }
+          throw new Error(`Invalid content-type: ${contentType}. Expected application/json`);
+        }
         return res.json();
       })
       .then((data) => {
@@ -78,7 +91,10 @@ function CustomerStoriesCarousel() {
         const stories = data.transformationStories || (Array.isArray(data) ? data : []);
         setSubmittedTransformations(stories);
       })
-      .catch((error) => console.error("Error fetching transformations:", error));
+      .catch((error) => {
+        console.error("Error fetching transformations:", error);
+        // We could set an error state here if we wanted to show a specific error message in UI
+      });
   }, []);
 
   const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
