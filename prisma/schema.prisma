@@ -1,0 +1,340 @@
+generator client {
+  provider = "prisma-client-js"
+
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  isVerified         Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  authProvider       String              @default("email")
+  googleUid          String?             @unique
+  name               String?
+  photoURL           String?
+  isAdmin            Boolean             @default(false)
+  bookings           Booking[]
+  paymentMethods     PaymentMethod[]
+  sessions           Session[]
+  verificationTokens VerificationToken[]
+
+  @@index([googleUid])
+  @@index([isAdmin])
+}
+
+model VerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [email], references: [email], onDelete: Cascade)
+
+  @@index([email])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("verification_tokens")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+model Booking {
+  id              String           @id @default(cuid())
+  userId          String
+  type            String
+  itemName        String
+  itemSlug        String
+  location        String
+  duration        String
+  price           Float
+  travelDate      DateTime
+  fullName        String
+  email           String
+  phone           String?
+  status          String           @default("pending")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  amount          Float
+  currency        String           @default("usd")
+  guests          Int              @default(1)
+  paymentStatus   String           @default("pending")
+  stripeSessionId String?          @unique
+  transactionId   String?
+  paymentIntentId String?          @unique
+  paymentMethodId String?
+  refundAmount    Float?
+  refundReason    String?
+  refundStatus    String           @default("none")
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentHistory  PaymentHistory[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([stripeSessionId])
+  @@index([paymentIntentId])
+  @@index([travelDate])
+  @@index([createdAt])
+}
+
+model PaymentHistory {
+  id            String   @id @default(cuid())
+  bookingId     String
+  eventType     String
+  amount        Float?
+  currency      String?
+  status        String
+  stripeEventId String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([createdAt])
+  @@index([eventType])
+}
+
+model PaymentMethod {
+  id                    String   @id @default(cuid())
+  userId                String
+  stripePaymentMethodId String   @unique
+  type                  String
+  last4                 String?
+  brand                 String?
+  expiryMonth           Int?
+  expiryYear            Int?
+  isDefault             Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([stripePaymentMethodId])
+}
+
+model WebhookEvent {
+  id              String    @id @default(cuid())
+  stripeEventId   String    @unique
+  eventType       String
+  payload         Json
+  processed       Boolean   @default(false)
+  processingError String?
+  createdAt       DateTime  @default(now())
+  processedAt     DateTime?
+
+  @@index([stripeEventId])
+  @@index([processed])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+model Tour {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String
+  longDescription String?
+  location        String
+  duration        String
+  price           Float
+  currency        String   @default("USD")
+  difficulty      Int      @default(1)
+  rating          Float    @default(5.0)
+  maxGroupSize    Int      @default(15)
+  minAge          Int      @default(5)
+  coverImage      String?
+  images          String[]
+  highlights      String[]
+  includes        String[]
+  excludes        String[]
+  itinerary       Json?
+  faq             Json?
+  tags            String[]  @default([])
+  latitude        Float?
+  longitude       Float?
+  metaTitle       String?
+  metaDescription String?
+  isActive        Boolean  @default(true)
+  isFeatured      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([isActive, isFeatured]) // Compound index for filtering
+}
+
+model Trek {
+  id              String   @id @default(cuid())
+  name            String
+  slug            String   @unique
+  description     String
+  longDescription String?
+  location        String
+  duration        String
+  price           Float
+  currency        String   @default("USD")
+  difficulty      Int      @default(1)
+  rating          Float    @default(5.0)
+  altitude        String?
+  maxGroupSize    Int      @default(12)
+  minAge          Int      @default(12)
+  coverImage      String?
+  images          String[]
+  highlights      String[]
+  includes        String[]
+  excludes        String[]
+  itinerary       Json?
+  faq             Json?
+  bestSeason      String[]
+  tags            String[]  @default([])
+  trekGrade       String?
+  latitude        Float?
+  longitude       Float?
+  metaTitle       String?
+  metaDescription String?
+  isActive        Boolean  @default(true)
+  isFeatured      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([isActive, isFeatured]) // Compound index for filtering
+}
+
+model SiteSettings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+}
+
+model SpiritualPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  content     String   // Markdown content
+  coverImage  String?
+  category    String   @default("Spiritual Insights")
+  tags        String[]
+  author      String   @default("Eraya Team")
+  publishDate DateTime @default(now())
+  isPublished Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  readTime    String?  // e.g., "5 min read"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@index([publishDate])
+  @@index([isPublished, publishDate]) // Compound index for default sort
+}
+
+model BlogPost {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  excerpt       String
+  content       String   // Markdown content
+  featuredImage String?
+  category      String   @default("Travel Tips")
+  tags          String[]
+  authorName    String   @default("Eraya Team")
+  authorAvatar  String?
+  authorBio     String?
+  publishDate   DateTime @default(now())
+  readTime      String?  // e.g., "5 min read"
+  featured      Boolean  @default(false)
+  isPublished   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([featured])
+  @@index([category])
+  @@index([publishDate])
+  @@index([isPublished, publishDate]) // Compound index for default sort
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  name        String
+  location    String?  // e.g., "India", "Nepal"
+  experience  String?  // e.g., "Eraya Wellness Experience"
+  rating      Int      @default(5) // 1-5 stars
+  review      String   @db.Text
+  avatar      String?  // Avatar image URL or initials
+  
+  // Moderation
+  isApproved  Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isApproved])
+  @@index([isFeatured])
+  @@index([createdAt])
+}
+
+model TransformationStory {
+  id          String   @id @default(cuid())
+  name        String
+  age         String
+  location    String
+  storyTitle  String
+  story       String   @db.Text
+  avatar      String?
+  
+  // Moderation
+  isApproved  Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isApproved])
+  @@index([isFeatured])
+  @@index([createdAt])
+}

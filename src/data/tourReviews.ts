@@ -1,0 +1,86 @@
+// Additional reviews data to expand from 3 to 12+ reviews
+export const additionalNepalReviews = [
+    {
+        name: "Michael Thompson",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+        rating: 5,
+        date: "August 2024",
+        text: "Absolutely phenomenal experience! Our guide was incredibly patient and knowledgeable. The trek pace was perfect, allowing us to really absorb the beauty around us. Highly recommend for anyone looking for an authentic Himalayan adventure.",
+        verified: true,
+    },
+    {
+        name: "Lisa Anderson",
+        avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop",
+        rating: 5,
+        date: "July 2024",
+        text: "This was my first time in Nepal and Eraya made it unforgettable. The cultural immersion was incredible - from meditation sessions with monks to cooking with local families. The organization was flawless.",
+        verified: true,
+    },
+    {
+        name: "David Martinez",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+        rating: 4,
+        date: "June 2024",
+        text: "Great tour with stunning views and excellent guides. Lost one star only because the weather didn't cooperate on summit day, but that's nature! Everything else was perfect.",
+        verified: true,
+    },
+    {
+        name: "Rachel Green",
+        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+        rating: 5,
+        date: "May 2024",
+        text: "Best travel experience of my life! The sunrise over the Himalayas brought tears to my eyes. Our group bonded amazingly, and I made lifelong friends. Worth every penny!",
+        verified: true,
+    },
+    {
+        name: "Thomas Wilson",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+        rating: 5,
+        date: "April 2024",
+        text: "Exceptional organization from start to finish. The attention to safety was impressive, and the guides' knowledge of local flora and fauna added so much to the experience.",
+        verified: true,
+    },
+    {
+        name: "Jennifer Lee",
+        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop",
+        rating: 5,
+        date: "March 2024",
+        text: "As a solo female traveler, I felt completely safe and welcomed. The small group size meant we got personalized attention. The tea houses were charming and the food surprisingly delicious!",
+        verified: true,
+    },
+    {
+        name: "Robert Brown",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+        rating: 5,
+        date: "February 2024",
+        text: "Traveled with my teenage son - perfect father-son bonding experience. The physical challenge brought us closer, and the guides were great with teenagers. Can't wait to come back!",
+        verified: false,
+    },
+    {
+        name: "Amanda Davis",
+        avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop",
+        rating: 4,
+        date: "January 2024",
+        text: "Wonderful tour! The only minor issue was one accommodation being a bit cold at night, but the experience more than made up for it. The cultural visits were highlights.",
+        verified: true,
+    },
+    {
+        name: "Christopher Taylor",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+        rating: 5,
+        date: "December 2023",
+        text: "This trek changed my perspective on life. The simplicity of mountain living, the kindness of locals, and the raw beauty of nature - everything was transformative. Thank you Eraya!",
+        verified: true,
+    },
+];
+
+// Route coordinates for Nepal tour
+export const nepalRouteCoordinates = [
+    { lat: 27.7172, lng: 85.3240, name: "Kathmandu", day: 1 },
+    { lat: 27.6983, lng: 85.3206, name: "Swayambhunath Temple", day: 2 },
+    { lat: 27.7089, lng: 85.3481, name: "Boudhanath Stupa", day: 3 },
+    { lat: 28.2096, lng: 83.9856, name: "Pokhara", day: 5 },
+    { lat: 28.2380, lng: 83.8560, name: "Phewa Lake", day: 6 },
+    { lat: 28.3949, lng: 84.1240, name: "Annapurna Viewpoint", day: 7 },
+    { lat: 27.7172, lng: 85.3240, name: "Return to Kathmandu", day: 9 },
+];

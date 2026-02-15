@@ -1,0 +1,461 @@
+import { Router, Request, Response, NextFunction } from "express";
+import { prisma } from "../services/prisma";
+import { authenticate } from "../middleware/auth.middleware";
+import logger from "../services/logger";
+
+const router = Router();
+
+// Middleware to check if user is admin
+async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+    try {
+        const user = req.user;
+        const requestId = Math.random().toString(36).substring(7);
+
+        logger.info(`[AdminAuth:${requestId}] Checking admin access`, {
+            userId: user?.userId,
+            email: user?.email,
+            path: req.path
+        });
+
+        if (!user || !user.userId) {
+            logger.warn(`[AdminAuth:${requestId}] Unauthorized: No user attached to request`, { user });
+            return res.status(401).json({ error: "Not authenticated" });
+        }
+
+        // Validate userId format if possible (e.g. check if it's empty string)
+        if (typeof user.userId !== 'string' || user.userId.trim() === '') {
+            logger.error(`[AdminAuth:${requestId}] Invalid userId format`, { userId: user.userId });
+            return res.status(401).json({ error: "Invalid user ID" });
+        }
+
+        logger.debug(`[AdminAuth:${requestId}] Querying database for user role...`);
+
+        try {
+            const dbUser = await prisma.user.findUnique({
+                where: { id: user.userId },
+                select: { isAdmin: true },
+            });
+
+            if (!dbUser) {
+                logger.warn(`[AdminAuth:${requestId}] User not found in database`, { userId: user.userId });
+                return res.status(403).json({ error: "User not found" });
+            }
+
+            if (!dbUser.isAdmin) {
+                logger.warn(`[AdminAuth:${requestId}] Access denied: User is not admin`, { userId: user.userId });
+                return res.status(403).json({ error: "Admin access required" });
+            }
+
+            logger.info(`[AdminAuth:${requestId}] Access granted`);
+            next();
+
+        } catch (dbError) {
+            logger.error(`[AdminAuth:${requestId}] Database error during admin check`, {
+                error: dbError instanceof Error ? dbError.message : String(dbError),
+                userId: user.userId
+            });
+            return res.status(500).json({ error: "Database error verifying admin status" });
+        }
+    } catch (error) {
+        logger.error("Admin middleware unexpected error", { error });
+        res.status(500).json({ error: "Failed to verify admin status" });
+    }
+}
+
+// All admin routes require authentication and admin role
+router.use(authenticate);
+router.use(requireAdmin);
+
+// ==================== DASHBOARD ====================
+
+router.get("/dashboard/stats", async (req: Request, res: Response) => {
+    try {
+        const [
+            totalTours,
+            totalTreks,
+            totalBookings,
+            pendingBookings,
+            recentBookings,
+        ] = await Promise.all([
+            prisma.tour.count({ where: { isActive: true } }),
+            prisma.trek.count({ where: { isActive: true } }),
+            prisma.booking.count(),
+            prisma.booking.count({ where: { status: "pending" } }),
+            prisma.booking.findMany({
+                take: 5,
+                orderBy: { createdAt: "desc" },
+                select: {
+                    id: true,
+                    itemName: true,
+                    fullName: true,
+                    email: true,
+                    amount: true,
+                    status: true,
+                    createdAt: true,
+                },
+            }),
+        ]);
+
+        res.json({
+            stats: {
+                totalTours,
+                totalTreks,
+                totalBookings,
+                pendingBookings,
+            },
+            recentBookings,
+        });
+    } catch (error) {
+        logger.error("Failed to fetch dashboard stats", { error });
+        res.status(500).json({ error: "Failed to fetch dashboard stats" });
+    }
+});
+
+// ==================== TOURS ====================
+
+// Get all tours
+router.get("/tours", async (req: Request, res: Response) => {
+    try {
+        const tours = await prisma.tour.findMany({
+            orderBy: { createdAt: "desc" },
+        });
+        res.json(tours);
+    } catch (error) {
+        logger.error("Failed to fetch tours", { error });
+        res.status(500).json({ error: "Failed to fetch tours" });
+    }
+});
+
+// Get single tour
+router.get("/tours/:id", async (req: Request, res: Response) => {
+    try {
+        const tour = await prisma.tour.findUnique({
+            where: { id: req.params.id as string },
+        });
+
+        if (!tour) {
+            return res.status(404).json({ error: "Tour not found" });
+        }
+
+        res.json(tour);
+    } catch (error) {
+        logger.error("Failed to fetch tour", { error });
+        res.status(500).json({ error: "Failed to fetch tour" });
+    }
+});
+
+// Create tour
+router.post("/tours", async (req: Request, res: Response) => {
+    try {
+        // Log incoming data
+        logger.info("Creating tour", {
+            bodyKeys: Object.keys(req.body),
+            isActive: req.body.isActive,
+            userId: req.user?.userId
+        });
+
+        // Ensure isActive defaults to true if not provided
+        const dataToCreate = {
+            ...req.body,
+            isActive: req.body.isActive ?? true,
+        };
+
+        const tour = await prisma.tour.create({
+            data: dataToCreate,
+        });
+
+        logger.info("Tour created successfully", {
+            tourId: tour.id,
+            slug: tour.slug,
+            isActive: tour.isActive,
+            userId: req.user?.userId
+        });
+        res.json(tour);
+    } catch (error) {
+        logger.error("Failed to create tour", { error });
+        res.status(500).json({ error: "Failed to create tour" });
+    }
+});
+
+// Update tour
+router.put("/tours/:id", async (req: Request, res: Response) => {
+    try {
+        // Filter out database-managed fields that shouldn't be updated
+        const { id: _id, createdAt, updatedAt, ...updateData } = req.body;
+
+        logger.info("Updating tour", {
+            tourId: req.params.id as string,
+            receivedKeys: Object.keys(req.body),
+            sanitizedKeys: Object.keys(updateData)
+        });
+
+        const tour = await prisma.tour.update({
+            where: { id: req.params.id as string },
+            data: updateData,
+        });
+
+        logger.info("Tour updated", { tourId: tour.id, userId: req.user?.userId });
+        res.json(tour);
+    } catch (error: any) {
+        logger.error("Failed to update tour", {
+            error: error.message,
+            code: (error as any).code,
+            meta: error.meta,
+            tourId: req.params.id as string,
+            bodyKeys: Object.keys(req.body)
+        });
+
+        // Return more specific error message
+        const errorMessage = (error as any).code === 'P2002'
+            ? 'A tour with this slug already exists'
+            : (error as any).code === 'P2025'
+                ? 'Tour not found'
+                : (error as any).message || 'Failed to update tour';
+
+        res.status(500).json({
+            error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
+
+// Delete tour
+router.delete("/tours/:id", async (req: Request, res: Response) => {
+    try {
+        await prisma.tour.delete({
+            where: { id: req.params.id as string },
+        });
+
+        logger.info("Tour deleted", { tourId: req.params.id as string, userId: req.user?.userId });
+        res.json({ message: "Tour deleted successfully" });
+    } catch (error) {
+        logger.error("Failed to delete tour", { error });
+        res.status(500).json({ error: "Failed to delete tour" });
+    }
+});
+
+// ==================== TREKS ====================
+
+// Get all treks
+router.get("/treks", async (req: Request, res: Response) => {
+    try {
+        const treks = await prisma.trek.findMany({
+            orderBy: { createdAt: "desc" },
+        });
+        res.json(treks);
+    } catch (error) {
+        logger.error("Failed to fetch treks", { error });
+        res.status(500).json({ error: "Failed to fetch treks" });
+    }
+});
+
+// Get single trek
+router.get("/treks/:id", async (req: Request, res: Response) => {
+    try {
+        const trek = await prisma.trek.findUnique({
+            where: { id: req.params.id as string },
+        });
+
+        if (!trek) {
+            return res.status(404).json({ error: "Trek not found" });
+        }
+
+        res.json(trek);
+    } catch (error) {
+        logger.error("Failed to fetch trek", { error });
+        res.status(500).json({ error: "Failed to fetch trek" });
+    }
+});
+
+// Create trek
+router.post("/treks", async (req: Request, res: Response) => {
+    try {
+        // Log incoming data
+        logger.info("Creating trek", {
+            bodyKeys: Object.keys(req.body),
+            isActive: req.body.isActive,
+            userId: req.user?.userId
+        });
+
+        // Ensure isActive defaults to true if not provided
+        const dataToCreate = {
+            ...req.body,
+            isActive: req.body.isActive ?? true,
+        };
+
+        const trek = await prisma.trek.create({
+            data: dataToCreate,
+        });
+
+        logger.info("Trek created successfully", {
+            trekId: trek.id,
+            slug: trek.slug,
+            isActive: trek.isActive,
+            userId: req.user?.userId
+        });
+        res.status(201).json(trek);
+    } catch (error) {
+        logger.error("Failed to create trek", { error });
+
+        if ((error as any).code === 'P2002') {
+            return res.status(400).json({ error: "A trek with this slug or name already exists" });
+        }
+
+        res.status(500).json({ error: "Failed to create trek", details: (error as any).message });
+    }
+});
+
+// Update trek
+router.put("/treks/:id", async (req: Request, res: Response) => {
+    try {
+        // Filter out database-managed fields that shouldn't be updated
+        const { id: _id, createdAt, updatedAt, ...updateData } = req.body;
+
+        const trek = await prisma.trek.update({
+            where: { id: req.params.id as string },
+            data: updateData,
+        });
+
+        logger.info("Trek updated", { trekId: trek.id, userId: req.user?.userId });
+        res.json(trek);
+    } catch (error: any) {
+        logger.error("Failed to update trek", {
+            error: error.message,
+            code: (error as any).code,
+            meta: error.meta,
+            trekId: req.params.id as string,
+            bodyKeys: Object.keys(req.body)
+        });
+
+        // Return more specific error message
+        const errorMessage = (error as any).code === 'P2002'
+            ? 'A trek with this slug already exists'
+            : (error as any).code === 'P2025'
+                ? 'Trek not found'
+                : (error as any).message || 'Failed to update trek';
+
+        res.status(500).json({
+            error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
+
+// Delete trek
+router.delete("/treks/:id", async (req: Request, res: Response) => {
+    try {
+        await prisma.trek.delete({
+            where: { id: req.params.id as string },
+        });
+
+        logger.info("Trek deleted", { trekId: req.params.id as string, userId: req.user?.userId });
+        res.json({ message: "Trek deleted successfully" });
+    } catch (error) {
+        logger.error("Failed to delete trek", { error });
+        res.status(500).json({ error: "Failed to delete trek" });
+    }
+});
+
+// ==================== BOOKINGS ====================
+
+// Get all bookings
+router.get("/bookings", async (req: Request, res: Response) => {
+    try {
+        const bookings = await prisma.booking.findMany({
+            include: {
+                user: {
+                    select: {
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+        res.json(bookings);
+    } catch (error) {
+        logger.error("Failed to fetch bookings", { error });
+        res.status(500).json({ error: "Failed to fetch bookings" });
+    }
+});
+
+// Update booking status
+router.put("/bookings/:id/status", async (req: Request, res: Response) => {
+    try {
+        const { status } = req.body;
+
+        const booking = await prisma.booking.update({
+            where: { id: req.params.id as string },
+            data: { status },
+        });
+
+        logger.info("Booking status updated", {
+            bookingId: booking.id,
+            newStatus: status,
+            userId: req.user?.userId
+        });
+
+        res.json(booking);
+    } catch (error) {
+        logger.error("Failed to update booking status", { error });
+        res.status(500).json({ error: "Failed to update booking status" });
+    }
+});
+
+// ==================== SETTINGS ====================
+
+// Get all settings
+router.get("/settings", async (req: Request, res: Response) => {
+    try {
+        const settings = await prisma.siteSettings.findMany();
+
+        // Convert to key-value format
+        const settingsMap = settings.reduce((acc, setting) => {
+            acc[setting.key] = JSON.parse(setting.value);
+            return acc;
+        }, {} as Record<string, any>);
+
+        res.json(settingsMap);
+    } catch (error) {
+        logger.error("Failed to fetch settings", { error });
+        res.status(500).json({ error: "Failed to fetch settings" });
+    }
+});
+
+// Update setting
+router.put("/settings/:key", async (req: Request, res: Response) => {
+    try {
+        const key = req.params.key as string;
+        const { value, description } = req.body;
+
+        if (!value) {
+            logger.warn("Attempt to update setting with empty value", { key });
+            return res.status(400).json({ error: "Value is required" });
+        }
+
+        const setting = await prisma.siteSettings.upsert({
+            where: { key: req.params.key as string },
+            create: {
+                key: req.params.key as string,
+                value: JSON.stringify(value),
+                description,
+            },
+            update: {
+                value: JSON.stringify(value),
+                description,
+            },
+        });
+
+        logger.info("Setting updated", {
+            key: req.params.key as string,
+            userId: req.user?.userId
+        });
+
+        res.json({ key: setting.key, value: JSON.parse(setting.value) });
+    } catch (error) {
+        logger.error("Failed to update setting", { error });
+        res.status(500).json({ error: "Failed to update setting" });
+    }
+});
+
+export default router;

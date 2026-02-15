@@ -1,0 +1,37 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "ES2020",
+        "moduleResolution": "bundler",
+        "outDir": "../dist/server",
+        "strict": false,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": false,
+        "allowSyntheticDefaultImports": true,
+        "types": [
+            "node",
+            "express"
+        ],
+        "typeRoots": [
+            "../node_modules/@types",
+            "./types"
+        ],
+        "baseUrl": "..",
+        "paths": {
+            "@shared/*": [
+                "shared/*"
+            ]
+        }
+    },
+    "include": [
+        "**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}
