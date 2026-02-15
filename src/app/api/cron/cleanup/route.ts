@@ -4,6 +4,8 @@ import { cleanupExpiredTokens } from '@/../server/services/otp';
 
 // Route handler for Vercel Cron
 // Configure this in vercel.json
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     // Verify authorization header to prevent unauthorized access
     const authHeader = request.headers.get('authorization');
