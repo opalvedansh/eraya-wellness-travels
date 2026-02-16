@@ -6,7 +6,8 @@ import { PrismaClient } from "@prisma/client";
  */
 function sanitizeDatabaseUrl(url: string | undefined): string {
     if (!url) {
-        throw new Error("DATABASE_URL environment variable is required");
+        console.warn("DATABASE_URL environment variable is not defined. Using dummy URL for build.");
+        return "postgresql://dummy:dummy@localhost:5432/dummy";
     }
 
     let sanitized = url.trim();
